@@ -1,0 +1,28 @@
+{
+  "name": "@sorosplits/sdk",
+  "version": "0.0.1",
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "type": "module",
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@stellar/freighter-api": "^1.7.1",
+    "@stellar/stellar-sdk": "^11.2.2",
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.56",
+    "bun-types": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "scripts": {
+    "build": "rm -rf lib && tsc"
+  }
+}

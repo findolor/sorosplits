@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "outDir": "./lib",
+    "skipLibCheck": true,
+    "module": "es2015",
+    "moduleResolution": "node",
+    "declaration": true,
+    "noImplicitAny": false,
+    "removeComments": true,
+    "noLib": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "target": "es2015",
+    "sourceMap": true,
+    "jsx": "react",
+    "lib": ["es6"],
+    "types": [
+      "bun-types" // add Bun global
+    ]
+  }
+}
