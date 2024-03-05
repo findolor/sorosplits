@@ -24,7 +24,8 @@ This structure is used to map each shareholder to their allocated share of the t
 A data structure that holds the configuration details of the contract, which includes:
 
 - **admin** - `Address`: The blockchain address of the admin who has the authority to execute admin-level operations.
-- **mutable** - `bool`: A boolean flag indicating whether the contract is mutable (i.e., whether the shares and other configurations can be updated post-initialization).
+- **name** - `String`: The name of the contract.
+- **updatable** - `bool`: A boolean flag indicating whether the contract is mutable (i.e., whether the shares and other configurations can be updated post-initialization).
 
 This structure is crucial for maintaining the state of the contract, including administrative control and mutability status.
 

@@ -22,8 +22,9 @@ Initializes the contract with the necessary parameters.
 **Parameters:**
 
 - **`admin`**: The address of the admin.
+- **`name`**: The name of the contract.
 - **`shares`**: A vector of `ShareDataKey` structs representing the shareholders and their respective shares.
-- **`mutable`**: A boolean flag indicating whether the contract is mutable.
+- **`updatable`**: A boolean flag indicating whether the contract is mutable.
 
 ### `distribute_tokens`
 
