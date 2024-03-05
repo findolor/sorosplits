@@ -97,7 +97,7 @@ export default function SearchSplitter() {
       setLoading(false)
       successToast("Splitter locked!")
 
-      setContractConfig(Object.assign({}, contractConfig, { mutable: false }))
+      setContractConfig(Object.assign({}, contractConfig, { updatable: false }))
     } catch (error: any) {
       setLoading(false)
       errorToast(error)
@@ -170,7 +170,7 @@ export default function SearchSplitter() {
         {contractConfig && (
           <div>
             <h3 className="text-xl font-bold mb-2">Contract State</h3>
-            {contractConfig.mutable ? (
+            {contractConfig.updatable ? (
               <>
                 <p className="mb-4">
                   Contract is mutable. Shareholders and shares can be updated.
@@ -198,7 +198,7 @@ export default function SearchSplitter() {
             <SplitterData
               initialData={contractShares}
               updateData={setContractShares}
-              locked={loading || !contractConfig?.mutable}
+              locked={loading || !contractConfig?.updatable}
             />
 
             <div className="h-8" />
@@ -206,7 +206,7 @@ export default function SearchSplitter() {
               text="Update Splitter"
               onClick={updateSplitter}
               type="primary"
-              loading={loading || !contractConfig?.mutable}
+              loading={loading || !contractConfig?.updatable}
             />
           </div>
         )}

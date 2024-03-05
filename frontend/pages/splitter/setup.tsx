@@ -17,8 +17,9 @@ export default function SetupSplitter() {
   const splitterContract = useSplitterContract()
   const { loading, setLoading } = useAppStore()
 
+  const [name, setName] = useState<string>("Splitter Contract")
   const [data, setData] = useState<DataProps[]>(INITIAL_DATA)
-  const [mutable, setMutable] = useState<boolean>(false)
+  const [updatable, setUpdatable] = useState<boolean>(false)
 
   const deployAndInitSplitter = async () => {
     try {
@@ -29,13 +30,14 @@ export default function SetupSplitter() {
       loadingToast("Creating your Splitter contract...")
 
       let contractId = await splitterContract.deployAndInit({
+        name,
         shares: data.map((item) => {
           return {
             ...item,
             share: item.share * 100,
           }
         }),
-        mutable,
+        updatable,
       })
 
       successToast(
@@ -68,7 +70,7 @@ export default function SetupSplitter() {
 
         <Switch
           initialState={false}
-          onChange={setMutable}
+          onChange={setUpdatable}
           text="Allow updating shareholders and shares in the future?"
           locked={loading}
         />

@@ -28,11 +28,12 @@ const useSplitterContract = () => {
   }
 
   const deployAndInit = async ({
+    name,
     shares,
-    mutable,
+    updatable,
   }: DeployAndInitContractArgs) => {
     await checkFreighterConnection()
-    return splitterContract.deployAndInit({ shares, mutable })
+    return splitterContract.deployAndInit({ name, shares, updatable })
   }
 
   const query = async <T extends QueryMethod>({
