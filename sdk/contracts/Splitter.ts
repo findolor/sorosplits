@@ -11,7 +11,7 @@ import {
 import { randomBytes } from "crypto"
 import CONFIG, { Network } from "../config"
 import ba from "../utils/binascii"
-import { hexToByte } from "../utils/hexToByte"
+// import { hexToByte } from "../utils/hexToByte"
 
 export interface ShareDataProps {
   share: number
@@ -33,8 +33,9 @@ export interface CallContractArgs<T extends CallMethod> {
 export type MethodArgs<T extends CallMethod> = T extends "init"
   ? {
       admin: string
+      name: string
       shares: ShareDataProps[]
-      mutable: boolean
+      updatable: boolean
     }
   : T extends "distribute_tokens"
   ? { token_address: string }
@@ -60,7 +61,8 @@ export type QueryArgs<T extends QueryMethod> = T extends "list_shares"
 
 export interface ContractConfigResult {
   admin: string
-  mutable: boolean
+  name: Uint8Array
+  updatable: boolean
 }
 
 export type QueryContractResult<T extends QueryMethod> = T extends "get_config"
@@ -70,8 +72,9 @@ export type QueryContractResult<T extends QueryMethod> = T extends "get_config"
   : never
 
 export interface DeployAndInitContractArgs {
+  name: string
   shares: ShareDataProps[]
-  mutable: boolean
+  updatable: boolean
 }
 
 export class SplitterContract extends BaseContract {
@@ -79,11 +82,12 @@ export class SplitterContract extends BaseContract {
     super(network, walletAddress)
   }
 
-  public async deployAndInit({ shares, mutable }: DeployAndInitContractArgs) {
+  public async deployAndInit({ name, shares, updatable }: DeployAndInitContractArgs) {
     const contract = new Contract(CONFIG[this.network].deployerContractId)
 
     let splitterArgs = [
       new Address(this.walletAddress || "").toScVal(),
+      xdr.ScVal.scvBytes(Buffer.from(name, 'utf-8')),
       xdr.ScVal.scvVec(
         shares.map((item) => {
           xdr.ScVal
@@ -99,7 +103,7 @@ export class SplitterContract extends BaseContract {
           ])
         })
       ),
-      xdr.ScVal.scvBool(mutable),
+      xdr.ScVal.scvBool(updatable),
     ]
 
     let deployerArgs = [
@@ -139,9 +143,8 @@ export class SplitterContract extends BaseContract {
           .vec()
           ?.at(0)
           ?.address()
-          .contractId()
-          .toString("hex") || ""
-      return StrKey.encodeContract(hexToByte(contractId))
+          .contractId() as Buffer
+      return StrKey.encodeContract(contractId)
     } else throw new Error("Transaction failed")
   }
 
@@ -162,6 +165,7 @@ export class SplitterContract extends BaseContract {
           "init",
           ...[
             new Address(this.walletAddress || "").toScVal(),
+            xdr.ScVal.scvBytes(Buffer.from(callArgs.name, 'utf-8')),
             xdr.ScVal.scvVec(
               callArgs.shares.map((item) => {
                 xdr.ScVal
@@ -177,7 +181,7 @@ export class SplitterContract extends BaseContract {
                 ])
               })
             ),
-            xdr.ScVal.scvBool(callArgs.mutable),
+            xdr.ScVal.scvBool(callArgs.updatable),
           ]
         )
         break
