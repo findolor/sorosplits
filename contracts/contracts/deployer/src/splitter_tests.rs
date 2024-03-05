@@ -11,7 +11,7 @@ use soroban_sdk::{
         self, ContractIdPreimage, ContractIdPreimageFromAddress, CreateContractArgs, Limits,
         ReadXdr, ScVal, Uint256,
     },
-    Address, BytesN, Env, IntoVal, Val, Vec,
+    Address, Bytes, BytesN, Env, IntoVal, Val, Vec,
 };
 
 // Splitter contract to be deployed
@@ -38,6 +38,7 @@ fn test_deploy_from_address() {
     let init_fn = symbol_short!("init");
     let init_fn_args: Vec<Val> = (
         deployer.clone(),
+        Bytes::from_slice(&env, "Splitter Contract".as_bytes()),
         ScVal::from_xdr_base64("AAAAEAAAAAEAAAACAAAAEQAAAAEAAAACAAAADwAAAAVzaGFyZQAAAAAAAAoAAAAAAAAAAAAAAAAAAAfQAAAADwAAAAtzaGFyZWhvbGRlcgAAAAASAAAAAAAAAADpj6fg3ucLOk6Bhu//xjLZukCRXxO5Pn3xfYlxA/sWMgAAABEAAAABAAAAAgAAAA8AAAAFc2hhcmUAAAAAAAAKAAAAAAAAAAAAAAAAAAAfQAAAAA8AAAALc2hhcmVob2xkZXIAAAAAEgAAAAAAAAAAfNqRvTyoFTMCJ3LrSV1WtzDaNILzjamsvTOwQ0SQuMw=", Limits {
             depth: 100,
             len: 1000
@@ -86,7 +87,11 @@ fn test_deploy_from_address() {
 
     let config = client.get_config();
     assert_eq!(config.admin, deployer);
-    assert_eq!(config.mutable, false);
+    assert_eq!(
+        config.name,
+        Bytes::from_slice(&env, "Splitter Contract".as_bytes())
+    );
+    assert_eq!(config.updatable, false);
 
     let shareholder1: Address = ScVal::from_xdr_base64(
         "AAAAEgAAAAAAAAAA6Y+n4N7nCzpOgYbv/8Yy2bpAkV8TuT598X2JcQP7FjI=",

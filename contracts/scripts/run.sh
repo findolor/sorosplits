@@ -12,8 +12,9 @@ soroban contract invoke \
   -- \
   init \
   --admin $(cat scripts/test_identity) \
+  --name "U3BsaXR0ZXIgQ29udHJhY3Q=" \
   --shares '[{"shareholder":"'${SOROSPLIT_SHAREHOLDER1_IDENTITY}'", "share": "8050"},{"shareholder":"'${SOROSPLIT_SHAREHOLDER2_IDENTITY}'", "share": "1950"}]' \
-  --mutable true
+  --updatable true
 
 echo "3. Initializing and minting 100 tokens to splitter contract \n"
 soroban contract invoke \

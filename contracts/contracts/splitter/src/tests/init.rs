@@ -1,4 +1,4 @@
-use soroban_sdk::{testutils::Address as _, vec, Address, Env};
+use soroban_sdk::{testutils::Address as _, vec, Address, Bytes, Env};
 
 use crate::{errors::Error, storage::ShareDataKey, tests::helpers::create_splitter};
 
@@ -8,6 +8,7 @@ fn happy_path() {
     let (splitter, _) = create_splitter(&env);
 
     let admin = Address::generate(&env);
+    let name = Bytes::from_slice(&env, "Splitter Contract".as_bytes());
     let shareholder_1 = Address::generate(&env);
     let shareholder_2 = Address::generate(&env);
     let shares = vec![
@@ -22,7 +23,7 @@ fn happy_path() {
         },
     ];
 
-    splitter.init(&admin, &shares, &true);
+    splitter.init(&admin, &name, &shares, &true);
 
     assert_eq!(splitter.get_share(&shareholder_1), Some(8050));
     assert_eq!(splitter.get_share(&shareholder_2), Some(1950));
@@ -35,6 +36,7 @@ fn test_already_initialized() {
     let (splitter, _) = create_splitter(&env);
 
     let admin = Address::generate(&env);
+    let name = Bytes::from_slice(&env, "Splitter Contract".as_bytes());
     let shares = vec![
         &env,
         ShareDataKey {
@@ -46,10 +48,10 @@ fn test_already_initialized() {
             share: 1950,
         },
     ];
-    splitter.init(&admin, &shares, &true);
+    splitter.init(&admin, &name, &shares, &true);
 
     assert_eq!(
-        splitter.try_init(&admin, &shares, &true),
+        splitter.try_init(&admin, &name, &shares, &true),
         Err(Ok(Error::AlreadyInitialized))
     );
 }
@@ -60,6 +62,7 @@ fn test_low_share_count() {
     let (splitter, _) = create_splitter(&env);
 
     let admin = Address::generate(&env);
+    let name = Bytes::from_slice(&env, "Splitter Contract".as_bytes());
     let shares = vec![
         &env,
         ShareDataKey {
@@ -69,7 +72,7 @@ fn test_low_share_count() {
     ];
 
     assert_eq!(
-        splitter.try_init(&admin, &shares, &true),
+        splitter.try_init(&admin, &name, &shares, &true),
         Err(Ok(Error::LowShareCount))
     );
 }
@@ -80,10 +83,12 @@ fn test_invalid_share_total() {
     let (splitter, _) = create_splitter(&env);
 
     let admin = Address::generate(&env);
+    let name = Bytes::from_slice(&env, "Splitter Contract".as_bytes());
 
     assert_eq!(
         splitter.try_init(
             &admin,
+            &name,
             &vec![
                 &env,
                 ShareDataKey {
@@ -103,6 +108,7 @@ fn test_invalid_share_total() {
     assert_eq!(
         splitter.try_init(
             &admin,
+            &name,
             &vec![
                 &env,
                 ShareDataKey {

@@ -1,4 +1,4 @@
-use soroban_sdk::{testutils::Address as _, vec, Address, Env};
+use soroban_sdk::{testutils::Address as _, vec, Address, Bytes, Env, String};
 
 use crate::{
     errors::Error,
@@ -12,12 +12,14 @@ fn happy_path() {
     env.mock_all_auths();
 
     let admin = Address::generate(&env);
+    let name = Bytes::from_slice(&env, "Splitter Contract".as_bytes());
     let shareholder_1 = Address::generate(&env);
     let shareholder_2 = Address::generate(&env);
 
     let (splitter, splitter_address) = create_splitter_with_shares(
         &env,
         &admin,
+        &name,
         &vec![
             &env,
             ShareDataKey {

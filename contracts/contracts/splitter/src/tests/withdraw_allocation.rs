@@ -1,4 +1,4 @@
-use soroban_sdk::{testutils::Address as _, Address, Env};
+use soroban_sdk::{testutils::Address as _, Address, Bytes, Env, String};
 
 use crate::{
     errors::Error,
@@ -13,11 +13,12 @@ fn happy_path() {
     env.mock_all_auths();
 
     let admin = Address::generate(&env);
+    let name = Bytes::from_slice(&env, "Splitter Contract".as_bytes());
     let share_data = get_default_share_data(&env);
     let shareholder = share_data.get(0).unwrap().shareholder;
 
     let (splitter, splitter_address) =
-        create_splitter_with_shares(&env, &admin, &share_data, &true);
+        create_splitter_with_shares(&env, &admin, &name, &share_data, &true);
 
     let token_admin = Address::generate(&env);
     let (token, sudo_token, token_address) = create_token(&env, &token_admin);
@@ -64,8 +65,9 @@ fn test_zero_withdraw_amount() {
     env.mock_all_auths();
 
     let admin = Address::generate(&env);
+    let name = Bytes::from_slice(&env, "Splitter Contract".as_bytes());
     let (splitter, _) =
-        create_splitter_with_shares(&env, &admin, &get_default_share_data(&env), &true);
+        create_splitter_with_shares(&env, &admin, &name, &get_default_share_data(&env), &true);
 
     assert_eq!(
         splitter.try_withdraw_allocation(&Address::generate(&env), &Address::generate(&env), &0),
@@ -79,8 +81,9 @@ fn test_withdrawal_amount_above_allocation() {
     env.mock_all_auths();
 
     let admin = Address::generate(&env);
+    let name = Bytes::from_slice(&env, "Splitter Contract".as_bytes());
     let (splitter, splitter_address) =
-        create_splitter_with_shares(&env, &admin, &get_default_share_data(&env), &true);
+        create_splitter_with_shares(&env, &admin, &name, &get_default_share_data(&env), &true);
 
     let token_admin = Address::generate(&env);
     let (_, sudo_token, token_address) = create_token(&env, &token_admin);

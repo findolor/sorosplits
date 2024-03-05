@@ -1,4 +1,4 @@
-use soroban_sdk::{contracttype, Address, Env, IntoVal, Val, Vec};
+use soroban_sdk::{contracttype, Address, Bytes, Env, IntoVal, Val, Vec};
 
 use crate::errors::Error;
 
@@ -91,14 +91,19 @@ impl ShareDataKey {
 #[contracttype]
 pub struct ConfigDataKey {
     pub admin: Address,
-    pub mutable: bool,
+    pub name: Bytes,
+    pub updatable: bool,
 }
 impl ConfigDataKey {
-    /// Initializes the config with the given admin address and mutable flag
-    pub fn init(e: &Env, admin: Address, mutable: bool) {
+    /// Initializes the config with the given admin address and updatable flag
+    pub fn init(e: &Env, admin: Address, name: Bytes, updatable: bool) {
         bump_instance(e);
         let key = DataKey::Config;
-        let config = ConfigDataKey { admin, mutable };
+        let config = ConfigDataKey {
+            admin,
+            name,
+            updatable,
+        };
         e.storage().instance().set(&key, &config);
     }
 
@@ -116,7 +121,7 @@ impl ConfigDataKey {
         let config: Option<ConfigDataKey> = e.storage().instance().get(&key);
         match config {
             Some(mut config) => {
-                config.mutable = false;
+                config.updatable = false;
                 e.storage().instance().set(&key, &config);
             }
             None => (),
@@ -139,14 +144,14 @@ impl ConfigDataKey {
         Ok(())
     }
 
-    /// Returns true if the contract is mutable
+    /// Returns true if the contract is updatable
     // TODO: Maybe return an error if ConfigDataKey doesn't exist
     pub fn is_contract_locked(e: &Env) -> bool {
         bump_instance(e);
         let key = DataKey::Config;
         let config: Option<ConfigDataKey> = e.storage().instance().get(&key);
         match config {
-            Some(config) => config.mutable,
+            Some(config) => config.updatable,
             None => false,
         }
     }

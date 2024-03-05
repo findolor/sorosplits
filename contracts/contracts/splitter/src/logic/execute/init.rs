@@ -1,4 +1,4 @@
-use soroban_sdk::{Address, Env, Vec};
+use soroban_sdk::{Address, Bytes, Env, Vec};
 
 use crate::{
     errors::Error,
@@ -9,15 +9,16 @@ use crate::{
 pub fn execute(
     env: Env,
     admin: Address,
+    name: Bytes,
     shares: Vec<ShareDataKey>,
-    mutable: bool,
+    updatable: bool,
 ) -> Result<(), Error> {
     if ConfigDataKey::exists(&env) {
         return Err(Error::AlreadyInitialized);
     };
 
     // Initialize the contract configuration
-    ConfigDataKey::init(&env, admin, mutable);
+    ConfigDataKey::init(&env, admin, name, updatable);
 
     // Check if the shares sum up to 10000
     check_shares(&shares)?;

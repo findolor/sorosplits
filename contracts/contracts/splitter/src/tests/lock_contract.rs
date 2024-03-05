@@ -15,7 +15,7 @@ fn happy_path() {
 
     splitter.lock_contract();
 
-    assert_eq!(splitter.get_config().mutable, false);
+    assert_eq!(splitter.get_config().updatable, false);
 }
 
 #[test]

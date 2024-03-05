@@ -1,4 +1,4 @@
-use soroban_sdk::{contract, contractimpl, contractmeta, Address, Env, Vec};
+use soroban_sdk::{contract, contractimpl, contractmeta, Address, Bytes, Env, Vec};
 
 use crate::{
     errors::Error,
@@ -21,13 +21,15 @@ pub trait SplitterTrait {
     /// ## Arguments
     ///
     /// * `admin` - The admin address for the contract
+    /// * `name` - The name of the contract
     /// * `shares` - The shareholders with their shares
-    /// * `mutable` - Whether the contract is mutable or not
+    /// * `updatable` - Whether the contract is mutable or not
     fn init(
         env: Env,
         admin: Address,
+        name: Bytes,
         shares: Vec<ShareDataKey>,
-        mutable: bool,
+        updatable: bool,
     ) -> Result<(), Error>;
 
     // ========== Execute Functions ==========
@@ -144,10 +146,11 @@ impl SplitterTrait for Splitter {
     fn init(
         env: Env,
         admin: Address,
+        name: Bytes,
         shares: Vec<ShareDataKey>,
-        mutable: bool,
+        updatable: bool,
     ) -> Result<(), Error> {
-        execute::init(env, admin, shares, mutable)
+        execute::init(env, admin, name, shares, updatable)
     }
 
     fn transfer_tokens(
