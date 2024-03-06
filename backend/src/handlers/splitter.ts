@@ -1,6 +1,7 @@
 import bearer from "@elysiajs/bearer"
 import jwt from "@elysiajs/jwt"
-import { Elysia, t } from "elysia"
+import { Elysia } from "elysia"
+import { AuthenticationError } from "../errors"
 
 export default new Elysia({ prefix: "/splitter" })
   .use(bearer())
@@ -10,7 +11,14 @@ export default new Elysia({ prefix: "/splitter" })
       secret: process.env.JWT_SECRET as string,
     })
   )
-  .get("/:contractId/interactions", async ({ params: { contractId }, user }) => {
-    console.log(user)
+  .derive(async ({ jwt, bearer }) => {
+    const user = await jwt.verify(bearer)
+    if (!user) {
+      throw new AuthenticationError("Unauthorized")
+    }
+    return { publicKey: user.id }
+  })
+  .get("/:contractId/interactions", async ({ params: { contractId }, publicKey }) => {
+    console.log(publicKey)
     return { contractId }
   })

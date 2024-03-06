@@ -51,15 +51,7 @@ const application = new Elysia()
         }
     }
   })
-  .use(authenticationHandlers)
-  .derive(async ({ jwt, bearer, store }) => {
-    const user = await jwt.verify(bearer)
-    if (!user) {
-      throw new AuthenticationError("Unauthorized")
-    }
-    return { user }
-  })
-  .use(splitterRoutes)
+  .group("/api", (app) => app.use(authenticationHandlers).use(splitterRoutes))
   .listen(3001)
 
 console.log(
