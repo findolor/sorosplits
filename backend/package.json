@@ -16,7 +16,8 @@
     "elysia": "latest"
   },
   "devDependencies": {
-    "bun-types": "latest"
+    "bun-types": "latest",
+    "prisma": "^5.10.2"
   },
   "module": "src/index.js"
 }
