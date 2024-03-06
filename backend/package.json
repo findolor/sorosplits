@@ -1,0 +1,22 @@
+{
+  "name": "sorosplits-backend",
+  "version": "1.0.50",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "bun run --watch src/index.ts",
+    "build": "bun build src/index.ts",
+    "start": "NODE_ENV=production bun src/index.ts"
+  },
+  "dependencies": {
+    "@elysiajs/bearer": "^0.8.0",
+    "@elysiajs/cors": "^0.8.0",
+    "@elysiajs/jwt": "^0.8.0",
+    "@stellar/freighter-api": "^2.0.0",
+    "@stellar/stellar-sdk": "^11.2.2",
+    "elysia": "latest"
+  },
+  "devDependencies": {
+    "bun-types": "latest"
+  },
+  "module": "src/index.js"
+}
