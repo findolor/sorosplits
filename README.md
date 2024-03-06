@@ -6,5 +6,6 @@ It includes:
 
 - Soroban Smart Contracts
 - React Frontend
-- Docusaurus Documentation
+- Bun Server
 - Typescript SoroSplits SDK
+- Docusaurus Documentation
