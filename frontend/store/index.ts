@@ -9,6 +9,9 @@ interface AppState {
 
   loading: boolean
   setLoading: (value: boolean) => void
+
+  accessToken: string | null
+  setAccessToken: (value: string) => void
 }
 
 const useAppStore = create<AppState>()((set) => ({
@@ -20,6 +23,9 @@ const useAppStore = create<AppState>()((set) => ({
 
   loading: false,
   setLoading: (value: boolean) => set(() => ({ loading: value })),
+
+  accessToken: null,
+  setAccessToken: (value: string) => set(() => ({ accessToken: value })),
 }))
 
 export default useAppStore
