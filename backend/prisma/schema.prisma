@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String             @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt         DateTime           @default(now())
+  publicKey         String             @unique
+  nonce             String             @unique
+  splitterContracts SplitterContract[]
+}
+
+model SplitterContract {
+  id           String                @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt    DateTime              @default(now())
+  address      String                @unique
+  owner        User                  @relation(fields: [ownerId], references: [id])
+  ownerId      String                @db.ObjectId
+  transactions SplitterTransaction[]
+}
+
+model SplitterTransaction {
+  id         String            @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt  DateTime          @default(now())
+  contract   SplitterContract? @relation(fields: [contractId], references: [id])
+  contractId String?           @db.ObjectId
+}

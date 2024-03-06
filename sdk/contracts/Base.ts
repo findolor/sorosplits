@@ -15,7 +15,6 @@ export default class BaseContract {
 
   private async initTxBuilder(publicKey: string, server: SorobanRpc.Server) {
     const source = await server.getAccount(publicKey)
-    console.log(source)
     return new TransactionBuilder(source, {
       fee: "1000000",
       networkPassphrase: CONFIG[this.network].networkPhrase,
@@ -94,7 +93,7 @@ export default class BaseContract {
     const server = this.getServer()
 
     const transactionResponse = await this.sendTransaction(server, operation)
-    console.log(transactionResponse)
+    
     return this.getTransaction(server, transactionResponse)
   }
 
@@ -103,7 +102,7 @@ export default class BaseContract {
   ): Promise<any> {
     const server = this.getServer()
     const txBuilder = await this.initTxBuilder(
-      this.walletAddress,
+      CONFIG[this.network].adminWallet,
       this.getServer()
     )
 

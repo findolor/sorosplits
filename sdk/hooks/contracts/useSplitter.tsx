@@ -24,11 +24,12 @@ export const useSplitterContract = (network: string, walletAddress: string) => {
   }, [walletAddress])
 
   const deployAndInit = async ({
+    name,
     shares,
-    mutable,
+    updatable,
   }: DeployAndInitContractArgs) => {
     await checkFreighterConnection()
-    return splitterContract.deployAndInit({ shares, mutable })
+    return splitterContract.deployAndInit({ name, shares, updatable })
   }
 
   const query = async <T extends QueryMethod>({
