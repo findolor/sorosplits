@@ -21,16 +21,25 @@ export default class BaseContract {
     })
   }
 
-  private getServer() {
+  protected getServer() {
     return new SorobanRpc.Server(CONFIG[this.network].rpcUrl, {
       allowHttp: true,
     })
   }
 
-  private async sendTransaction(
-    server: SorobanRpc.Server,
-    operation: xdr.Operation<Operation>
+  public async sendTransaction(
+    signedTx: string
   ): Promise<SorobanRpc.Api.SendTransactionResponse> {
+    const server = this.getServer()
+    let transaction = TransactionBuilder.fromXDR(
+      signedTx,
+      CONFIG[this.network].networkPhrase
+    )
+    return server.sendTransaction(transaction)
+  }
+
+  public async signTransaction(operation: xdr.Operation<Operation>) {
+    const server = this.getServer()
     const userInfo = await getUserInfo()
     const txBuilder = await this.initTxBuilder(this.walletAddress, server)
 
@@ -47,18 +56,13 @@ export default class BaseContract {
       accountToSign: userInfo.publicKey,
     })
 
-    let transaction = TransactionBuilder.fromXDR(
-      signedTx,
-      CONFIG[this.network].networkPhrase
-    )
-
-    return server.sendTransaction(transaction)
+    return signedTx
   }
 
-  private async getTransaction(
-    server: SorobanRpc.Server,
+  public async getTransaction(
     transactionResponse: SorobanRpc.Api.SendTransactionResponse
   ): Promise<SorobanRpc.Api.GetTransactionResponse> {
+    const server = this.getServer()
     let confirmation: SorobanRpc.Api.GetTransactionResponse
     let tries = 0
 
@@ -90,11 +94,9 @@ export default class BaseContract {
   protected async processTransaction(
     operation: xdr.Operation<Operation>
   ): Promise<SorobanRpc.Api.GetTransactionResponse> {
-    const server = this.getServer()
-
-    const transactionResponse = await this.sendTransaction(server, operation)
-    
-    return this.getTransaction(server, transactionResponse)
+    const signedTx = await this.signTransaction(operation)
+    const transactionResponse = await this.sendTransaction(signedTx)
+    return this.getTransaction(transactionResponse)
   }
 
   protected async processQuery(
