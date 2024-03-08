@@ -7,13 +7,13 @@ import TokenContract, {
 import { Network } from "../../config"
 import { checkFreighterConnection } from "../helper"
 
-export const useTokenContract = (network: string, walletAddress: string) => {
+export const useTokenContract = (network: Network, walletAddress: string) => {
   const [tokenContract, setTokenContract] = useState<TokenContract>(
-    new TokenContract(network as Network, walletAddress)
+    new TokenContract(network, walletAddress)
   )
 
   useEffect(() => {
-    const tokenContract = new TokenContract(network as Network, walletAddress)
+    const tokenContract = new TokenContract(network, walletAddress)
     setTokenContract(tokenContract)
   }, [walletAddress])
 

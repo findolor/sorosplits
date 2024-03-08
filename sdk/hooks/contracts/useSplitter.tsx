@@ -10,16 +10,16 @@ import SplitterContract, {
 } from "../../contracts/Splitter"
 import { checkFreighterConnection } from "../helper"
 
-export const useSplitterContract = (network: string, walletAddress: string) => {
+export const useSplitterContract = (
+  network: Network,
+  walletAddress: string
+) => {
   const [splitterContract, setSplitterContract] = useState<SplitterContract>(
-    new SplitterContract(network as Network, walletAddress)
+    new SplitterContract(network, walletAddress)
   )
 
   useEffect(() => {
-    const splitterContract = new SplitterContract(
-      network as Network,
-      walletAddress
-    )
+    const splitterContract = new SplitterContract(network, walletAddress)
     setSplitterContract(splitterContract)
   }, [walletAddress])
 
