@@ -9,3 +9,5 @@ It includes:
 - Bun Server
 - Typescript SoroSplits SDK
 - Docusaurus Documentation
+
+> **Note:** SoroSplits Phase 2 is currently under development. The code in this repository is not yet ready for production use.
