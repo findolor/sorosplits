@@ -1,4 +1,4 @@
-use soroban_sdk::{testutils::Address as _, vec, Address, Bytes, Env, String};
+use soroban_sdk::{testutils::Address as _, vec, Address, Bytes, Env};
 
 use crate::{
     errors::Error,

@@ -1,4 +1,4 @@
-use soroban_sdk::{testutils::Address as _, token, vec, Address, Bytes, Env, String, Vec};
+use soroban_sdk::{testutils::Address as _, token, vec, Address, Bytes, Env, Vec};
 use token::{Client as TokenClient, StellarAssetClient as TokenAdminClient};
 
 use crate::{
