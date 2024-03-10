@@ -11,7 +11,7 @@ use soroban_sdk::{
         self, ContractIdPreimage, ContractIdPreimageFromAddress, CreateContractArgs, Limits,
         ReadXdr, ScVal, Uint256,
     },
-    Address, Bytes, BytesN, Env, IntoVal, Val, Vec,
+    Address, Bytes, BytesN, Env, IntoVal, Symbol, Val, Vec,
 };
 
 // Splitter contract to be deployed
@@ -50,7 +50,7 @@ fn test_deploy_from_address() {
     ).into_val(&env);
     env.mock_all_auths();
     let (contract_id, init_result) =
-        deployer_client.deploy(&deployer, &wasm_hash, &salt, &init_fn, &init_fn_args);
+        deployer_client.deploy_splitter(&deployer, &wasm_hash, &salt, &init_fn, &init_fn_args);
 
     assert!(init_result.is_void());
 
@@ -58,7 +58,7 @@ fn test_deploy_from_address() {
         // Top-level authorized function is `deploy` with all the arguments
         function: AuthorizedFunction::Contract((
             deployer_client.address,
-            symbol_short!("deploy"),
+            Symbol::new(&env, "deploy_splitter"),
             (
                 deployer.clone(),
                 wasm_hash.clone(),

@@ -15,7 +15,7 @@ impl Deployer {
     /// and it's not possible to frontrun the contract initialization.
     ///
     /// Returns the contract ID and result of the init function.
-    pub fn deploy(
+    pub fn deploy_splitter(
         env: Env,
         deployer: Address,
         wasm_hash: BytesN<32>,
