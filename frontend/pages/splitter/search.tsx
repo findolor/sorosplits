@@ -1,34 +1,51 @@
-import { useEffect, useState } from "react"
-import Input from "../../components/Input"
-import useSplitterContract from "../../hooks/contracts/useSplitter"
-import { loadingToast, successToast, errorToast } from "../../utils/toast"
-import SplitterData, { DataProps } from "../../components/SplitterData"
-import Button from "../../components/Button"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
-import { TbExternalLink } from "react-icons/tb"
-import PageHeader from "../../components/PageHeader"
 import { useRouter } from "next/router"
-import checkSplitterData from "../../utils/checkSplitterData"
-import { Address } from "stellar-sdk"
-import useAppStore from "../../store"
-import TokenDistribution from "../../components/TokenDistribution"
-import { ContractConfigResult } from "../../contracts/Splitter"
+import SoroSplitsSDK from "@sorosplits/sdk"
+import { ContractConfigResult } from "@sorosplits/sdk/lib/contracts/Splitter"
+import { TbExternalLink } from "react-icons/tb"
+import Input from "@/components/Input"
+import SplitterData, { DataProps } from "@/components/SplitterData"
+import Button from "@/components/Button"
+import PageHeader from "@/components/PageHeader"
+import TokenDistribution from "@/components/TokenDistribution"
+import { loadingToast, successToast, errorToast } from "@/utils/toast"
+import checkSplitterData from "@/utils/checkSplitterData"
+import useAppStore from "@/store/index"
+import useApiService from "@/hooks/useApi"
 
 export default function SearchSplitter() {
-  const { query } = useRouter()
-  const { loading, setLoading } = useAppStore()
-  const splitterContract = useSplitterContract()
+  const router = useRouter()
+  const { loading, setLoading, walletAddress } = useAppStore()
+  const { splitterApiService } = useApiService()
 
   const [contractAddress, setContractAddress] = useState("")
 
   const [contractConfig, setContractConfig] = useState<ContractConfigResult>()
   const [contractShares, setContractShares] = useState<DataProps[]>()
 
+  const splitterContract = useMemo(() => {
+    return new SoroSplitsSDK.SplitterContract("testnet", walletAddress || "")
+  }, [walletAddress])
+
   useEffect(() => {
-    if (query.contractId) {
-      setContractAddress(query.contractId as string)
+    if (router.query.address) {
+      setContractAddress(router.query.address as string)
     }
-  }, [query])
+  }, [router.query])
+
+  useEffect(() => {
+    if (contractAddress != "") {
+      router.push(
+        {
+          pathname: router.pathname,
+          query: { address: contractAddress },
+        },
+        undefined,
+        { shallow: true }
+      )
+    }
+  }, [contractAddress])
 
   useEffect(() => {
     const fetchContractData = setTimeout(async () => {
@@ -88,10 +105,15 @@ export default function SearchSplitter() {
 
       loadingToast("Locking Splitter for updates...")
 
-      await splitterContract.call({
+      let operation = splitterContract.getCallOperation({
         contractId: contractAddress,
         method: "lock_contract",
         args: {},
+      })
+      const signedTx = await splitterContract.signTransaction(operation)
+
+      await splitterApiService.callMethod({
+        transaction: signedTx,
       })
 
       setLoading(false)
@@ -113,19 +135,22 @@ export default function SearchSplitter() {
 
       loadingToast("Updating Splitter shareholders and shares...")
 
-      const shares = contractShares.map((item) => {
-        return {
-          shareholder: Address.fromString(item.shareholder),
-          share: BigInt(item.share * 100),
-        }
-      })
-
-      await splitterContract.call({
+      let operation = splitterContract.getCallOperation({
         contractId: contractAddress,
         method: "update_shares",
         args: {
-          shares,
+          shares: contractShares.map((item) => {
+            return {
+              ...item,
+              share: item.share * 100,
+            }
+          }),
         },
+      })
+      const signedTx = await splitterContract.signTransaction(operation)
+
+      await splitterApiService.callMethod({
+        transaction: signedTx,
       })
 
       setLoading(false)

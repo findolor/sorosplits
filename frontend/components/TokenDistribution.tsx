@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useState } from "react"
+import { TokenResult } from "@sorosplits/sdk/lib/contracts/Token"
 import Input from "./Input"
-import useTokenContract from "../hooks/contracts/useToken"
-import { errorToast, loadingToast, successToast } from "../utils/toast"
-import useAppStore from "../store"
+import { errorToast, loadingToast, successToast } from "@/utils/toast"
+import useAppStore from "@/store/index"
 import Button from "./Button"
 import { DataProps } from "./SplitterData"
-import truncateAddress from "../utils/truncateAddress"
-import useSplitterContract from "../hooks/contracts/useSplitter"
-import { TokenResult } from "../contracts/Token"
+import truncateAddress from "@/utils/truncateAddress"
+import useContracts from "@/hooks/useContracts"
+import useApiService from "@/hooks/useApi"
 
-interface TokenDistributionProps {
+interface ITokenDistribution {
   splitterContractAddress: string
   contractShares: DataProps[]
 }
@@ -17,10 +17,10 @@ interface TokenDistributionProps {
 const TokenDistribution = ({
   splitterContractAddress,
   contractShares,
-}: TokenDistributionProps) => {
-  const splitterContract = useSplitterContract()
-  const tokenContract = useTokenContract()
+}: ITokenDistribution) => {
   const { loading, setLoading } = useAppStore()
+  const { splitterApiService } = useApiService()
+  const { splitterContract, tokenContract } = useContracts()
 
   const [tokenAddress, setTokenAddress] = useState("")
   const [tokenInfo, setTokenInfo] = useState<TokenResult>()
@@ -104,13 +104,16 @@ const TokenDistribution = ({
 
       loadingToast("Distributing tokens to shareholders...")
 
-      await splitterContract.call({
+      const operation = splitterContract.getCallOperation({
         contractId: splitterContractAddress,
         method: "distribute_tokens",
         args: {
           token_address: tokenAddress,
         },
       })
+      const signedTx = await splitterContract.signTransaction(operation)
+
+      await splitterApiService.callMethod({ transaction: signedTx })
 
       await fetchTokenBalance()
 
