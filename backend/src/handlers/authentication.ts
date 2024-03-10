@@ -21,7 +21,7 @@ const authenticationHandlers = new Elysia({ prefix: "/auth" })
     async ({ query: { publicKey }, prisma }) => {
       // Check if the public key is valid
       Keypair.fromPublicKey(publicKey)
-      
+
       const nonce = randomBytes(16).toString("hex")
 
       const user = await prisma.user.findUnique({ where: { publicKey } })
@@ -63,7 +63,7 @@ const authenticationHandlers = new Elysia({ prefix: "/auth" })
         const accessToken = await jwt.sign({ publicKey })
         return { accessToken }
       } else {
-        throw new AuthenticationError("Invalid signature")
+        throw new AuthenticationError("Invalid signature!")
       }
     },
     {
