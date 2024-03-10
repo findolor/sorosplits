@@ -6,6 +6,7 @@ import {
   SorobanRpc,
   StrKey,
   nativeToScVal,
+  scValToNative,
   xdr,
 } from "@stellar/stellar-sdk"
 import { randomBytes } from "crypto"
@@ -77,17 +78,45 @@ export interface DeployAndInitContractArgs {
   updatable: boolean
 }
 
+export interface VerifyTransactionSourceAccount {
+  sourceAccount: string
+  xdrString: string
+}
+
+export interface DecodeArgs {
+  xdrString: string
+}
+
+export interface DecodeInitResult {
+  admin: string
+  name: string
+  shares: ShareDataProps[]
+  updatable: boolean
+}
+
+export interface DecodeUpdateSharesResult {
+  shares: ShareDataProps[]
+}
+
+export interface DecodeDistributeTokensResult {
+  tokenAddress: string
+}
+
 export class SplitterContract extends BaseContract {
   constructor(network: Network, walletAddress: string) {
     super(network, walletAddress)
   }
 
-  public async deployAndInit({ name, shares, updatable }: DeployAndInitContractArgs) {
+  public getDeployAndInitOperation({
+    name,
+    shares,
+    updatable,
+  }: DeployAndInitContractArgs): xdr.Operation {
     const contract = new Contract(CONFIG[this.network].deployerContractId)
 
     let splitterArgs = [
       new Address(this.walletAddress || "").toScVal(),
-      xdr.ScVal.scvBytes(Buffer.from(name, 'utf-8')),
+      xdr.ScVal.scvBytes(Buffer.from(name, "utf-8")),
       xdr.ScVal.scvVec(
         shares.map((item) => {
           xdr.ScVal
@@ -122,10 +151,23 @@ export class SplitterContract extends BaseContract {
       xdr.ScVal.scvVec(splitterArgs),
     ]
 
-    let operation = contract.call("deploy", ...deployerArgs)
+    let operation = contract.call("deploy_splitter", ...deployerArgs)
+    return operation
+  }
 
+  public async deployAndInit({
+    name,
+    shares,
+    updatable,
+  }: DeployAndInitContractArgs) {
+    let operation = this.getDeployAndInitOperation({ name, shares, updatable })
     const transaction = await this.processTransaction(operation)
+    return this.parseDeployedContractAddress(transaction)
+  }
 
+  public async parseDeployedContractAddress(
+    transaction: SorobanRpc.Api.GetTransactionResponse
+  ) {
     if (
       transaction.status === SorobanRpc.Api.GetTransactionStatus.SUCCESS &&
       transaction.resultMetaXdr
@@ -135,24 +177,23 @@ export class SplitterContract extends BaseContract {
         "base64"
       )
       const txMeta = xdr.TransactionMeta.fromXDR(buff)
-      const contractId =
-        txMeta
-          .v3()
-          .sorobanMeta()
-          ?.returnValue()
-          .vec()
-          ?.at(0)
-          ?.address()
-          .contractId() as Buffer
+      const contractId = txMeta
+        .v3()
+        .sorobanMeta()
+        ?.returnValue()
+        .vec()
+        ?.at(0)
+        ?.address()
+        .contractId() as Buffer
       return StrKey.encodeContract(contractId)
     } else throw new Error("Transaction failed")
   }
 
-  public async call<T extends CallMethod>({
+  public getCallOperation<T extends CallMethod>({
     contractId,
     method,
     args,
-  }: CallContractArgs<T>) {
+  }: CallContractArgs<T>): xdr.Operation {
     const contract = new Contract(contractId)
 
     let operation: xdr.Operation<Operation>
@@ -165,7 +206,7 @@ export class SplitterContract extends BaseContract {
           "init",
           ...[
             new Address(this.walletAddress || "").toScVal(),
-            xdr.ScVal.scvBytes(Buffer.from(callArgs.name, 'utf-8')),
+            xdr.ScVal.scvBytes(Buffer.from(callArgs.name, "utf-8")),
             xdr.ScVal.scvVec(
               callArgs.shares.map((item) => {
                 xdr.ScVal
@@ -222,7 +263,16 @@ export class SplitterContract extends BaseContract {
         throw new Error("Invalid method")
     }
 
-    await this.processTransaction(operation)
+    return operation
+  }
+
+  public async call<T extends CallMethod>({
+    contractId,
+    method,
+    args,
+  }: CallContractArgs<T>) {
+    const operation = this.getCallOperation({ contractId, method, args })
+    return this.processTransaction(operation)
   }
 
   public async query<T extends QueryMethod>({
@@ -245,6 +295,100 @@ export class SplitterContract extends BaseContract {
     }
 
     return this.processQuery(operation)
+  }
+
+  public async verifyTransactionSourceAccount({
+    sourceAccount,
+    xdrString,
+  }: VerifyTransactionSourceAccount) {
+    const publicKey = StrKey.encodeEd25519PublicKey(
+      xdr.TransactionEnvelope.fromXDR(xdrString, "base64")
+        .v1()
+        .tx()
+        .sourceAccount()
+        .ed25519()
+    )
+    return sourceAccount === publicKey
+  }
+
+  private decodeDeploySplitter(args: xdr.ScVal[]): DecodeInitResult {
+    const [admin, name, shares, updatable] = scValToNative(
+      xdr.ScVal.scvVec([args[4]])
+    )[0]
+    return {
+      admin,
+      name: Buffer.from(name).toString("utf-8"),
+      shares: shares.map((item) => {
+        return {
+          shareholder: item.shareholder.toString(),
+          share: Number(BigInt(item.share)),
+        }
+      }),
+      updatable,
+    }
+  }
+
+  private decodeUpdateShares(args: xdr.ScVal[]): DecodeUpdateSharesResult {
+    const shares = scValToNative(args[0])
+    return {
+      shares: shares.map((item) => {
+        return {
+          shareholder: item.shareholder.toString(),
+          share: Number(BigInt(item.share)),
+        }
+      }),
+    }
+  }
+
+  private decodeDistributeTokens(args: xdr.ScVal[]) {
+    const tokenAddress = scValToNative(args[0])
+    return {
+      tokenAddress,
+    }
+  }
+
+  public decodeTransaction({ xdrString }: DecodeArgs) {
+    const invokeContract = xdr.TransactionEnvelope.fromXDR(xdrString, "base64")
+      .v1()
+      .tx()
+      .operations()[0]
+      .body()
+      .invokeHostFunctionOp()
+      .hostFunction()
+      .invokeContract()
+    const functionName = Buffer.from(invokeContract.functionName()).toString(
+      "utf-8"
+    )
+    const contractAddress = StrKey.encodeContract(
+      invokeContract.contractAddress().contractId()
+    )
+    const args = invokeContract.args()
+
+    let response = {
+      functionName,
+      contractAddress,
+      args: {},
+    }
+
+    switch (functionName) {
+      case "init":
+        throw new Error("Not implemented")
+      case "deploy_splitter":
+        response.args = this.decodeDeploySplitter(args)
+        break
+      case "update_shares":
+        response.args = this.decodeUpdateShares(args)
+        break
+      case "distribute_tokens":
+        response.args = this.decodeDistributeTokens(args)
+        break
+      case "lock_contract":
+        break
+      default:
+        throw new Error("Invalid transaction function!")
+    }
+
+    return response
   }
 }
 
