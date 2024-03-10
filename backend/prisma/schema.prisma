@@ -25,8 +25,10 @@ model SplitterContract {
 }
 
 model SplitterTransaction {
-  id         String            @id @default(auto()) @map("_id") @db.ObjectId
-  createdAt  DateTime          @default(now())
-  contract   SplitterContract? @relation(fields: [contractId], references: [id])
-  contractId String?           @db.ObjectId
+  id         String           @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt  DateTime         @default(now())
+  contract   SplitterContract @relation(fields: [contractId], references: [id])
+  contractId String           @db.ObjectId
+  action     String
+  data       Json
 }
