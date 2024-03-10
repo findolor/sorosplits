@@ -1,11 +1,22 @@
-import { isAllowed, setAllowed, getUserInfo } from "@stellar/freighter-api"
+import {
+  isAllowed,
+  setAllowed,
+  getUserInfo,
+  signBlob,
+} from "@stellar/freighter-api"
 import useAppStore from "../store"
 import { errorToast } from "../utils/toast"
-import { getAccessToken } from '../services/authentication'
+import useApiService from "./useApi"
 
 const useWallet = () => {
-  const { isConnected, walletAddress, setIsConnected, setWalletAddress, setAccessToken } =
-    useAppStore()
+  const {
+    isConnected,
+    walletAddress,
+    setIsConnected,
+    setWalletAddress,
+    setAccessToken,
+  } = useAppStore()
+  const { authenticationApiService } = useApiService()
 
   const connect = async () => {
     try {
@@ -18,7 +29,26 @@ const useWallet = () => {
         return errorToast("Please unlock your wallet")
       }
 
-      const accessToken = await getAccessToken(info.publicKey)
+      let publicKey = info.publicKey
+
+      const nonce = await authenticationApiService.getNonce({ publicKey })
+
+      const signedBlob = (await signBlob(
+        btoa(
+          JSON.stringify({
+            message: "SoroSplits connection message for authentication",
+            nonce,
+          })
+        ),
+        {
+          accountToSign: publicKey,
+        }
+      )) as unknown as { data: Uint8Array }
+
+      const accessToken = await authenticationApiService.connect({
+        signature: Buffer.from(signedBlob.data).toString("base64"),
+        publicKey,
+      })
 
       setWalletAddress(info.publicKey)
       setAccessToken(accessToken)
