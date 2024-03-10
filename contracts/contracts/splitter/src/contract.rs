@@ -162,6 +162,7 @@ impl SplitterTrait for Splitter {
         execute::transfer_tokens(env, token_address, recipient, amount)
     }
 
+    // TODO: Add amount of tokens to distribute
     fn distribute_tokens(env: Env, token_address: Address) -> Result<(), Error> {
         execute::distribute_tokens(env, token_address)
     }
