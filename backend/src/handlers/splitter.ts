@@ -43,8 +43,6 @@ export default new Elysia({ prefix: "/splitter" })
         throw new Error("Invalid source account")
       }
 
-      console.log(transaction)
-
       const decodedTransaction = contract.decodeTransaction({
         xdrString: transaction,
       })
@@ -130,7 +128,11 @@ export default new Elysia({ prefix: "/splitter" })
       select: {
         splitterContracts: {
           select: {
+            createdAt: true,
             address: true,
+          },
+          orderBy: {
+            createdAt: "desc",
           },
         },
       },

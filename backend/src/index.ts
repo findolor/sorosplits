@@ -51,7 +51,12 @@ const application = new Elysia()
         }
     }
   })
-  .group("/api", (app) => app.use(authenticationHandlers).use(splitterRoutes))
+  .group("/api", (app) =>
+    app
+      .get("/health", () => {})
+      .use(authenticationHandlers)
+      .use(splitterRoutes)
+  )
   .listen(3001)
 
 console.log(
