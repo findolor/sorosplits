@@ -14,6 +14,8 @@ interface InputProps {
   maxLength?: number
   numeric?: boolean
   disabled?: boolean
+  error?: boolean
+  errorMessage?: string
 }
 
 const Input = ({
@@ -24,17 +26,20 @@ const Input = ({
   maxLength,
   numeric,
   disabled,
+  error,
+  errorMessage,
 }: InputProps) => {
   const style = useMemo(() => {
     return clsx(
-      "p-2 px-4 text-sm bg-transparent placeholder:text-text placeholder:text-sm outline-none",
-      small ? "w-[110px]" : "w-[600px]"
+      "bg-background-dark p-2 px-4 text-sm placeholder:text-text placeholder:text-sm outline-none rounded-lg",
+      small ? "w-[110px]" : "w-[600px]",
+      error ? "border-2 border-red-500" : ""
     )
-  }, [small])
+  }, [small, error])
 
   const change = (e: ChangeEvent<HTMLInputElement>) => {
     let inputValue = e.target.value
-    if (!numeric && /[^a-zA-Z0-9]/.test(inputValue)) {
+    if (!numeric && /[^a-zA-Z0-9.]/.test(inputValue)) {
       return
     }
     onChange(e.target.value)
@@ -45,7 +50,7 @@ const Input = ({
   }
 
   return (
-    <div className="bg-background-dark flex items-center rounded-lg h-10">
+    <div className="flex items-center h-auto rounded-lg">
       {numeric ? (
         <NumericFormat
           className={style}
@@ -57,15 +62,20 @@ const Input = ({
           disabled={disabled}
         />
       ) : (
-        <input
-          className={style}
-          type="text"
-          onChange={change}
-          placeholder={placeholder}
-          value={value}
-          maxLength={maxLength}
-          disabled={disabled}
-        />
+        <div className="flex flex-col">
+          <input
+            className={style}
+            type="text"
+            onChange={change}
+            placeholder={placeholder}
+            value={value}
+            maxLength={maxLength}
+            disabled={disabled}
+          />
+          {errorMessage && (
+            <p className="text-sm text-red-500">{errorMessage}</p>
+          )}
+        </div>
       )}
     </div>
   )

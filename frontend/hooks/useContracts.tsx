@@ -13,7 +13,11 @@ const useContracts = () => {
     return new SoroSplitsSDK.TokenContract("testnet", walletAddress || "")
   }, [walletAddress])
 
-  return { splitterContract, tokenContract }
+  const nameServiceContract = useMemo(() => {
+    return new SoroSplitsSDK.NameServiceContract("testnet")
+  }, [])
+
+  return { splitterContract, tokenContract, nameServiceContract }
 }
 
 export default useContracts

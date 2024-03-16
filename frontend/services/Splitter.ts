@@ -1,4 +1,3 @@
-import { CallMethod } from "@sorosplits/sdk/lib/contracts/Splitter"
 import BaseApiService from "./Base"
 
 const BASE_PATH = "splitter"

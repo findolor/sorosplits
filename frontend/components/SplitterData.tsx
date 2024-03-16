@@ -1,48 +1,142 @@
-import { useMemo, useState } from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
 import Input from "./Input"
 import { CgClose } from "react-icons/cg"
 import { AiOutlineUserAdd } from "react-icons/ai"
 import clsx from "clsx"
+import { Contract, Keypair, StrKey } from "stellar-sdk"
+import useContracts from "@/hooks/useContracts"
+import { ShareDataProps } from "@sorosplits/sdk/lib/contracts/Splitter"
 
-interface DataProps {
-  share: number
-  shareholder: string
+interface InputData {
+  input: string
+  shareData: ShareDataProps
 }
 
-interface SplitterDataProps {
-  initialData?: DataProps[]
-  updateData: (data: DataProps[]) => void
+interface IErrorData {
+  value: boolean
+  message?: string
+}
+
+interface ISplitterData {
+  initialData?: InputData[]
+  updateData: (data: InputData[]) => void
   locked?: boolean
 }
 
-const INITIAL_DATA = [
+const INITIAL_DATA: InputData[] = [
   {
-    share: 0,
-    shareholder: "",
+    input: "",
+    shareData: {
+      share: 0,
+      shareholder: "",
+    },
   },
   {
-    share: 0,
-    shareholder: "",
+    input: "",
+    shareData: {
+      share: 0,
+      shareholder: "",
+    },
   },
 ]
 
-const SplitterData = ({
-  initialData,
-  updateData,
-  locked,
-}: SplitterDataProps) => {
-  const [data, setData] = useState<DataProps[]>(initialData ?? INITIAL_DATA)
+const SplitterData = ({ initialData, updateData, locked }: ISplitterData) => {
+  const { nameServiceContract } = useContracts()
 
-  const updateDataShareholder = (idx: number, value: string) => {
+  const [data, setData] = useState<InputData[]>(initialData ?? INITIAL_DATA)
+  const [dataError, setDataError] = useState<IErrorData[]>([
+    { value: false },
+    { value: false },
+  ])
+
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  const debounce = <F extends (...args: any[]) => any>(
+    func: F,
+    wait: number
+  ): ((...args: Parameters<F>) => void) => {
+    return function executedFunction(...args: Parameters<F>) {
+      const later = () => {
+        timeoutRef.current = null
+        func(...args)
+      }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+      timeoutRef.current = setTimeout(later, wait)
+    }
+  }
+
+  const validateAndSetData = useCallback(async (idx: number, value: string) => {
+    const setError = (hasError: boolean, userAddress: string = "") => {
+      toggleDataError(
+        idx,
+        hasError,
+        hasError ? "Invalid user, contract or domain address" : ""
+      )
+      updateDataShareholder(idx, hasError ? "" : userAddress)
+    }
+
+    try {
+      Keypair.fromPublicKey(value)
+      setError(false)
+    } catch {
+      try {
+        StrKey.decodeContract(value)
+        setError(false)
+      } catch {
+        const isValidDomain = await nameServiceContract.isValidDomainStr(value)
+        if (!isValidDomain) {
+          setError(true)
+          return
+        }
+
+        try {
+          const userAddress = await nameServiceContract.parseDomainStr(value)
+          if (userAddress === null) {
+            setError(true)
+          } else {
+            setError(false, userAddress)
+          }
+        } catch {
+          setError(true)
+        }
+      }
+    }
+  }, [])
+
+  const debouncedValidateAndSetData = useMemo(
+    () => debounce(validateAndSetData, 500),
+    [validateAndSetData]
+  )
+
+  const toggleDataError = (idx: number, value: boolean, message?: string) => {
+    setDataError((prevDataError) => {
+      const newDataError = [...prevDataError]
+      newDataError[idx].value = value
+      newDataError[idx].message = message
+      return newDataError
+    })
+  }
+
+  const updateDataInput = async (idx: number, value: string) => {
     const newData = [...data]
-    newData[idx].shareholder = value
+    newData[idx].input = value
+    setData(newData)
+    updateData(newData)
+    debouncedValidateAndSetData(idx, value)
+  }
+
+  const updateDataShareholder = async (idx: number, value: string) => {
+    const newData = [...data]
+    newData[idx].shareData.shareholder = value
     setData(newData)
     updateData(newData)
   }
 
   const updateDataShare = (idx: number, value: string) => {
     const newData = [...data]
-    newData[idx].share = parseFloat(value)
+    newData[idx].shareData.share = parseFloat(value)
     setData(newData)
     updateData(newData)
   }
@@ -57,16 +151,25 @@ const SplitterData = ({
   const addData = () => {
     const newData = [...data]
     newData.push({
-      share: 0,
-      shareholder: "",
+      input: "",
+      shareData: {
+        share: 0,
+        shareholder: "",
+      },
     })
     setData(newData)
+
+    const newErrorData = [...dataError]
+    newErrorData.push({ value: false })
+    setDataError(newErrorData)
+
     updateData(newData)
   }
 
   const totalShareAmount = useMemo(() => {
     return data.reduce(
-      (total, item) => total + (isNaN(item.share) ? 0 : item.share),
+      (total, item) =>
+        total + (isNaN(item.shareData.share) ? 0 : item.shareData.share),
       0
     )
   }, [data])
@@ -79,15 +182,17 @@ const SplitterData = ({
             <div key={idx} className="flex gap-4">
               <Input
                 placeholder="User address"
-                onChange={(value) => updateDataShareholder(idx, value)}
-                value={item.shareholder}
+                onChange={(value) => updateDataInput(idx, value)}
+                value={item.input}
                 disabled={locked}
+                error={dataError[idx].value}
+                errorMessage={dataError[idx].message}
               />
               <Input
                 placeholder="Percentage"
                 onChange={(value) => updateDataShare(idx, value)}
                 small
-                value={item.share.toString()}
+                value={item.shareData.share.toString()}
                 maxLength={4}
                 numeric
                 disabled={locked}
@@ -137,4 +242,4 @@ const SplitterData = ({
 
 export default SplitterData
 export { INITIAL_DATA }
-export type { DataProps }
+export type { InputData }

@@ -1,6 +1,6 @@
-import { DataProps } from "../components/SplitterData"
+import { ShareDataProps } from "@sorosplits/sdk/lib/contracts/Splitter"
 
-const checkSplitterData = (data: DataProps[]) => {
+const checkSplitterData = (data: ShareDataProps[]) => {
   data.map((item) => {
     if (item.shareholder === "")
       throw new Error("Please enter a shareholder address")

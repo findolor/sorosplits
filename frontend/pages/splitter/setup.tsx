@@ -2,8 +2,8 @@ import { useState } from "react"
 import { useRouter } from "next/router"
 import Button from "@/components/Button"
 import SplitterData, {
-  DataProps,
   INITIAL_DATA,
+  InputData,
 } from "@/components/SplitterData"
 import PageHeader from "@/components/PageHeader"
 import Switch from "@/components/Switch"
@@ -20,14 +20,14 @@ export default function SetupSplitter() {
   const { splitterContract } = useContracts()
 
   const [name, setName] = useState<string>("Splitter Contract")
-  const [data, setData] = useState<DataProps[]>(INITIAL_DATA)
+  const [data, setData] = useState<InputData[]>(INITIAL_DATA)
   const [updatable, setUpdatable] = useState<boolean>(false)
 
   const deployAndInitSplitter = async () => {
     try {
       setLoading(true)
 
-      checkSplitterData(data)
+      checkSplitterData(data.map((item) => item.shareData))
 
       loadingToast("Creating your Splitter contract...")
 
@@ -35,8 +35,8 @@ export default function SetupSplitter() {
         name,
         shares: data.map((item) => {
           return {
-            ...item,
-            share: item.share * 100,
+            ...item.shareData,
+            share: item.shareData.share * 100,
           }
         }),
         updatable,

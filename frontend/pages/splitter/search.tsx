@@ -2,10 +2,13 @@ import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/router"
 import SoroSplitsSDK from "@sorosplits/sdk"
-import { ContractConfigResult } from "@sorosplits/sdk/lib/contracts/Splitter"
+import {
+  ContractConfigResult,
+  ShareDataProps,
+} from "@sorosplits/sdk/lib/contracts/Splitter"
 import { TbExternalLink } from "react-icons/tb"
 import Input from "@/components/Input"
-import SplitterData, { DataProps } from "@/components/SplitterData"
+import SplitterData, { InputData } from "@/components/SplitterData"
 import Button from "@/components/Button"
 import PageHeader from "@/components/PageHeader"
 import TokenDistribution from "@/components/TokenDistribution"
@@ -22,7 +25,7 @@ export default function SearchSplitter() {
   const [contractAddress, setContractAddress] = useState("")
 
   const [contractConfig, setContractConfig] = useState<ContractConfigResult>()
-  const [contractShares, setContractShares] = useState<DataProps[]>()
+  const [contractShares, setContractShares] = useState<InputData[]>()
 
   const splitterContract = useMemo(() => {
     return new SoroSplitsSDK.SplitterContract("testnet", walletAddress || "")
@@ -79,11 +82,14 @@ export default function SearchSplitter() {
           let config = results[0] as ContractConfigResult
           setContractConfig(config)
 
-          let shares = results[1] as DataProps[]
+          let shares = results[1] as ShareDataProps[]
           let shareData = shares.map((item) => {
             return {
-              shareholder: item.shareholder.toString(),
-              share: Number(BigInt(item.share)) / 100,
+              input: item.shareholder.toString(),
+              shareData: {
+                shareholder: item.shareholder.toString(),
+                share: Number(BigInt(item.share)) / 100,
+              },
             }
           })
           setContractShares(shareData)
@@ -131,7 +137,7 @@ export default function SearchSplitter() {
       setLoading(true)
 
       if (!contractShares) return
-      checkSplitterData(contractShares)
+      checkSplitterData(contractShares.map((item) => item.shareData))
 
       loadingToast("Updating Splitter shareholders and shares...")
 
@@ -141,8 +147,8 @@ export default function SearchSplitter() {
         args: {
           shares: contractShares.map((item) => {
             return {
-              ...item,
-              share: item.share * 100,
+              ...item.shareData,
+              share: item.shareData.share * 100,
             }
           }),
         },
