@@ -7,6 +7,7 @@ interface Config {
   adminWallet: string
   deployerContractId: string
   splitterWasmHash: string
+  sorobanDomainsContractId: string
 }
 
 interface ConfigExport {
@@ -22,6 +23,8 @@ const TESNET_CONFIG: Config = {
     "90d9640c94769eae5a984158f7bc1445cf18f5402e9bf05d583ca0ef2751586f",
   deployerContractId:
     "CBSKNVZERNCGCXFZIGUKO7PL2FACICRCPW5RV4T5WSABID5AZNK4D5ZS",
+  sorobanDomainsContractId:
+    "CAPXARBAGOJO3HBPWTISP5JB35DWOX6GYWBZMIPH6A2XZIMISDA3762L",
 }
 
 const FUTURENET_CONFIG: Config = {
@@ -35,6 +38,7 @@ const FUTURENET_CONFIG: Config = {
   // TODO: Update this contract ID
   deployerContractId:
     "CB2WMMSG66I366CO6335U56UOEG3OU57YKNQICKR4LRVURG4L56XPW6L",
+  sorobanDomainsContractId: "",
 }
 
 const CONFIG: ConfigExport = {
