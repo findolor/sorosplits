@@ -60,7 +60,8 @@ pub trait SplitterTrait {
     /// ## Arguments
     ///
     /// * `token_address` - The address of the token to distribute
-    fn distribute_tokens(env: Env, token_address: Address) -> Result<(), Error>;
+    /// * `amount` - The amount of tokens to distribute
+    fn distribute_tokens(env: Env, token_address: Address, amount: i128) -> Result<(), Error>;
 
     /// **ADMIN ONLY FUNCTION**
     ///
@@ -162,9 +163,8 @@ impl SplitterTrait for Splitter {
         execute::transfer_tokens(env, token_address, recipient, amount)
     }
 
-    // TODO: Add amount of tokens to distribute
-    fn distribute_tokens(env: Env, token_address: Address) -> Result<(), Error> {
-        execute::distribute_tokens(env, token_address)
+    fn distribute_tokens(env: Env, token_address: Address, amount: i128) -> Result<(), Error> {
+        execute::distribute_tokens(env, token_address, amount)
     }
 
     fn update_shares(env: Env, shares: Vec<ShareDataKey>) -> Result<(), Error> {

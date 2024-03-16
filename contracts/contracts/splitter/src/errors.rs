@@ -10,11 +10,13 @@ pub enum Error {
     ContractLocked = 4,
     LowShareCount = 5,
     InvalidShareTotal = 6,
+    // Token distribution errors
+    InsufficientBalance = 7,
     // Token transfer errors
-    ZeroTransferAmount = 7,
-    TransferAmountAboveBalance = 8,
-    TransferAmountAboveUnusedBalance = 9,
+    ZeroTransferAmount = 8,
+    TransferAmountAboveBalance = 9,
+    TransferAmountAboveUnusedBalance = 10,
     // Token withdrawal errors
-    ZeroWithdrawalAmount = 10,
-    WithdrawalAmountAboveAllocation = 11,
+    ZeroWithdrawalAmount = 11,
+    WithdrawalAmountAboveAllocation = 12,
 }

@@ -24,7 +24,7 @@ fn happy_path() {
     let (token, sudo_token, token_address) = create_token(&env, &token_admin);
 
     sudo_token.mint(&splitter_address, &1_000_000_000);
-    splitter.distribute_tokens(&token_address);
+    splitter.distribute_tokens(&token_address, &1_000_000_000);
 
     splitter.withdraw_allocation(&token_address, &shareholder, &500_000_000);
     assert_eq!(
@@ -89,7 +89,7 @@ fn test_withdrawal_amount_above_allocation() {
     let (_, sudo_token, token_address) = create_token(&env, &token_admin);
 
     sudo_token.mint(&splitter_address, &1_000_000_000);
-    splitter.distribute_tokens(&token_address);
+    splitter.distribute_tokens(&token_address, &1_000_000_000);
 
     assert_eq!(
         splitter.try_withdraw_allocation(

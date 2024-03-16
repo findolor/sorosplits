@@ -1,4 +1,4 @@
-mod distribute;
+mod distribute_tokens;
 mod helpers;
 mod init;
 mod lock_contract;

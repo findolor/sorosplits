@@ -7,7 +7,7 @@ use crate::{
     storage::{AllocationDataKey, ConfigDataKey, ShareDataKey},
 };
 
-pub fn execute(env: Env, token_address: Address) -> Result<(), Error> {
+pub fn execute(env: Env, token_address: Address, amount: i128) -> Result<(), Error> {
     if !ConfigDataKey::exists(&env) {
         return Err(Error::NotInitialized);
     };
@@ -20,6 +20,14 @@ pub fn execute(env: Env, token_address: Address) -> Result<(), Error> {
     // Get the available token balance
     let balance = token_client.balance(&env.current_contract_address());
 
+    // Check for amount errors
+    if amount <= 0 || balance <= 0 {
+        return Err(Error::ZeroTransferAmount);
+    }
+    if amount > balance {
+        return Err(Error::InsufficientBalance);
+    }
+
     // Get the shareholders vector
     let shareholders = ShareDataKey::get_shareholders(&env);
 
@@ -27,9 +35,9 @@ pub fn execute(env: Env, token_address: Address) -> Result<(), Error> {
     for shareholder in shareholders.iter() {
         if let Some(ShareDataKey { share, .. }) = ShareDataKey::get_share(&env, &shareholder) {
             // Calculate the amount of tokens to distribute
-            let amount = balance.fixed_mul_floor(share, 10000).unwrap_or(0);
+            let shareholder_allocation = amount.fixed_mul_floor(share, 10000).unwrap_or(0);
 
-            if amount > 0 {
+            if shareholder_allocation > 0 {
                 // Get the current allocation for the user - default to 0
                 let allocation =
                     AllocationDataKey::get_allocation(&env, &shareholder, &token_address)
@@ -40,7 +48,7 @@ pub fn execute(env: Env, token_address: Address) -> Result<(), Error> {
                     &env,
                     &shareholder,
                     &token_address,
-                    allocation + amount,
+                    allocation + shareholder_allocation,
                 );
             }
         };

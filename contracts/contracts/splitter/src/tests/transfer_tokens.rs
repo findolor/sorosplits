@@ -22,7 +22,7 @@ fn happy_path() {
     let (token, sudo_token, token_address) = create_token(&env, &token_admin);
 
     sudo_token.mint(&splitter_address, &1_000_000_000);
-    splitter.distribute_tokens(&token_address);
+    splitter.distribute_tokens(&token_address, &1_000_000_000);
     sudo_token.mint(&splitter_address, &1_000_000_000);
 
     let transfer_address = Address::generate(&env);
@@ -114,7 +114,7 @@ fn test_transfer_amount_unused_balance() {
     let (_, sudo_token, token_address) = create_token(&env, &token_admin);
 
     sudo_token.mint(&splitter_address, &1_000_000_000);
-    splitter.distribute_tokens(&token_address);
+    splitter.distribute_tokens(&token_address, &1_000_000_000);
     sudo_token.mint(&splitter_address, &1_000_000_000);
 
     assert_eq!(
