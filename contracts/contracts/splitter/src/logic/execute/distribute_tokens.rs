@@ -4,7 +4,11 @@ use soroban_sdk::{Address, Env};
 use crate::{
     errors::Error,
     logic::helpers::get_token_client,
-    storage::{ConfigDataKey, ShareDataKey, TokenDistribution},
+    storage::{
+        config::ConfigDataKey,
+        distributions::{TokenAllocations, WhitelistedTokens},
+        recipients::ShareDataKey,
+    },
 };
 
 pub fn execute(env: Env, token_address: Address, amount: i128) -> Result<(), Error> {
@@ -15,7 +19,7 @@ pub fn execute(env: Env, token_address: Address, amount: i128) -> Result<(), Err
     // Make sure the caller is the admin
     ConfigDataKey::require_admin(&env)?;
 
-    if !TokenDistribution::check_whitelisted_token(&env, &token_address) {
+    if !WhitelistedTokens::check_token_address(&env, &token_address) {
         return Err(Error::TokenNotWhitelisted);
     };
 
@@ -44,11 +48,10 @@ pub fn execute(env: Env, token_address: Address, amount: i128) -> Result<(), Err
             if shareholder_allocation > 0 {
                 // Get the current allocation for the user - default to 0
                 let allocation =
-                    TokenDistribution::get_allocation(&env, &shareholder, &token_address)
-                        .unwrap_or(0);
+                    TokenAllocations::get(&env, &shareholder, &token_address).unwrap_or(0);
 
                 // Update the allocation with the new amount
-                TokenDistribution::save_allocation(
+                TokenAllocations::save(
                     &env,
                     &shareholder,
                     &token_address,

@@ -3,7 +3,7 @@ use soroban_sdk::{Address, Env};
 use crate::{
     errors::Error,
     logic::helpers::get_token_client,
-    storage::{ConfigDataKey, TokenDistribution},
+    storage::{config::ConfigDataKey, distributions::TokenAllocations},
 };
 
 pub fn execute(
@@ -22,8 +22,7 @@ pub fn execute(
     let token_client = get_token_client(&env, &token_address);
 
     // Get the current allocation for the user - default to 0
-    let allocation =
-        TokenDistribution::get_allocation(&env, &shareholder, &token_address).unwrap_or(0);
+    let allocation = TokenAllocations::get(&env, &shareholder, &token_address).unwrap_or(0);
 
     // Withdraw amount cannot be equal and less than 0
     if amount == 0 {
@@ -35,9 +34,9 @@ pub fn execute(
     };
 
     if amount == allocation {
-        TokenDistribution::remove_allocation(&env, &shareholder, &token_address);
+        TokenAllocations::remove(&env, &shareholder, &token_address);
     } else {
-        TokenDistribution::save_allocation(&env, &shareholder, &token_address, allocation - amount);
+        TokenAllocations::save(&env, &shareholder, &token_address, allocation - amount);
     }
 
     // Transfer the tokens to the shareholder

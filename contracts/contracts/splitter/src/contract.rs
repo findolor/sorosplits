@@ -4,7 +4,7 @@ use crate::{
     errors::Error,
     logic::execute,
     logic::query,
-    storage::{ConfigDataKey, ShareDataKey},
+    storage::{config::ConfigDataKey, recipients::ShareDataKey},
 };
 
 contractmeta!(
@@ -150,6 +150,17 @@ pub trait SplitterTrait {
     /// * `i128` - The allocation of the shareholder for the token
     fn get_allocation(env: Env, shareholder: Address, token: Address) -> Result<i128, Error>;
 
+    /// Lists the allocations of the shareholder.
+    ///
+    /// ## Arguments
+    ///
+    /// * `shareholder` - The address of the shareholder
+    ///
+    /// ## Returns
+    ///
+    /// * `Vec<(Address, i128)>` - The list of allocations for the shareholder
+    // fn list_allocations(env: Env, shareholder: Address) -> Result<Vec<(Address, i128)>, Error>;
+
     /// Lists the whitelisted tokens.
     ///
     /// ## Returns
@@ -226,6 +237,10 @@ impl SplitterTrait for Splitter {
     fn get_allocation(env: Env, shareholder: Address, token: Address) -> Result<i128, Error> {
         query::get_allocation(env, shareholder, token)
     }
+
+    // fn list_allocations(env: Env, shareholder: Address) -> Result<Vec<(Address, i128)>, Error> {
+    //     query::list_allocations(env, shareholder)
+    // }
 
     fn list_whitelisted_tokens(env: Env) -> Result<Vec<Address>, Error> {
         query::list_whitelisted_tokens(env)

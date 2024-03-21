@@ -3,7 +3,7 @@ use soroban_sdk::{Address, Bytes, Env, Vec};
 use crate::{
     errors::Error,
     logic::helpers::{check_shares, update_shares},
-    storage::{ConfigDataKey, ShareDataKey},
+    storage::{config::ConfigDataKey, recipients::ShareDataKey},
 };
 
 pub fn execute(

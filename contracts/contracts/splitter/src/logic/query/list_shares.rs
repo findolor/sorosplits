@@ -2,7 +2,7 @@ use soroban_sdk::{Env, Vec};
 
 use crate::{
     errors::Error,
-    storage::{ConfigDataKey, ShareDataKey},
+    storage::{config::ConfigDataKey, recipients::ShareDataKey},
 };
 
 pub fn query(env: Env) -> Result<Vec<ShareDataKey>, Error> {

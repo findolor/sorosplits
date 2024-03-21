@@ -3,7 +3,7 @@ use soroban_sdk::{Address, Env};
 use crate::{
     errors::Error,
     logic::helpers::get_token_client,
-    storage::{ConfigDataKey, TokenDistribution},
+    storage::{config::ConfigDataKey, distributions::TokenAllocations},
 };
 
 pub fn execute(
@@ -25,8 +25,7 @@ pub fn execute(
     let balance = token_client.balance(&env.current_contract_address());
 
     // Get the total allocation for the token
-    let total_allocation =
-        TokenDistribution::get_total_allocation(&env, &token_address).unwrap_or(0);
+    let total_allocation = TokenAllocations::get_total(&env, &token_address).unwrap_or(0);
 
     // Calculate the unused balance that can be transferred
     let unused_balance = balance - total_allocation;

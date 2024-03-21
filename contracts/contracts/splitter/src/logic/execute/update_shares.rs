@@ -3,7 +3,7 @@ use soroban_sdk::{Env, Vec};
 use crate::{
     errors::Error,
     logic::helpers::{check_shares, reset_shares, update_shares as update_shares_helper},
-    storage::{ConfigDataKey, ShareDataKey},
+    storage::{config::ConfigDataKey, recipients::ShareDataKey},
 };
 
 pub fn execute(env: Env, shares: Vec<ShareDataKey>) -> Result<(), Error> {

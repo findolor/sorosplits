@@ -3,7 +3,7 @@ use soroban_sdk::{Address, Env, Vec};
 use crate::{
     errors::Error,
     logic::helpers::check_token,
-    storage::{ConfigDataKey, TokenDistribution},
+    storage::{config::ConfigDataKey, distributions::WhitelistedTokens},
 };
 
 pub fn execute(env: Env, tokens: Vec<Address>) -> Result<(), Error> {
@@ -20,7 +20,7 @@ pub fn execute(env: Env, tokens: Vec<Address>) -> Result<(), Error> {
     }
 
     // Update the whitelisted tokens list
-    TokenDistribution::update_whitelisted_tokens(&env, tokens);
+    WhitelistedTokens::update(&env, tokens);
 
     Ok(())
 }

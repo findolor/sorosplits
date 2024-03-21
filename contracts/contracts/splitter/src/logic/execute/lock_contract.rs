@@ -1,6 +1,6 @@
 use soroban_sdk::Env;
 
-use crate::{errors::Error, storage::ConfigDataKey};
+use crate::{errors::Error, storage::config::ConfigDataKey};
 
 pub fn execute(env: Env) -> Result<(), Error> {
     if !ConfigDataKey::exists(&env) {

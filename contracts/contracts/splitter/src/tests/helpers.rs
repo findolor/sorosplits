@@ -3,7 +3,7 @@ use token::{Client as TokenClient, StellarAssetClient as TokenAdminClient};
 
 use crate::{
     contract::{Splitter, SplitterClient},
-    storage::ShareDataKey,
+    storage::recipients::ShareDataKey,
 };
 
 pub fn create_splitter(e: &Env) -> (SplitterClient, Address) {

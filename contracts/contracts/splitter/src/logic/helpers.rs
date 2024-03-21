@@ -3,7 +3,7 @@ use soroban_sdk::{
     Address, Env, Vec,
 };
 
-use crate::{errors::Error, storage::ShareDataKey};
+use crate::{errors::Error, storage::recipients::ShareDataKey};
 
 /// Checks if the shares sum up to 10000
 pub fn check_shares(shares: &Vec<ShareDataKey>) -> Result<(), Error> {

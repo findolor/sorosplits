@@ -2,7 +2,7 @@ use soroban_sdk::{Address, Env};
 
 use crate::{
     errors::Error,
-    storage::{ConfigDataKey, ShareDataKey},
+    storage::{config::ConfigDataKey, recipients::ShareDataKey},
 };
 
 pub fn query(env: Env, shareholder: Address) -> Result<Option<i128>, Error> {
