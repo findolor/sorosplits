@@ -9,8 +9,7 @@ body {
   padding: 0;
   margin: 0;
   font-family: Montserrat, sans-serif;
-  background-color: #F7F6E9;
-  color: "#22200C"
+  background-color: #FBFBFB;
 }
 
 a {
@@ -20,4 +19,19 @@ a {
 
 * {
   box-sizing: border-box;
+}
+
+.search-input::placeholder {
+  font-size: 14px;
+  line-height: 16px;
+  letter-spacing: -0.015em;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }

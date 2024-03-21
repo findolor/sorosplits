@@ -1,35 +1,30 @@
-import { useEffect, useMemo, useState } from "react"
-import Link from "next/link"
 import { useRouter } from "next/router"
-import SoroSplitsSDK from "@sorosplits/sdk"
+import { useEffect, useMemo, useState } from "react"
+
+import Search from "@/components/Input/Search"
+import PageHeader from "@/components/PageHeader"
+import { InputData } from "@/components/SplitterData"
+import ContractInfoCard from "@/components/SplitterData/ContractInfo"
+import ShareholdersCard from "@/components/SplitterData/Shareholders"
 import {
   ContractConfigResult,
   ShareDataProps,
 } from "@sorosplits/sdk/lib/contracts/Splitter"
-import { TbExternalLink } from "react-icons/tb"
-import Input from "@/components/Input"
-import SplitterData, { InputData } from "@/components/SplitterData"
-import Button from "@/components/Button"
-import PageHeader from "@/components/PageHeader"
-import TokenDistribution from "@/components/TokenDistribution"
-import { loadingToast, successToast, errorToast } from "@/utils/toast"
-import checkSplitterData from "@/utils/checkSplitterData"
 import useAppStore from "@/store/index"
 import useApiService from "@/hooks/useApi"
+import { loadingToast, successToast, errorToast } from "@/utils/toast"
+import useContracts from "@/hooks/useContracts"
+import { ManageSplitterButton } from "@/components/Button/Splitter"
 
-export default function SearchSplitter() {
+const NewSearch: React.FC = () => {
   const router = useRouter()
   const { loading, setLoading, walletAddress } = useAppStore()
   const { splitterApiService } = useApiService()
+  const { splitterContract } = useContracts()
 
   const [contractAddress, setContractAddress] = useState("")
-
   const [contractConfig, setContractConfig] = useState<ContractConfigResult>()
   const [contractShares, setContractShares] = useState<InputData[]>()
-
-  const splitterContract = useMemo(() => {
-    return new SoroSplitsSDK.SplitterContract("testnet", walletAddress || "")
-  }, [walletAddress])
 
   useEffect(() => {
     if (router.query.address) {
@@ -49,6 +44,12 @@ export default function SearchSplitter() {
       )
     }
   }, [contractAddress])
+
+  const onContractAddressChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setContractAddress(event.target.value)
+  }
 
   useEffect(() => {
     const fetchContractData = setTimeout(async () => {
@@ -105,150 +106,66 @@ export default function SearchSplitter() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contractAddress])
 
-  const lockSplitter = async () => {
-    try {
-      setLoading(true)
+  const shareholdersCardData = useMemo(() => {
+    if (!contractShares) return []
+    return contractShares.map((i) => {
+      return {
+        address: i.shareData.shareholder.toString(),
+        share: i.shareData.share.toString(),
+        domain: false,
+      }
+    })
+  }, [contractShares])
 
-      loadingToast("Locking Splitter for updates...")
-
-      let operation = splitterContract.getCallOperation({
-        contractId: contractAddress,
-        method: "lock_contract",
-        args: {},
-      })
-      const signedTx = await splitterContract.signTransaction(operation)
-
-      await splitterApiService.callMethod({
-        transaction: signedTx,
-      })
-
-      setLoading(false)
-      successToast("Splitter locked!")
-
-      setContractConfig(Object.assign({}, contractConfig, { updatable: false }))
-    } catch (error: any) {
-      setLoading(false)
-      errorToast(error)
+  const contractInfoCardData = useMemo(() => {
+    if (!contractConfig)
+      return {
+        owner: "",
+        name: "",
+        updatable: false,
+        balances: [],
+        totalDistributions: [],
+      }
+    return {
+      owner: contractConfig.admin.toString(),
+      name: new TextDecoder().decode(contractConfig.name).toString(),
+      updatable: contractConfig.updatable,
+      balances: [],
+      totalDistributions: [],
     }
-  }
-
-  const updateSplitter = async () => {
-    try {
-      setLoading(true)
-
-      if (!contractShares) return
-      checkSplitterData(contractShares.map((item) => item.shareData))
-
-      loadingToast("Updating Splitter shareholders and shares...")
-
-      let operation = splitterContract.getCallOperation({
-        contractId: contractAddress,
-        method: "update_shares",
-        args: {
-          shares: contractShares.map((item) => {
-            return {
-              ...item.shareData,
-              share: item.shareData.share * 100,
-            }
-          }),
-        },
-      })
-      const signedTx = await splitterContract.signTransaction(operation)
-
-      await splitterApiService.callMethod({
-        transaction: signedTx,
-      })
-
-      setLoading(false)
-      successToast("Shareholders and shares updated successfully!")
-    } catch (error: any) {
-      setLoading(false)
-      errorToast(error)
-    }
-  }
+  }, [contractConfig])
 
   return (
-    <div className="flex flex-col w-full">
+    <div className="mt-10">
       <PageHeader
         title="Search Splitter"
-        subtitle="Search for a Splitter contract by entering the contract address below."
+        subtitle="Display information about a splitter contract by entering the address below."
       />
 
-      <div className="flex mb-6">
-        <Input
-          placeholder="Enter Splitter address"
-          onChange={setContractAddress}
+      <div className="flex justify-center mt-10">
+        <Search
+          placeholder="Enter splitter address"
+          onChange={onContractAddressChange}
           value={contractAddress}
-          disabled={loading}
         />
       </div>
 
-      <div className="flex flex-col gap-6">
-        {contractConfig && (
-          <div>
-            <h3 className="text-xl font-bold mb-2">Contract Admin</h3>
-            <Link
-              href={`https://futurenet.stellarchain.io/accounts/${contractConfig.admin.toString()}`}
-              target="_blank"
-              className="flex items-center gap-2 underline hover:text-accent"
-            >
-              {contractConfig.admin.toString()}
-              <TbExternalLink size={16} />
-            </Link>
+      {contractConfig && contractShares && (
+        <div className="flex flex-col justify-between mt-6 px-3">
+          {walletAddress === contractConfig.admin.toString() && (
+            <div className="mb-2">
+              <ManageSplitterButton onClick={() => {}} />
+            </div>
+          )}
+
+          <div className="flex justify-between">
+            <ShareholdersCard data={shareholdersCardData} />
+            <ContractInfoCard data={contractInfoCardData} />
           </div>
-        )}
-
-        {contractConfig && (
-          <div>
-            <h3 className="text-xl font-bold mb-2">Contract State</h3>
-            {contractConfig.updatable ? (
-              <>
-                <p className="mb-4">
-                  Contract is mutable. Shareholders and shares can be updated.
-                </p>
-                <Button
-                  text="Lock Splitter"
-                  onClick={lockSplitter}
-                  type="primary"
-                  loading={loading}
-                />
-              </>
-            ) : (
-              <p>
-                Contract is immutable. Shareholders and shares are locked for
-                updates.
-              </p>
-            )}
-          </div>
-        )}
-
-        {contractShares && (
-          <div>
-            <h3 className="text-xl font-bold mb-2">Shareholders & Shares</h3>
-
-            <SplitterData
-              initialData={contractShares}
-              updateData={setContractShares}
-              locked={loading || !contractConfig?.updatable}
-            />
-
-            <div className="h-8" />
-            <Button
-              text="Update Splitter"
-              onClick={updateSplitter}
-              type="primary"
-              loading={loading || !contractConfig?.updatable}
-            />
-          </div>
-        )}
-
-        {contractConfig && (
-          <TokenDistribution
-            splitterContractAddress={contractAddress}
-            contractShares={contractShares || []}
-          />
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }
+
+export default NewSearch

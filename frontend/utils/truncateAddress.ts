@@ -1,9 +1,11 @@
-const truncateAddress = (address: string) => {
-    if (!address) return ""
-    const firstChars = address.slice(0, 4)
-    const lastChars = address.slice(-4)
-
-    return `${firstChars}.....${lastChars}`
+const truncateAddressShort = (address: string) => {
+  if (address == "") return address
+  return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`
 }
 
-export default truncateAddress
+const truncateAddressLong = (address: string) => {
+  if (address == "") return address
+  return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`
+}
+
+export { truncateAddressLong, truncateAddressShort }

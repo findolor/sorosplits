@@ -1,5 +1,6 @@
 import "../styles/globals.css"
-import Layout from "@/components/Layout"
+
+import Layout from "@/components/NewLayout"
 import type { AppProps } from "next/app"
 import { Toaster } from "react-hot-toast"
 
@@ -8,11 +9,11 @@ export default function App({ Component, pageProps }: AppProps) {
     <Layout>
       <Component {...pageProps} />
       <Toaster
-        position="top-right"
+        position="top-center"
         toastOptions={{
           style: {
-            backgroundColor: "#F7F6E9",
-            border: "2px solid #deddd1",
+            backgroundColor: "#FBFBFB",
+            border: "1px solid #EBF2F7",
           },
         }}
       />

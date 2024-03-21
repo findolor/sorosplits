@@ -5,9 +5,9 @@ interface PageHeaderProps {
 
 const PageHeader = ({ title, subtitle }: PageHeaderProps) => {
   return (
-    <div>
-      <h1 className="text-[64px] font-bold">{title}</h1>
-      <p className="mb-2">{subtitle}</p>
+    <div className="flex flex-col items-center tracking-[-2%]">
+      <h1 className="text-[28px] font-bold leading-[32px] mb-6">{title}</h1>
+      <p className="text-[15px] text-[#46535F] leading-[20px]">{subtitle}</p>
     </div>
   )
 }
