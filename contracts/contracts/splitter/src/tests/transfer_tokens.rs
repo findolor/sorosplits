@@ -1,4 +1,4 @@
-use soroban_sdk::{testutils::Address as _, Address, Bytes, Env};
+use soroban_sdk::{testutils::Address as _, vec, Address, Bytes, Env};
 
 use crate::{
     errors::Error,
@@ -20,6 +20,7 @@ fn happy_path() {
 
     let token_admin = Address::generate(&env);
     let (token, sudo_token, token_address) = create_token(&env, &token_admin);
+    splitter.update_whitelisted_tokens(&vec![&env, token_address.clone()]);
 
     sudo_token.mint(&splitter_address, &1_000_000_000);
     splitter.distribute_tokens(&token_address, &1_000_000_000);
@@ -112,6 +113,7 @@ fn test_transfer_amount_unused_balance() {
 
     let token_admin = Address::generate(&env);
     let (_, sudo_token, token_address) = create_token(&env, &token_admin);
+    splitter.update_whitelisted_tokens(&vec![&env, token_address.clone()]);
 
     sudo_token.mint(&splitter_address, &1_000_000_000);
     splitter.distribute_tokens(&token_address, &1_000_000_000);

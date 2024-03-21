@@ -158,8 +158,37 @@ impl ConfigDataKey {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct AllocationDataKey {}
-impl AllocationDataKey {
+pub struct TokenDistribution {}
+impl TokenDistribution {
+    // ========== Whitelisted Tokens ==========
+
+    /// Update the list of whitelisted tokens
+    pub fn update_whitelisted_tokens(e: &Env, tokens: Vec<Address>) {
+        let key = DataKey::WhitelistedTokens;
+        e.storage().persistent().set(&key, &tokens);
+        bump_persistent(e, &key);
+    }
+
+    /// Checks if the token is whitelisted
+    pub fn check_whitelisted_token(e: &Env, token: &Address) -> bool {
+        let tokens: Vec<Address> = Self::get_whitelisted_tokens(e);
+        tokens.contains(token)
+    }
+
+    /// Gets the list of whitelisted tokens
+    /// Returns an empty vector if the list doesn't exist
+    pub fn get_whitelisted_tokens(e: &Env) -> Vec<Address> {
+        let key = DataKey::WhitelistedTokens;
+        let res = e.storage().persistent().get::<DataKey, Vec<Address>>(&key);
+        match res {
+            Some(tokens) => {
+                bump_persistent(e, &key);
+                tokens
+            }
+            None => Vec::new(&e),
+        }
+    }
+
     // ========== User Allocation ==========
 
     /// Initializes the share for the shareholder
@@ -240,15 +269,11 @@ impl AllocationDataKey {
 #[contracttype]
 pub enum DataKey {
     Config,
-    // Storage keys for the shareholder and share data
-    //
     /// Data key for keeping all of the shareholders in the contract
     Shareholders,
     /// Data key for keeping the share of a shareholder.
     /// User addresses are mapped to their shares
     Share(Address),
-    // Storage keys for the allocations
-    //
     /// Data key for keeping the total allocation amount for a token.
     /// Token addresses are mapped to their total allocation amount.
     TotalAllocation(Address),
@@ -257,4 +282,7 @@ pub enum DataKey {
     ///
     /// (UserAddr, TokenAddr) -> Allocation
     Allocation(Address, Address),
+    /// Data key for keeping the list of whitelisted tokens.
+    /// Only whitelisted tokens can be used to distribute the allocation.
+    WhitelistedTokens,
 }

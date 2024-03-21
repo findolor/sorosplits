@@ -19,4 +19,6 @@ pub enum Error {
     // Token withdrawal errors
     ZeroWithdrawalAmount = 11,
     WithdrawalAmountAboveAllocation = 12,
+    // Token whitelist errors
+    TokenNotWhitelisted = 13,
 }

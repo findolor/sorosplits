@@ -36,6 +36,18 @@ pub trait SplitterTrait {
 
     /// **ADMIN ONLY FUNCTION**
     ///
+    /// Updates the whitelisted tokens.
+    ///
+    /// Whitelisted tokens are the tokens that can be distributed to the shareholders.
+    /// If the token is not whitelisted, it cannot be distributed.
+    ///
+    /// ## Arguments
+    ///
+    /// * `tokens` - The list of token addresses to whitelist
+    fn update_whitelisted_tokens(env: Env, tokens: Vec<Address>) -> Result<(), Error>;
+
+    /// **ADMIN ONLY FUNCTION**
+    ///
     /// Transfers unused tokens to the recipient.
     ///
     /// Unused tokens are defined as the tokens that are not distributed to the shareholders.
@@ -53,6 +65,8 @@ pub trait SplitterTrait {
         amount: i128,
     ) -> Result<(), Error>;
 
+    /// **ADMIN ONLY FUNCTION**
+    ///
     /// Distributes tokens to the shareholders.
     ///
     /// All of the available token balance is distributed on execution.
@@ -135,6 +149,13 @@ pub trait SplitterTrait {
     ///
     /// * `i128` - The allocation of the shareholder for the token
     fn get_allocation(env: Env, shareholder: Address, token: Address) -> Result<i128, Error>;
+
+    /// Lists the whitelisted tokens.
+    ///
+    /// ## Returns
+    ///
+    /// * `Vec<Address>` - The list of whitelisted token addresses
+    fn list_whitelisted_tokens(env: Env) -> Result<Vec<Address>, Error>;
 }
 
 #[contract]
@@ -152,6 +173,10 @@ impl SplitterTrait for Splitter {
         updatable: bool,
     ) -> Result<(), Error> {
         execute::init(env, admin, name, shares, updatable)
+    }
+
+    fn update_whitelisted_tokens(env: Env, tokens: Vec<Address>) -> Result<(), Error> {
+        execute::update_whitelisted_tokens(env, tokens)
     }
 
     fn transfer_tokens(
@@ -200,5 +225,9 @@ impl SplitterTrait for Splitter {
 
     fn get_allocation(env: Env, shareholder: Address, token: Address) -> Result<i128, Error> {
         query::get_allocation(env, shareholder, token)
+    }
+
+    fn list_whitelisted_tokens(env: Env) -> Result<Vec<Address>, Error> {
+        query::list_whitelisted_tokens(env)
     }
 }

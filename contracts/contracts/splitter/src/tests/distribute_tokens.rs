@@ -39,6 +39,7 @@ fn happy_path() {
 
     let token_admin = Address::generate(&env);
     let (_, sudo_token, token_address) = create_token(&env, &token_admin);
+    splitter.update_whitelisted_tokens(&vec![&env, token_address.clone()]);
 
     sudo_token.mint(&splitter_address, &1_000_000_000);
 
@@ -81,6 +82,7 @@ fn test_zero_token_balance() {
 
     let token_admin = Address::generate(&env);
     let (_, _, token_address) = create_token(&env, &token_admin);
+    splitter.update_whitelisted_tokens(&vec![&env, token_address.clone()]);
 
     assert_eq!(
         splitter.try_distribute_tokens(&token_address, &0),
@@ -98,6 +100,7 @@ fn test_zero_distribution_amount() {
 
     let token_admin = Address::generate(&env);
     let (_, sudo_token, token_address) = create_token(&env, &token_admin);
+    splitter.update_whitelisted_tokens(&vec![&env, token_address.clone()]);
 
     sudo_token.mint(&splitter_address, &1_000_000_000);
 
@@ -117,11 +120,28 @@ fn test_distribution_amount_above_balance() {
 
     let token_admin = Address::generate(&env);
     let (_, sudo_token, token_address) = create_token(&env, &token_admin);
+    splitter.update_whitelisted_tokens(&vec![&env, token_address.clone()]);
 
     sudo_token.mint(&splitter_address, &1_000_000);
 
     assert_eq!(
         splitter.try_distribute_tokens(&token_address, &2_000_000),
         Err(Ok(Error::InsufficientBalance))
+    );
+}
+
+#[test]
+fn test_token_not_whitelisted() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let (splitter, _) = create_splitter_with_default_shares(&env, &Address::generate(&env));
+
+    let token_admin = Address::generate(&env);
+    let (_, _, token_address) = create_token(&env, &token_admin);
+
+    assert_eq!(
+        splitter.try_distribute_tokens(&token_address, &1000),
+        Err(Ok(Error::TokenNotWhitelisted))
     );
 }
