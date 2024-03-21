@@ -122,8 +122,8 @@ export default new Elysia({ prefix: "/splitter" })
       }),
     }
   )
-  .get("/my-contracts", async ({ prisma, user }) => {
-    const data = await prisma.user.findUnique({
+  .get("/my-contracts", async ({ prisma, user, contract }) => {
+    const records = await prisma.user.findUnique({
       where: { id: user.id },
       select: {
         splitterContracts: {
@@ -137,7 +137,24 @@ export default new Elysia({ prefix: "/splitter" })
         },
       },
     })
-    return data?.splitterContracts
+    if (!records) {
+      return []
+    }
+    const data = await Promise.all(
+      records.splitterContracts.map(async (record) => {
+        const item = await contract.query({
+          contractId: record.address,
+          method: "get_config",
+          args: {},
+        })
+        return {
+          address: record.address,
+          name: Buffer.from(item.name).toString("utf-8"),
+          createdAt: record.createdAt,
+        }
+      })
+    )
+    return data
   })
   .get(
     "/:address/transactions",
