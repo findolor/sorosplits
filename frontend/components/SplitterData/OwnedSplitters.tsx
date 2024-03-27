@@ -17,7 +17,7 @@ const OwnedSplittersCard: React.FC<OwnedSplittersCardProps> = ({
   data,
 }) => {
   return (
-    <Card width="344">
+    <Card width="440">
       <div className="flex justify-between">
         <Text
           text="Name"
@@ -36,7 +36,7 @@ const OwnedSplittersCard: React.FC<OwnedSplittersCardProps> = ({
       </div>
       <div className="w-[405px]">
         {loading ? (
-          <Loading />
+          <Loading small />
         ) : (
           <div className="flex flex-col mt-3 gap-1">
             {data.map((item) => {
@@ -45,7 +45,7 @@ const OwnedSplittersCard: React.FC<OwnedSplittersCardProps> = ({
                   key={item.address}
                   href={`/splitter/search?address=${item.address}`}
                 >
-                  <div className="h-[28px] rounded-[8px] flex justify-between items-center px-1 hover:bg-[#EBF2F7] hover:cursor-pointer">
+                  <div className="h-[28px] rounded-[8px] flex justify-between items-center hover:bg-[#EBF2F7] hover:cursor-pointer p-4 px-2">
                     <Text
                       text={item.name}
                       size="12"

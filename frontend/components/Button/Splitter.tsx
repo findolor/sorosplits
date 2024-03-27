@@ -22,7 +22,7 @@ const BaseButton: React.FC<BaseButtonProps> = ({
   return (
     <button
       className={clsx(
-        "w-[68px] h-6 flex justify-center items-center text-black font-bold py-1 px-2 rounded gap-1"
+        "w-[76px] h-7 flex justify-center items-center text-black font-bold py-1 px-2 rounded gap-1"
       )}
       style={{ backgroundColor: bgColor }}
       onClick={onClick}
@@ -41,6 +41,34 @@ const ManageSplitterButton = ({ onClick }: { onClick: () => void }) => {
       text="Manage"
       onClick={onClick}
       bgColor="#FFDC93"
+      icon={{
+        src: "/icons/wrench.svg",
+        size: 10,
+      }}
+    />
+  )
+}
+
+const ManageSplitterDoneButton = ({ onClick }: { onClick: () => void }) => {
+  return (
+    <BaseButton
+      text="Done"
+      onClick={onClick}
+      bgColor="#FFDC93"
+      icon={{
+        src: "/icons/wrench.svg",
+        size: 10,
+      }}
+    />
+  )
+}
+
+const ManageSplitterCancelButton = ({ onClick }: { onClick: () => void }) => {
+  return (
+    <BaseButton
+      text="Cancel"
+      onClick={onClick}
+      bgColor="#FF9E9E"
       icon={{
         src: "/icons/wrench.svg",
         size: 10,
@@ -77,4 +105,10 @@ const SearchSplitterButton = () => {
   )
 }
 
-export { ManageSplitterButton, CreateSplitterButton, SearchSplitterButton }
+export {
+  ManageSplitterButton,
+  ManageSplitterDoneButton,
+  ManageSplitterCancelButton,
+  CreateSplitterButton,
+  SearchSplitterButton,
+}

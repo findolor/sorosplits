@@ -1,4 +1,3 @@
-import clsx from "clsx"
 import React from "react"
 
 interface TextProps {
@@ -9,6 +8,7 @@ interface TextProps {
   lineHeight?: string
   letterSpacing?: string
   centered?: boolean
+  rightAligned?: boolean
 }
 
 const Text: React.FC<TextProps> = ({
@@ -19,17 +19,24 @@ const Text: React.FC<TextProps> = ({
   lineHeight = "24",
   letterSpacing = "0",
   centered = false,
+  rightAligned = false,
 }) => {
   const classes = `
-    text-[${size}px]
     ${bold ? "font-bold" : "font-normal"}
-    leading-[${lineHeight}px]
-    tracking-[${letterSpacing}%]
-    ${centered ? "text-center" : "text-left"}
+    ${rightAligned ? "text-right" : "text-left"}
+    ${centered && "text-center"}
   `
 
   return (
-    <p className={classes} style={{ color }}>
+    <p
+      className={classes}
+      style={{
+        color,
+        fontSize: `${size}px`,
+        lineHeight: `${lineHeight}px`,
+        letterSpacing: `${letterSpacing}%`,
+      }}
+    >
       {text}
     </p>
   )

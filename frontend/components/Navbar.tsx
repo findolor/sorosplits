@@ -6,7 +6,7 @@ import Text from "./Text"
 
 const Navbar: React.FC = () => {
   return (
-    <nav className="flex justify-between items-center h-16 px-6 border-b border-[#EBF2F7]">
+    <nav className="flex justify-between items-center h-16 px-6">
       <div className="flex items-center">
         <Link href="/">
           <button>

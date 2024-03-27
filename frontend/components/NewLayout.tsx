@@ -11,8 +11,11 @@ const radioCanada = Radio_Canada({ subsets: ["latin"] })
 const NewLayout: React.FC<NewLayoutProps> = ({ children }) => {
   return (
     <div className={radioCanada.className}>
-      <Navbar />
-      <main className="max-w-4xl mx-auto">{children}</main>
+      <div className="max-w-[1024px] mx-auto">
+        <Navbar />
+      </div>
+      <div className="h-[1px] bg-[#EBF2F7]" />
+      <main className="max-w-[1024px] mx-auto">{children}</main>
     </div>
   )
 }

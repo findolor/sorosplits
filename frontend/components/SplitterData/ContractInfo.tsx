@@ -3,6 +3,8 @@ import Image from "next/image"
 import Text from "../Text"
 import useAppStore from "@/store/index"
 import Card from "./Card"
+import Switch from "../Switch"
+import { useState } from "react"
 
 interface ContractInfoCardProps {
   data: {
@@ -20,10 +22,14 @@ interface ContractInfoCardProps {
       tokenSymbol: string
     }[]
   }
+  edit: boolean
 }
 
-const ContractInfoCard: React.FC<ContractInfoCardProps> = ({ data }) => {
+const ContractInfoCard: React.FC<ContractInfoCardProps> = ({ data, edit }) => {
   const { walletAddress } = useAppStore()
+
+  const [name, setName] = useState(data.name)
+  const [updatable, setUpdatable] = useState(data.updatable)
 
   const RenderHeader = ({ value }: { value: string }) => {
     return (
@@ -111,11 +117,20 @@ const ContractInfoCard: React.FC<ContractInfoCardProps> = ({ data }) => {
             <Text text="Shareholders & shares are" size="12" color="#687B8C" />
             &nbsp;
             <Text
-              text={data.updatable ? "updatable" : "locked"}
+              text={updatable ? "updatable" : "locked"}
               size="12"
               color="#687B8C"
               bold
             />
+            {edit && (
+              <div className="ml-2">
+                <Switch
+                  initialState={updatable}
+                  onChange={setUpdatable}
+                  locked={false}
+                />
+              </div>
+            )}
           </div>
         </div>
       </RenderSection>
@@ -125,8 +140,8 @@ const ContractInfoCard: React.FC<ContractInfoCardProps> = ({ data }) => {
           <div className="flex gap-1">
             <Image
               src="/icons/info.svg"
-              height={10}
-              width={10}
+              height={12}
+              width={12}
               alt="Info icon"
             />
             <Text
