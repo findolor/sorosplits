@@ -12,7 +12,6 @@ import {
 import { randomBytes } from "crypto"
 import CONFIG, { Network } from "../config"
 import ba from "../utils/binascii"
-// import { hexToByte } from "../utils/hexToByte"
 
 export interface ShareDataProps {
   share: number
@@ -21,8 +20,11 @@ export interface ShareDataProps {
 
 export type CallMethod =
   | "init"
+  | "update_whitelisted_tokens"
+  | "transfer_tokens"
   | "distribute_tokens"
   | "update_shares"
+  | "update_name"
   | "lock_contract"
 
 export interface CallContractArgs<T extends CallMethod> {
@@ -38,15 +40,25 @@ export type MethodArgs<T extends CallMethod> = T extends "init"
       shares: ShareDataProps[]
       updatable: boolean
     }
+  : T extends "update_whitelisted_tokens"
+  ? { tokens: string[] }
+  : T extends "transfer_tokens"
+  ? { token_address: string; recipient: string; amount: number }
   : T extends "distribute_tokens"
   ? { token_address: string }
   : T extends "update_shares"
   ? { shares: ShareDataProps[] }
+  : T extends "update_name"
+  ? { name: string }
   : T extends "lock_contract"
   ? {}
   : never
 
-export type QueryMethod = "list_shares" | "get_config"
+export type QueryMethod =
+  | "list_shares"
+  | "get_config"
+  | "get_allocation"
+  | "list_whitelisted_tokens"
 
 export interface QueryContractArgs<T extends QueryMethod> {
   contractId: string
@@ -57,6 +69,10 @@ export interface QueryContractArgs<T extends QueryMethod> {
 export type QueryArgs<T extends QueryMethod> = T extends "list_shares"
   ? {}
   : T extends "get_config"
+  ? {}
+  : T extends "get_allocation"
+  ? { shareholder: string; token: string }
+  : T extends "list_whitelisted_tokens"
   ? {}
   : never
 
@@ -70,6 +86,10 @@ export type QueryContractResult<T extends QueryMethod> = T extends "get_config"
   ? ContractConfigResult
   : T extends "list_shares"
   ? ShareDataProps[]
+  : T extends "get_allocation"
+  ? number
+  : T extends "list_whitelisted_tokens"
+  ? string[]
   : never
 
 export interface DeployAndInitContractArgs {
@@ -161,7 +181,7 @@ export class SplitterContract extends BaseContract {
     updatable,
   }: DeployAndInitContractArgs) {
     let operation = this.getDeployAndInitOperation({ name, shares, updatable })
-    const transaction = await this.processTransaction(operation)
+    const transaction = await this.processSingleTransaction(operation)
     return this.parseDeployedContractAddress(transaction)
   }
 
@@ -197,18 +217,17 @@ export class SplitterContract extends BaseContract {
     const contract = new Contract(contractId)
 
     let operation: xdr.Operation<Operation>
-    let callArgs: any
 
     switch (method) {
       case "init":
-        callArgs = args as MethodArgs<"init">
+        let initArgs = args as MethodArgs<"init">
         operation = contract.call(
           "init",
           ...[
             new Address(this.walletAddress || "").toScVal(),
-            xdr.ScVal.scvBytes(Buffer.from(callArgs.name, "utf-8")),
+            xdr.ScVal.scvBytes(Buffer.from(initArgs.name, "utf-8")),
             xdr.ScVal.scvVec(
-              callArgs.shares.map((item) => {
+              initArgs.shares.map((item) => {
                 xdr.ScVal
                 return xdr.ScVal.scvMap([
                   new xdr.ScMapEntry({
@@ -222,17 +241,17 @@ export class SplitterContract extends BaseContract {
                 ])
               })
             ),
-            xdr.ScVal.scvBool(callArgs.updatable),
+            xdr.ScVal.scvBool(initArgs.updatable),
           ]
         )
         break
       case "update_shares":
-        callArgs = args as MethodArgs<"update_shares">
+        let updateShareArgs = args as MethodArgs<"init">
         operation = contract.call(
           "update_shares",
           ...[
             xdr.ScVal.scvVec(
-              callArgs.shares.map((item) => {
+              updateShareArgs.shares.map((item) => {
                 xdr.ScVal
                 return xdr.ScVal.scvMap([
                   new xdr.ScMapEntry({
@@ -253,10 +272,42 @@ export class SplitterContract extends BaseContract {
         operation = contract.call(method, ...[])
         break
       case "distribute_tokens":
-        callArgs = args as MethodArgs<"distribute_tokens">
+        let distributeTokensArgs = args as MethodArgs<"distribute_tokens">
         operation = contract.call(
           method,
-          ...[new Address(callArgs.token_address).toScVal()]
+          ...[new Address(distributeTokensArgs.token_address).toScVal()]
+        )
+        break
+      case "transfer_tokens":
+        let transferTokensArgs = args as MethodArgs<"transfer_tokens">
+        operation = contract.call(
+          method,
+          ...[
+            new Address(transferTokensArgs.token_address).toScVal(),
+            new Address(transferTokensArgs.recipient).toScVal(),
+            nativeToScVal(transferTokensArgs.amount, { type: "i128" }),
+          ]
+        )
+        break
+      case "update_whitelisted_tokens":
+        let updateWhitelistedTokensArgs =
+          args as MethodArgs<"update_whitelisted_tokens">
+        operation = contract.call(
+          method,
+          ...[
+            xdr.ScVal.scvVec(
+              updateWhitelistedTokensArgs.tokens.map((token) => {
+                return new Address(token).toScVal()
+              })
+            ),
+          ]
+        )
+        break
+      case "update_name":
+        let updateNameArgs = args as MethodArgs<"update_name">
+        operation = contract.call(
+          method,
+          ...[xdr.ScVal.scvBytes(Buffer.from(updateNameArgs.name, "utf-8"))]
         )
         break
       default:
@@ -272,12 +323,13 @@ export class SplitterContract extends BaseContract {
     args,
   }: CallContractArgs<T>) {
     const operation = this.getCallOperation({ contractId, method, args })
-    return this.processTransaction(operation)
+    return this.processSingleTransaction(operation)
   }
 
   public async query<T extends QueryMethod>({
     contractId,
     method,
+    args,
   }: QueryContractArgs<T>): Promise<QueryContractResult<T>> {
     const contract = new Contract(contractId)
 
@@ -289,6 +341,16 @@ export class SplitterContract extends BaseContract {
         break
       case "get_config":
         operation = contract.call(method)
+        break
+      case "get_allocation":
+        let getAllocationArgs = args as QueryArgs<"get_allocation">
+        operation = contract.call(
+          method,
+          ...[
+            new Address(getAllocationArgs.shareholder).toScVal(),
+            new Address(getAllocationArgs.token).toScVal(),
+          ]
+        )
         break
       default:
         throw new Error("Invalid query method")
@@ -311,7 +373,7 @@ export class SplitterContract extends BaseContract {
     return sourceAccount === publicKey
   }
 
-  private decodeDeploySplitter(args: xdr.ScVal[]): DecodeInitResult {
+  private decodeDeploySplitterParams(args: xdr.ScVal[]): DecodeInitResult {
     const [admin, name, shares, updatable] = scValToNative(
       xdr.ScVal.scvVec([args[4]])
     )[0]
@@ -328,7 +390,9 @@ export class SplitterContract extends BaseContract {
     }
   }
 
-  private decodeUpdateShares(args: xdr.ScVal[]): DecodeUpdateSharesResult {
+  private decodeUpdateSharesParams(
+    args: xdr.ScVal[]
+  ): DecodeUpdateSharesResult {
     const shares = scValToNative(args[0])
     return {
       shares: shares.map((item) => {
@@ -340,14 +404,39 @@ export class SplitterContract extends BaseContract {
     }
   }
 
-  private decodeDistributeTokens(args: xdr.ScVal[]) {
+  private decodeDistributeTokensParams(args: xdr.ScVal[]) {
     const tokenAddress = scValToNative(args[0])
     return {
       tokenAddress,
     }
   }
 
-  public decodeTransaction({ xdrString }: DecodeArgs) {
+  private decodeTransferTokensParams(args: xdr.ScVal[]) {
+    const [tokenAddress, recipient, amount] = scValToNative(args[0])
+    return {
+      tokenAddress: tokenAddress.toString(),
+      recipient: recipient.toString(),
+      amount: Number(BigInt(amount)),
+    }
+  }
+
+  private decodeUpdateNameParams(args: xdr.ScVal[]) {
+    const name = scValToNative(args[0])
+    return {
+      name: Buffer.from(name).toString("utf-8"),
+    }
+  }
+
+  private decodeUpdateWhitelistedTokensParams(args: xdr.ScVal[]) {
+    const tokens = scValToNative(args[0])
+    return {
+      tokens: tokens.map((item) => {
+        return item.toString()
+      }),
+    }
+  }
+
+  public decodeTransactionParams({ xdrString }: DecodeArgs) {
     const invokeContract = xdr.TransactionEnvelope.fromXDR(xdrString, "base64")
       .v1()
       .tx()
@@ -374,13 +463,22 @@ export class SplitterContract extends BaseContract {
       case "init":
         throw new Error("Not implemented")
       case "deploy_splitter":
-        response.args = this.decodeDeploySplitter(args)
+        response.args = this.decodeDeploySplitterParams(args)
         break
       case "update_shares":
-        response.args = this.decodeUpdateShares(args)
+        response.args = this.decodeUpdateSharesParams(args)
         break
       case "distribute_tokens":
-        response.args = this.decodeDistributeTokens(args)
+        response.args = this.decodeDistributeTokensParams(args)
+        break
+      case "transfer_tokens":
+        response.args = this.decodeTransferTokensParams(args)
+        break
+      case "update_name":
+        response.args = this.decodeUpdateNameParams(args)
+        break
+      case "update_whitelisted_tokens":
+        response.args = this.decodeUpdateWhitelistedTokensParams(args)
         break
       case "lock_contract":
         break

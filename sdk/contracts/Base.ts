@@ -1,4 +1,5 @@
 import {
+  BASE_FEE,
   Operation,
   SorobanRpc,
   TimeoutInfinite,
@@ -16,7 +17,7 @@ export default class BaseContract {
   private async initTxBuilder(publicKey: string, server: SorobanRpc.Server) {
     const source = await server.getAccount(publicKey)
     return new TransactionBuilder(source, {
-      fee: "1000000",
+      fee: BASE_FEE,
       networkPassphrase: CONFIG[this.network].networkPhrase,
     })
   }
@@ -38,15 +39,16 @@ export default class BaseContract {
     return server.sendTransaction(transaction)
   }
 
-  public async signTransaction(operation: xdr.Operation<Operation>) {
+  public async signTransaction(operations: xdr.Operation<Operation>[]) {
     const server = this.getServer()
     const userInfo = await getUserInfo()
     const txBuilder = await this.initTxBuilder(this.walletAddress, server)
 
-    let tx: Transaction = txBuilder
-      .addOperation(operation)
-      .setTimeout(TimeoutInfinite)
-      .build()
+    for (const operation of operations) {
+      txBuilder.addOperation(operation)
+    }
+
+    let tx: Transaction = txBuilder.setTimeout(TimeoutInfinite).build()
 
     let preparedTx = (await server.prepareTransaction(tx)) as Transaction
 
@@ -91,10 +93,18 @@ export default class BaseContract {
     return confirmation
   }
 
-  protected async processTransaction(
+  protected async processSingleTransaction(
     operation: xdr.Operation<Operation>
   ): Promise<SorobanRpc.Api.GetTransactionResponse> {
-    const signedTx = await this.signTransaction(operation)
+    const signedTx = await this.signTransaction([operation])
+    const transactionResponse = await this.sendTransaction(signedTx)
+    return this.getTransaction(transactionResponse)
+  }
+
+  protected async processMultipleTransactions(
+    operations: xdr.Operation<Operation>[]
+  ): Promise<SorobanRpc.Api.GetTransactionResponse> {
+    const signedTx = await this.signTransaction(operations)
     const transactionResponse = await this.sendTransaction(signedTx)
     return this.getTransaction(transactionResponse)
   }
