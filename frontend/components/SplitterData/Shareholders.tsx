@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Text from "../Text"
 import Card from "./Card"
 import clsx from "clsx"
@@ -9,23 +9,39 @@ import { errorToast } from "@/utils/toast"
 import { Keypair, StrKey } from "stellar-sdk"
 import useContracts from "@/hooks/useContracts"
 import Loading from "../Loading"
+import useAppStore from "@/store/index"
 
-interface ShareholdersCardProps {
-  data: {
-    address: string
-    share: string
-    domain: boolean
-  }[]
-  edit: boolean
+export interface ShareholderCardData {
+  address: string
+  share: string
+  domain: boolean
 }
 
-const ShareholdersCard: React.FC<ShareholdersCardProps> = ({ data, edit }) => {
+interface ShareholdersCardProps {
+  data: ShareholderCardData[]
+  onUpdate: (data: ShareholderCardData[]) => void
+  edit: boolean
+  reset: number
+  disabled?: boolean
+}
+
+const ShareholdersCard: React.FC<ShareholdersCardProps> = ({
+  data,
+  onUpdate,
+  edit,
+  reset,
+  disabled,
+}) => {
+  const { loading, setLoading } = useAppStore()
   const { nameServiceContract } = useContracts()
 
-  const [loading, setLoading] = useState(false)
   const [internalData, setInternalData] = useState(data)
   const [addressInput, setAddressInput] = useState("")
   const [shareInput, setShareInput] = useState("")
+
+  useEffect(() => {
+    setInternalData(data)
+  }, [reset])
 
   const add = async () => {
     try {
@@ -43,6 +59,7 @@ const ShareholdersCard: React.FC<ShareholdersCardProps> = ({ data, edit }) => {
         { address: addressInput, share: shareInput, domain: isDomain },
       ]
       setInternalData(newData)
+      onUpdate(newData)
       setAddressInput("")
       setShareInput("")
     } catch (error: any) {
@@ -54,6 +71,7 @@ const ShareholdersCard: React.FC<ShareholdersCardProps> = ({ data, edit }) => {
   const remove = (index: number) => {
     const newData = internalData.filter((_, i) => i !== index)
     setInternalData(newData)
+    onUpdate(newData)
   }
 
   const validateShareholder = async () => {
@@ -150,11 +168,11 @@ const ShareholdersCard: React.FC<ShareholdersCardProps> = ({ data, edit }) => {
               {edit && (
                 <button onClick={() => remove(index)}>
                   <Image
-                    src="/icons/wrench.svg"
-                    width={16}
-                    height={16}
+                    src="/icons/trash.svg"
+                    width={12}
+                    height={12}
                     alt="Trash icon"
-                    className="ml-2"
+                    className="ml-2 h-[28px]"
                   />
                 </button>
               )}
@@ -168,10 +186,12 @@ const ShareholdersCard: React.FC<ShareholdersCardProps> = ({ data, edit }) => {
                 placeholder="Enter shareholder address"
                 onChange={(e) => setAddressInput(e.target.value)}
                 value={addressInput}
+                disabled={loading}
               />
               <ShareInput
                 onChange={(v) => setShareInput(v)}
                 value={shareInput}
+                disabled={loading}
               />
             </div>
             <button

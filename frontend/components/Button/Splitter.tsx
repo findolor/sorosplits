@@ -11,6 +11,7 @@ interface BaseButtonProps {
     src: string
     size: number
   }
+  long?: boolean
 }
 
 const BaseButton: React.FC<BaseButtonProps> = ({
@@ -18,11 +19,13 @@ const BaseButton: React.FC<BaseButtonProps> = ({
   onClick,
   bgColor,
   icon,
+  long = false,
 }) => {
   return (
     <button
       className={clsx(
-        "w-[76px] h-7 flex justify-center items-center text-black font-bold py-1 px-2 rounded gap-1"
+        "h-7 flex justify-center items-center text-black font-bold py-1 px-2 rounded gap-1",
+        long ? "w-[100px]" : "w-[76px]"
       )}
       style={{ backgroundColor: bgColor }}
       onClick={onClick}
@@ -56,9 +59,24 @@ const ManageSplitterDoneButton = ({ onClick }: { onClick: () => void }) => {
       onClick={onClick}
       bgColor="#FFDC93"
       icon={{
-        src: "/icons/wrench.svg",
-        size: 10,
+        src: "/icons/check.svg",
+        size: 16,
       }}
+    />
+  )
+}
+
+const DistributeTokensButton = ({ onClick }: { onClick: () => void }) => {
+  return (
+    <BaseButton
+      text="Distribute"
+      onClick={onClick}
+      bgColor="#FFDC93"
+      icon={{
+        src: "/icons/check.svg",
+        size: 16,
+      }}
+      long
     />
   )
 }
@@ -70,8 +88,8 @@ const ManageSplitterCancelButton = ({ onClick }: { onClick: () => void }) => {
       onClick={onClick}
       bgColor="#FF9E9E"
       icon={{
-        src: "/icons/wrench.svg",
-        size: 10,
+        src: "/icons/close.svg",
+        size: 14,
       }}
     />
   )
@@ -84,8 +102,36 @@ const CreateSplitterButton = () => {
       onClick={() => {}}
       bgColor="#FFDC93"
       icon={{
-        src: "/icons/plus.svg",
+        src: "/icons/create.svg",
         size: 10,
+      }}
+    />
+  )
+}
+
+const CreateSplitterDoneButton = ({ onClick }: { onClick: () => void }) => {
+  return (
+    <BaseButton
+      text="Done"
+      onClick={onClick}
+      bgColor="#FFDC93"
+      icon={{
+        src: "/icons/check.svg",
+        size: 16,
+      }}
+    />
+  )
+}
+
+const CreateSplitterResetButton = ({ onClick }: { onClick: () => void }) => {
+  return (
+    <BaseButton
+      text="Reset"
+      onClick={onClick}
+      bgColor="#FF9E9E"
+      icon={{
+        src: "/icons/close.svg",
+        size: 14,
       }}
     />
   )
@@ -111,4 +157,7 @@ export {
   ManageSplitterCancelButton,
   CreateSplitterButton,
   SearchSplitterButton,
+  CreateSplitterDoneButton,
+  CreateSplitterResetButton,
+  DistributeTokensButton,
 }

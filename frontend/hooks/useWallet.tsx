@@ -15,18 +15,21 @@ const useWallet = () => {
     setIsConnected,
     setWalletAddress,
     setAccessToken,
+    setLoading,
   } = useAppStore()
   const { authenticationApiService } = useApiService()
 
   const connect = async () => {
     try {
+      setLoading(true)
+
       const allowed = await isAllowed()
       if (!allowed) {
         await setAllowed()
       }
       const info = await getUserInfo()
       if (info.publicKey === "") {
-        return errorToast("Please unlock your wallet")
+        throw new Error("Please unlock your wallet")
       }
 
       let publicKey = info.publicKey
@@ -53,7 +56,9 @@ const useWallet = () => {
       setWalletAddress(info.publicKey)
       setAccessToken(accessToken)
       setIsConnected(true)
+      setLoading(false)
     } catch (error: any) {
+      setLoading(false)
       errorToast(error)
     }
   }

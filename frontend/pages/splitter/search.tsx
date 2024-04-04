@@ -1,47 +1,85 @@
 import { useRouter } from "next/router"
 import { useEffect, useMemo, useState } from "react"
-
 import Search from "@/components/Input/Search"
 import PageHeader from "@/components/PageHeader"
-import { InputData } from "@/components/SplitterData"
-import ContractInfoCard from "@/components/SplitterData/ContractInfo"
-import ShareholdersCard from "@/components/SplitterData/Shareholders"
+import ContractInfoCard, {
+  TokenBalanceData,
+} from "@/components/SplitterData/ContractInfo"
+import ShareholdersCard, {
+  ShareholderCardData,
+} from "@/components/SplitterData/Shareholders"
 import {
   ContractConfigResult,
   ShareDataProps,
 } from "@sorosplits/sdk/lib/contracts/Splitter"
 import useAppStore from "@/store/index"
-import useApiService from "@/hooks/useApi"
 import { loadingToast, successToast, errorToast } from "@/utils/toast"
-import useContracts from "@/hooks/useContracts"
 import {
   ManageSplitterButton,
   ManageSplitterCancelButton,
   ManageSplitterDoneButton,
 } from "@/components/Button/Splitter"
-import WhitelistedTokensCard from "@/components/SplitterData/WhitelistedTokens"
+import WhitelistedTokensCard, {
+  WhitelistedTokensCardData,
+} from "@/components/SplitterData/WhitelistedTokens"
 import ActivityCard, {
   SplitterContractActivity,
 } from "@/components/SplitterData/Activity"
-import ConfirmationModal from "@/components/Modal"
+import useSplitter from "@/hooks/useSplitter"
+import useToken from "@/hooks/useToken"
+import useModal from "@/hooks/useModal"
 
 const NewSearch: React.FC = () => {
   const router = useRouter()
-  const { loading, setLoading, walletAddress } = useAppStore()
-  const { splitterApiService } = useApiService()
-  const { splitterContract } = useContracts()
+  const splitter = useSplitter()
+  const token = useToken()
+  const { walletAddress, setLoading } = useAppStore()
+  const { confirmModal, onConfirmModal, onCancelModal, RenderModal } =
+    useModal()
 
   const [contractAddress, setContractAddress] = useState("")
+
+  // Initial state for contract data
+  // Comes from the contract itself
   const [contractConfig, setContractConfig] = useState<ContractConfigResult>()
-  const [contractShares, setContractShares] = useState<InputData[]>()
+  const [contractShares, setContractShares] = useState<ShareDataProps[]>()
+  const [contractWhitelistedTokens, setContractWhitelistedTokens] = useState<
+    string[]
+  >([])
   const [contractTransactions, setContractTransactions] = useState<
     SplitterContractActivity[]
   >([])
+
+  // Derived data from contract data
+  const [whitelistedTokensCardData, setWhitelistedTokensCardData] = useState<
+    WhitelistedTokensCardData[]
+  >([])
+  const [
+    whitelistedTokensCardDataLoading,
+    setWhitelistedTokensCardDataLoading,
+  ] = useState(true)
+  const [contractBalanceData, setContractBalanceData] = useState<
+    TokenBalanceData[]
+  >([])
+  const [contractBalanceDataLoading, setContractBalanceDataLoading] =
+    useState(true)
+  const [contractTotalDistributionsData, setContractTotalDistributionsData] =
+    useState<TokenBalanceData[]>([])
+
+  // Updated state for contract data
+  const [updatedContractName, setUpdatedContractName] = useState("")
+  const [updatedContractUpdatable, setUpdatedContractUpdatable] = useState(true)
+  const [updatedContractShares, setUpdatedContractShares] = useState<
+    ShareDataProps[]
+  >([])
+  const [
+    updatedContractWhitelistedTokens,
+    setUpdatedContractWhitelistedTokens,
+  ] = useState<string[]>([])
+
+  // UI state
   const [manageSplitter, setManageSplitter] = useState(false)
-  const [confirmModal, setConfirmModal] = useState<[boolean, string]>([
-    false,
-    "",
-  ])
+  const [resetTrigger, setResetTrigger] = useState(0)
 
   useEffect(() => {
     if (router.query.address) {
@@ -73,11 +111,11 @@ const NewSearch: React.FC = () => {
   }
 
   const manageSplitterDoneOnClick = () => {
-    setConfirmModal([true, "done"])
+    onConfirmModal("done")
   }
 
   const manageSplitterCancelOnClick = () => {
-    setConfirmModal([true, "cancel"])
+    onConfirmModal("cancel")
   }
 
   useEffect(() => {
@@ -86,44 +124,33 @@ const NewSearch: React.FC = () => {
         if (contractAddress === "") {
           setContractConfig(undefined)
           setContractShares(undefined)
+          setContractWhitelistedTokens([])
           return
         }
 
         loadingToast("Searching for Splitter contract...")
 
-        let results = await Promise.all([
-          splitterContract.query({
-            contractId: contractAddress,
-            method: "get_config",
-            args: {},
-          }),
-          splitterContract.query({
-            contractId: contractAddress,
-            method: "list_shares",
-            args: {},
-          }),
-        ]).catch((error) => {
-          throw new Error(error)
+        const config = await splitter.query.getConfig(contractAddress)
+        setContractConfig(config)
+        setUpdatedContractName(new TextDecoder().decode(config.name).toString())
+        setUpdatedContractUpdatable(config.updatable)
+
+        const shares = await splitter.query.listShares(contractAddress)
+        let shareData = shares.map((item) => {
+          return {
+            shareholder: item.shareholder.toString(),
+            share: Number(BigInt(item.share)) / 100,
+          }
         })
+        setContractShares(shareData)
+        setUpdatedContractShares(shareData)
 
-        if (results) {
-          successToast("Found Splitter contract!")
+        const whitelistedTokens = await splitter.query.listWhitelistedTokens(
+          contractAddress
+        )
+        setContractWhitelistedTokens(whitelistedTokens)
 
-          let config = results[0] as ContractConfigResult
-          setContractConfig(config)
-
-          let shares = results[1] as ShareDataProps[]
-          let shareData = shares.map((item) => {
-            return {
-              input: item.shareholder.toString(),
-              shareData: {
-                shareholder: item.shareholder.toString(),
-                share: Number(BigInt(item.share)) / 100,
-              },
-            }
-          })
-          setContractShares(shareData)
-        }
+        successToast("Splitter contract found!")
       } catch (error: any) {
         setContractConfig(undefined)
         setContractShares(undefined)
@@ -137,23 +164,22 @@ const NewSearch: React.FC = () => {
 
   useEffect(() => {
     const fetch = async () => {
-      const data = await splitterApiService.getTransactions({
-        address: contractAddress,
-      })
+      const data = await splitter.getActivity(contractAddress)
       setContractTransactions(data)
     }
 
-    if (contractShares && contractConfig) {
+    if (contractShares && contractConfig && contractWhitelistedTokens) {
       fetch()
     }
-  }, [contractShares, contractConfig])
+  }, [contractShares, contractConfig, contractWhitelistedTokens])
 
   const shareholdersCardData = useMemo(() => {
     if (!contractShares) return []
     return contractShares.map((i) => {
       return {
-        address: i.shareData.shareholder.toString(),
-        share: i.shareData.share.toString(),
+        address: i.shareholder.toString(),
+        share: i.share.toString(),
+        // TODO: Need to check domain in here
         domain: false,
       }
     })
@@ -165,8 +191,6 @@ const NewSearch: React.FC = () => {
         owner: "",
         name: "",
         updatable: false,
-        balances: [],
-        totalDistributions: [],
       }
     return {
       owner: contractConfig.admin.toString(),
@@ -177,12 +201,184 @@ const NewSearch: React.FC = () => {
     }
   }, [contractConfig])
 
-  const cancelTransaction = async () => {
-    setManageSplitter(false)
-    setConfirmModal([false, ""])
+  useEffect(() => {
+    const fetch = async () => {
+      if (contractWhitelistedTokens.length === 0) return
+
+      setWhitelistedTokensCardDataLoading(true)
+      setContractBalanceDataLoading(true)
+
+      let whitelistedTokensCardData: WhitelistedTokensCardData[] = []
+      let balancesData: TokenBalanceData[] = []
+
+      for (let tokenAddress of contractWhitelistedTokens) {
+        const tokenName = await token.query.getName(tokenAddress)
+        const tokenSymbol = await token.query.getSymbol(tokenAddress)
+        const tokenDecimal = await token.query.getDecimal(tokenAddress)
+        const tokenAmount = await token.query.getBalance(
+          tokenAddress,
+          contractAddress
+        )
+
+        whitelistedTokensCardData.push({
+          address: tokenAddress,
+          name: tokenName,
+          symbol: tokenSymbol,
+          decimals: tokenDecimal,
+        })
+        balancesData.push({
+          tokenData: {
+            address: tokenAddress,
+            name: tokenName,
+            symbol: tokenSymbol,
+            decimals: tokenDecimal,
+          },
+          amount: (Number(tokenAmount) / Math.pow(10, tokenDecimal)).toFixed(2),
+        })
+      }
+
+      setWhitelistedTokensCardData(whitelistedTokensCardData)
+      setContractBalanceData(balancesData)
+
+      setWhitelistedTokensCardDataLoading(false)
+      setContractBalanceDataLoading(false)
+    }
+
+    fetch()
+  }, [contractAddress, contractWhitelistedTokens])
+
+  const onConfirm = async () => {
+    if (confirmModal[1] === "cancel") {
+      setResetTrigger((prev) => prev + 1)
+      setManageSplitter(false)
+      onCancelModal()
+    } else await updateSplitter()
   }
 
-  const submitTransaction = async () => {}
+  const checkUpdates = () => {
+    if (!contractConfig || !contractShares) {
+      throw new Error("No contract data found")
+    }
+
+    const nameUpdated =
+      updatedContractName !=
+      new TextDecoder().decode(contractConfig.name).toString()
+    const updatableUpdated =
+      updatedContractUpdatable != contractConfig.updatable
+    const sharesUpdated =
+      JSON.stringify(
+        updatedContractShares.sort((a, b) =>
+          a.shareholder.localeCompare(b.shareholder)
+        )
+      ) !=
+      JSON.stringify(
+        contractShares
+          .map((i) => ({
+            shareholder: i.shareholder.toString(),
+            share: Number(i.share.toString()),
+          }))
+          .sort((a, b) => a.shareholder.localeCompare(b.shareholder))
+      )
+    const whitelistedTokensUpdated =
+      JSON.stringify(
+        updatedContractWhitelistedTokens.sort((a, b) => a.localeCompare(b))
+      ) !=
+      JSON.stringify(
+        contractWhitelistedTokens.sort((a, b) => a.localeCompare(b))
+      )
+
+    return {
+      name: nameUpdated,
+      updatable: updatableUpdated,
+      shares: sharesUpdated,
+      whitelistedTokens: whitelistedTokensUpdated,
+    }
+  }
+
+  const updateSplitter = async () => {
+    loadingToast("Updating your Splitter contract...")
+
+    try {
+      setLoading(true)
+
+      const updates = checkUpdates()
+      if (
+        !updates.name &&
+        !updates.updatable &&
+        !updates.shares &&
+        !updates.whitelistedTokens
+      ) {
+        throw new Error("No changes detected")
+      }
+
+      if (updates.name) {
+        await splitter.call.updateName(contractAddress, updatedContractName)
+        setContractConfig((prev) => {
+          if (!prev) return prev
+          return Object.assign({}, prev, {
+            name: new TextEncoder().encode(updatedContractName),
+          })
+        })
+      }
+      if (updates.updatable) {
+        await splitter.call.lockContract(contractAddress)
+        setContractConfig((prev) => {
+          if (!prev) return prev
+          return Object.assign({}, prev, {
+            updatable: false,
+          })
+        })
+      }
+      if (updates.shares) {
+        await splitter.call.updateShares(
+          contractAddress,
+          updatedContractShares.map((item) => {
+            return {
+              ...item,
+              share: item.share * 100,
+            }
+          })
+        )
+        setContractShares(updatedContractShares)
+      }
+      if (updates.whitelistedTokens) {
+        await splitter.call.updateWhitelistedTokens(
+          contractAddress,
+          updatedContractWhitelistedTokens
+        )
+        setContractWhitelistedTokens(updatedContractWhitelistedTokens)
+      }
+
+      setLoading(false)
+      setManageSplitter(false)
+      successToast("Splitter contract updated successfully!")
+      onCancelModal()
+    } catch (error: any) {
+      setLoading(false)
+      errorToast(error)
+      onCancelModal()
+    }
+  }
+
+  const onContractInfoCardUpdate = (name: string, updatable: boolean) => {
+    setUpdatedContractName(name)
+    setUpdatedContractUpdatable(updatable)
+  }
+
+  const onShareholderCardUpdate = (data: ShareholderCardData[]) => {
+    setUpdatedContractShares(
+      data.map((i) => {
+        return {
+          shareholder: i.address,
+          share: Number(i.share),
+        }
+      })
+    )
+  }
+
+  const onWhitelistedTokensCardUpdate = (data: WhitelistedTokensCardData[]) => {
+    setUpdatedContractWhitelistedTokens(data.map((i) => i.address))
+  }
 
   return (
     <div className="mt-10">
@@ -224,32 +420,27 @@ const NewSearch: React.FC = () => {
             <div className="flex flex-col gap-4">
               <ShareholdersCard
                 data={shareholdersCardData}
+                onUpdate={onShareholderCardUpdate}
                 edit={manageSplitter}
+                reset={resetTrigger}
               />
               <WhitelistedTokensCard
-                data={[
-                  {
-                    name: "Ethereum",
-                    symbol: "ETH",
-                    decimals: 18,
-                  },
-                  {
-                    name: "Stellar",
-                    symbol: "XLM",
-                    decimals: 7,
-                  },
-                  {
-                    name: "Test Network",
-                    symbol: "SPLT",
-                    decimals: 9,
-                  },
-                ]}
+                data={whitelistedTokensCardData}
+                dataLoading={whitelistedTokensCardDataLoading}
+                onUpdate={onWhitelistedTokensCardUpdate}
+                edit={manageSplitter}
+                reset={resetTrigger}
               />
             </div>
             <div className="flex flex-col gap-4">
               <ContractInfoCard
                 data={contractInfoCardData}
+                balanceData={contractBalanceData}
+                balanceDataLoading={contractBalanceDataLoading}
+                totalDistributionsData={contractTotalDistributionsData}
+                onUpdate={onContractInfoCardUpdate}
                 edit={manageSplitter}
+                reset={resetTrigger}
               />
               <ActivityCard data={contractTransactions} />
             </div>
@@ -257,7 +448,7 @@ const NewSearch: React.FC = () => {
         </div>
       )}
 
-      <ConfirmationModal
+      <RenderModal
         title={
           confirmModal[1] === "done"
             ? "You are about to lock your splitter."
@@ -268,9 +459,7 @@ const NewSearch: React.FC = () => {
             ? "Do you want to confirm your changes?"
             : undefined
         }
-        isOpen={confirmModal[0]}
-        onCancel={() => setConfirmModal([false, ""])}
-        onConfirm={submitTransaction}
+        onConfirm={onConfirm}
       />
     </div>
   )

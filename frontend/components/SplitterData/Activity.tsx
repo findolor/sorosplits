@@ -23,9 +23,15 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ data }) => {
       case "update_shares":
         return "Shareholders & shares are updated"
       case "distribute_tokens":
-        return "Distributed "
+        return "Distributed tokens"
       case "lock_contract":
         return "Shareholders & shares are locked"
+      case "transfer_tokens":
+        return "Transferred unused tokens"
+      case "update_name":
+        return "Contract name updated"
+      case "update_whitelisted_tokens":
+        return "Whitelisted tokens updated"
     }
   }
 

@@ -42,8 +42,8 @@ const ConfirmButton = ({ onClick }: { onClick: () => void }) => {
       onClick={onClick}
       bgColor="#FFDC93"
       icon={{
-        src: "/icons/wrench.svg",
-        size: 10,
+        src: "/icons/check.svg",
+        size: 16,
       }}
     />
   )
@@ -56,8 +56,8 @@ const CancelButton = ({ onClick }: { onClick: () => void }) => {
       onClick={onClick}
       bgColor="#FF9E9E"
       icon={{
-        src: "/icons/wrench.svg",
-        size: 10,
+        src: "/icons/close.svg",
+        size: 14,
       }}
     />
   )

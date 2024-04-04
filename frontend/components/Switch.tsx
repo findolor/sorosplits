@@ -1,14 +1,19 @@
 import clsx from "clsx"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 interface SwitchProps {
   initialState: boolean
   onChange: (value: boolean) => void
   locked?: boolean
+  reset: number
 }
 
-const Switch = ({ initialState, onChange, locked }: SwitchProps) => {
+const Switch = ({ initialState, onChange, locked, reset }: SwitchProps) => {
   const [checked, setChecked] = useState(initialState)
+
+  useEffect(() => {
+    setChecked(initialState)
+  }, [reset, initialState])
 
   const toggle = () => {
     setChecked(!checked)

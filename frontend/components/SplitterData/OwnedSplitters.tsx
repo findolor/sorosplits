@@ -1,4 +1,4 @@
-import { truncateAddressLong } from "@/utils/truncateAddress"
+import { truncateAddressShort } from "@/utils/truncateAddress"
 import Text from "../Text"
 import Card from "./Card"
 import Link from "next/link"
@@ -53,7 +53,7 @@ const OwnedSplittersCard: React.FC<OwnedSplittersCardProps> = ({
                       letterSpacing="-1.5"
                     />
                     <Text
-                      text={truncateAddressLong(item.address)}
+                      text={truncateAddressShort(item.address)}
                       size="12"
                       lineHeight="12"
                       letterSpacing="-1.5"

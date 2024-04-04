@@ -1,23 +1,27 @@
-import { useMemo, useState } from "react"
-import Button from "./Button"
-import { FiLogOut } from "react-icons/fi"
+import { useState } from "react"
 import useWallet from "../hooks/useWallet"
 import { successToast } from "../utils/toast"
-import { truncateAddressShort } from "../utils/truncateAddress"
 import {
   AddressButton,
   ConnectWalletButton,
   DisconnectWalletButton,
 } from "./Button/Wallets"
 import Image from "next/image"
+import Loading from "./Loading"
+import useAppStore from "../store"
 
 const Wallet = () => {
+  const { loading } = useAppStore()
   const { isConnected, walletAddress, connect, disconnect } = useWallet()
   const [isHovered, setIsHovered] = useState(false)
 
   const copyAddress = () => {
     navigator.clipboard.writeText(walletAddress || "")
     successToast("Address copied to clipboard")
+  }
+
+  if (loading) {
+    return <Loading />
   }
 
   return (
