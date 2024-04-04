@@ -26,8 +26,14 @@ fn happy_path() {
     splitter.distribute_tokens(&token_address, &1_000_000_000);
     sudo_token.mint(&splitter_address, &1_000_000_000);
 
+    let unused_tokens = splitter.get_unused_tokens(&token_address);
+    assert_eq!(unused_tokens, 1_000_000_000);
+
     let transfer_address = Address::generate(&env);
     splitter.transfer_tokens(&token_address, &transfer_address, &500_000_000);
+
+    let unused_tokens = splitter.get_unused_tokens(&token_address);
+    assert_eq!(unused_tokens, 500_000_000);
 
     assert_eq!(token.balance(&splitter_address), 1_500_000_000);
     assert_eq!(token.balance(&transfer_address), 500_000_000);

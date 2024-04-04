@@ -90,6 +90,15 @@ pub trait SplitterTrait {
 
     /// **ADMIN ONLY FUNCTION**
     ///
+    /// Updates the name of the contract.
+    ///
+    /// ## Arguments
+    ///
+    /// * `name` - The new name for the contract
+    fn update_name(env: Env, name: Bytes) -> Result<(), Error>;
+
+    /// **ADMIN ONLY FUNCTION**
+    ///
     /// Locks the contract for further shares updates.
     ///
     /// Locking the contract does not affect the distribution of tokens.
@@ -143,12 +152,22 @@ pub trait SplitterTrait {
     /// ## Arguments
     ///
     /// * `shareholder` - The address of the shareholder
-    /// * `token` - The address of the token
+    /// * `token_addres` - The address of the token
     ///
     /// ## Returns
     ///
     /// * `i128` - The allocation of the shareholder for the token
-    fn get_allocation(env: Env, shareholder: Address, token: Address) -> Result<i128, Error>;
+    fn get_allocation(env: Env, shareholder: Address, token_addres: Address)
+        -> Result<i128, Error>;
+
+    /// Gets the unused tokens.
+    ///
+    /// Unused tokens are defined as the tokens that are not distributed to the shareholders.
+    ///
+    /// ## Returns
+    ///
+    /// * `i128` - The amount of unused tokens
+    fn get_unused_tokens(env: Env, token_addres: Address) -> Result<i128, Error>;
 
     /// Lists the allocations of the shareholder.
     ///
@@ -207,6 +226,10 @@ impl SplitterTrait for Splitter {
         execute::update_shares(env, shares)
     }
 
+    fn update_name(env: Env, name: Bytes) -> Result<(), Error> {
+        execute::update_name(env, name)
+    }
+
     fn lock_contract(env: Env) -> Result<(), Error> {
         execute::lock_contract(env)
     }
@@ -234,8 +257,16 @@ impl SplitterTrait for Splitter {
         query::get_config(env)
     }
 
-    fn get_allocation(env: Env, shareholder: Address, token: Address) -> Result<i128, Error> {
-        query::get_allocation(env, shareholder, token)
+    fn get_allocation(
+        env: Env,
+        shareholder: Address,
+        token_addres: Address,
+    ) -> Result<i128, Error> {
+        query::get_allocation(env, shareholder, token_addres)
+    }
+
+    fn get_unused_tokens(env: Env, token_addres: Address) -> Result<i128, Error> {
+        query::get_unused_tokens(env, token_addres)
     }
 
     // fn list_allocations(env: Env, shareholder: Address) -> Result<Vec<(Address, i128)>, Error> {

@@ -51,6 +51,19 @@ impl ConfigDataKey {
         }
     }
 
+    pub fn update_name(e: &Env, name: Bytes) {
+        bump_instance(e);
+        let key = ConfigKeys::Config;
+        let config: Option<ConfigDataKey> = e.storage().instance().get(&key);
+        match config {
+            Some(mut config) => {
+                config.name = name;
+                e.storage().instance().set(&key, &config);
+            }
+            None => (),
+        }
+    }
+
     /// Returns true if ConfigDataKey exists in the storage
     pub fn exists(e: &Env) -> bool {
         bump_instance(e);
