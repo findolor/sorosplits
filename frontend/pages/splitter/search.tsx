@@ -28,6 +28,7 @@ import ActivityCard, {
 import useSplitter from "@/hooks/useSplitter"
 import useToken from "@/hooks/useToken"
 import useModal from "@/hooks/useModal"
+import { getBalance } from "@/utils/getBalance"
 
 const NewSearch: React.FC = () => {
   const router = useRouter()
@@ -58,11 +59,6 @@ const NewSearch: React.FC = () => {
     whitelistedTokensCardDataLoading,
     setWhitelistedTokensCardDataLoading,
   ] = useState(true)
-  const [contractBalanceData, setContractBalanceData] = useState<
-    TokenBalanceData[]
-  >([])
-  const [contractBalanceDataLoading, setContractBalanceDataLoading] =
-    useState(true)
   const [contractTotalDistributionsData, setContractTotalDistributionsData] =
     useState<TokenBalanceData[]>([])
 
@@ -125,6 +121,9 @@ const NewSearch: React.FC = () => {
           setContractConfig(undefined)
           setContractShares(undefined)
           setContractWhitelistedTokens([])
+          setWhitelistedTokensCardData([])
+          setWhitelistedTokensCardDataLoading(true)
+          setContractTransactions([])
           return
         }
 
@@ -164,6 +163,8 @@ const NewSearch: React.FC = () => {
 
   useEffect(() => {
     const fetch = async () => {
+      if (contractAddress === "") return
+
       const data = await splitter.getActivity(contractAddress)
       setContractTransactions(data)
     }
@@ -203,13 +204,12 @@ const NewSearch: React.FC = () => {
 
   useEffect(() => {
     const fetch = async () => {
-      if (contractWhitelistedTokens.length === 0) return
+      if (contractAddress === "" || contractWhitelistedTokens.length === 0)
+        return
 
       setWhitelistedTokensCardDataLoading(true)
-      setContractBalanceDataLoading(true)
 
       let whitelistedTokensCardData: WhitelistedTokensCardData[] = []
-      let balancesData: TokenBalanceData[] = []
 
       for (let tokenAddress of contractWhitelistedTokens) {
         const tokenName = await token.query.getName(tokenAddress)
@@ -225,23 +225,12 @@ const NewSearch: React.FC = () => {
           name: tokenName,
           symbol: tokenSymbol,
           decimals: tokenDecimal,
-        })
-        balancesData.push({
-          tokenData: {
-            address: tokenAddress,
-            name: tokenName,
-            symbol: tokenSymbol,
-            decimals: tokenDecimal,
-          },
-          amount: (Number(tokenAmount) / Math.pow(10, tokenDecimal)).toFixed(2),
+          balance: getBalance(tokenAmount, tokenDecimal).toFixed(2),
         })
       }
 
       setWhitelistedTokensCardData(whitelistedTokensCardData)
-      setContractBalanceData(balancesData)
-
       setWhitelistedTokensCardDataLoading(false)
-      setContractBalanceDataLoading(false)
     }
 
     fetch()
@@ -425,6 +414,7 @@ const NewSearch: React.FC = () => {
                 reset={resetTrigger}
               />
               <WhitelistedTokensCard
+                contractAddress={contractAddress}
                 data={whitelistedTokensCardData}
                 dataLoading={whitelistedTokensCardDataLoading}
                 onUpdate={onWhitelistedTokensCardUpdate}
@@ -435,8 +425,6 @@ const NewSearch: React.FC = () => {
             <div className="flex flex-col gap-4">
               <ContractInfoCard
                 data={contractInfoCardData}
-                balanceData={contractBalanceData}
-                balanceDataLoading={contractBalanceDataLoading}
                 totalDistributionsData={contractTotalDistributionsData}
                 onUpdate={onContractInfoCardUpdate}
                 edit={manageSplitter}

@@ -8,15 +8,18 @@ import { errorToast } from "@/utils/toast"
 import clsx from "clsx"
 import useAppStore from "@/store/index"
 import useToken from "@/hooks/useToken"
+import { getBalance } from "@/utils/getBalance"
 
 export interface WhitelistedTokensCardData {
   address: string
   name: string
   symbol: string
   decimals: number
+  balance: string
 }
 
 interface WhitelistedTokensCardProps {
+  contractAddress: string
   data: WhitelistedTokensCardData[]
   dataLoading?: boolean
   onUpdate: (data: WhitelistedTokensCardData[]) => void
@@ -26,6 +29,7 @@ interface WhitelistedTokensCardProps {
 }
 
 const WhitelistedTokensCard: React.FC<WhitelistedTokensCardProps> = ({
+  contractAddress,
   data,
   dataLoading,
   onUpdate,
@@ -50,6 +54,11 @@ const WhitelistedTokensCard: React.FC<WhitelistedTokensCardProps> = ({
       const tokenData = await validateTokenAddress()
       setLoading(false)
 
+      const balance = await token.query.getBalance(
+        addressInput,
+        contractAddress
+      )
+
       const newData = [
         ...internalData,
         {
@@ -57,6 +66,7 @@ const WhitelistedTokensCard: React.FC<WhitelistedTokensCardProps> = ({
           name: tokenData.name,
           symbol: tokenData.symbol,
           decimals: tokenData.decimals,
+          balance: getBalance(balance, tokenData.decimals).toFixed(2),
         },
       ]
       setInternalData(newData)
@@ -108,6 +118,13 @@ const WhitelistedTokensCard: React.FC<WhitelistedTokensCardProps> = ({
         />
         <div className="flex items-center gap-4">
           <Text
+            text="Balance"
+            size="14"
+            lineHeight="16"
+            letterSpacing="-1.5"
+            color="#687B8C"
+          />
+          <Text
             text="Symbol"
             size="14"
             lineHeight="16"
@@ -115,7 +132,7 @@ const WhitelistedTokensCard: React.FC<WhitelistedTokensCardProps> = ({
             color="#687B8C"
           />
           <Text
-            text="Decimal"
+            text="Decimals"
             size="14"
             lineHeight="16"
             letterSpacing="-1.5"
@@ -158,12 +175,20 @@ const WhitelistedTokensCard: React.FC<WhitelistedTokensCardProps> = ({
                   />
                   <div className="flex items-center">
                     <Text
-                      text={item.symbol}
+                      text={item.balance}
                       size="12"
                       lineHeight="12"
                       letterSpacing="-1.5"
                     />
-                    <div className="w-[50px] ml-5 flex justify-end">
+                    <div className="w-[65px] flex justify-end">
+                      <Text
+                        text={item.symbol}
+                        size="12"
+                        lineHeight="12"
+                        letterSpacing="-1.5"
+                      />
+                    </div>
+                    <div className="w-[75px] flex justify-end">
                       <Text
                         text={item.decimals.toString()}
                         size="12"
