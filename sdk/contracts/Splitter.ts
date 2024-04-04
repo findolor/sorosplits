@@ -228,7 +228,6 @@ export class SplitterContract extends BaseContract {
             xdr.ScVal.scvBytes(Buffer.from(initArgs.name, "utf-8")),
             xdr.ScVal.scvVec(
               initArgs.shares.map((item) => {
-                xdr.ScVal
                 return xdr.ScVal.scvMap([
                   new xdr.ScMapEntry({
                     key: xdr.ScVal.scvSymbol("share"),
@@ -252,7 +251,6 @@ export class SplitterContract extends BaseContract {
           ...[
             xdr.ScVal.scvVec(
               updateShareArgs.shares.map((item) => {
-                xdr.ScVal
                 return xdr.ScVal.scvMap([
                   new xdr.ScMapEntry({
                     key: xdr.ScVal.scvSymbol("share"),
@@ -269,7 +267,7 @@ export class SplitterContract extends BaseContract {
         )
         break
       case "lock_contract":
-        operation = contract.call(method, ...[])
+        operation = contract.call(method)
         break
       case "distribute_tokens":
         let distributeTokensArgs = args as MethodArgs<"distribute_tokens">
@@ -351,6 +349,9 @@ export class SplitterContract extends BaseContract {
             new Address(getAllocationArgs.token).toScVal(),
           ]
         )
+        break
+      case "list_whitelisted_tokens":
+        operation = contract.call(method)
         break
       default:
         throw new Error("Invalid query method")
