@@ -7,6 +7,34 @@ import SoroSplitsSDK from "@sorosplits/sdk"
 
 export default new Elysia({ prefix: "/splitter" })
   .decorate("prisma", new PrismaClient())
+  .get(
+    "/transactions",
+    async ({ prisma, query: { address } }) => {
+      // TODO: Figure out pagination
+      const data = await prisma.splitterContract.findUnique({
+        where: { address },
+        select: {
+          transactions: {
+            take: 10,
+            select: {
+              createdAt: true,
+              action: true,
+              data: true,
+            },
+            orderBy: {
+              createdAt: "desc",
+            },
+          },
+        },
+      })
+      return data
+    },
+    {
+      query: t.Object({
+        address: t.String(),
+      }),
+    }
+  )
   .use(bearer())
   .use(
     jwt({
@@ -43,7 +71,7 @@ export default new Elysia({ prefix: "/splitter" })
         throw new Error("Invalid source account")
       }
 
-      const decodedTransaction = contract.decodeTransaction({
+      const decodedTransactionParams = contract.decodeTransactionParams({
         xdrString: transaction,
       })
 
@@ -59,8 +87,8 @@ export default new Elysia({ prefix: "/splitter" })
           ownerId: user.id,
           transactions: {
             create: {
-              action: decodedTransaction.functionName,
-              data: decodedTransaction.args as unknown as Prisma.JsonObject,
+              action: decodedTransactionParams.functionName,
+              data: decodedTransactionParams.args as unknown as Prisma.JsonObject,
             },
           },
         },
@@ -95,7 +123,7 @@ export default new Elysia({ prefix: "/splitter" })
         throw new Error("Invalid source account")
       }
 
-      const decodedTransaction = contract.decodeTransaction({
+      const decodedTransactionParams = contract.decodeTransactionParams({
         xdrString: transaction,
       })
 
@@ -103,12 +131,12 @@ export default new Elysia({ prefix: "/splitter" })
       await contract.getTransaction(sendTxRes)
 
       await prisma.splitterContract.update({
-        where: { address: decodedTransaction.contractAddress },
+        where: { address: decodedTransactionParams.contractAddress },
         data: {
           transactions: {
             create: {
-              action: decodedTransaction.functionName,
-              data: decodedTransaction.args as unknown as Prisma.JsonObject,
+              action: decodedTransactionParams.functionName,
+              data: decodedTransactionParams.args as unknown as Prisma.JsonObject,
             },
           },
         },
@@ -156,31 +184,3 @@ export default new Elysia({ prefix: "/splitter" })
     )
     return data
   })
-  .get(
-    "/:address/transactions",
-    async ({ prisma, params: { address } }) => {
-      // TODO: Figure out pagination
-      const data = await prisma.splitterContract.findUnique({
-        where: { address },
-        select: {
-          transactions: {
-            take: 10,
-            select: {
-              createdAt: true,
-              action: true,
-              data: true,
-            },
-            orderBy: {
-              createdAt: "desc",
-            },
-          },
-        },
-      })
-      return data
-    },
-    {
-      params: t.Object({
-        address: t.String(),
-      }),
-    }
-  )
