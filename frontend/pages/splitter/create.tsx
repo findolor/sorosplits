@@ -64,6 +64,7 @@ const CreateSplitter = () => {
         name: "",
         symbol: "",
         decimals: 0,
+        balance: "0.00",
       }
     })
   }, [contractWhitelistedTokens])
@@ -177,6 +178,7 @@ const CreateSplitter = () => {
             />
 
             <WhitelistedTokensCard
+              contractAddress={""}
               data={whitelistTokenCardData}
               onUpdate={onWhitelistedTokensCardUpdate}
               edit={true}
@@ -187,7 +189,6 @@ const CreateSplitter = () => {
           <div className="flex flex-col gap-4">
             <ContractInfoCard
               data={contractInfoData}
-              balanceData={[]}
               totalDistributionsData={[]}
               onUpdate={onContractInfoCardUpdate}
               edit={true}

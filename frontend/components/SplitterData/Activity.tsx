@@ -18,7 +18,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ data }) => {
   const decodeAction = (action: Action) => {
     switch (action) {
       case "deploy_splitter":
-      case "init":
+      case "init_splitter":
         return "Splitter created"
       case "update_shares":
         return "Shareholders & shares are updated"

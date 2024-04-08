@@ -148,6 +148,7 @@ const NewSearch: React.FC = () => {
           contractAddress
         )
         setContractWhitelistedTokens(whitelistedTokens)
+        setUpdatedContractWhitelistedTokens(whitelistedTokens)
 
         successToast("Splitter contract found!")
       } catch (error: any) {
