@@ -19,7 +19,7 @@ pub fn create_splitter_with_shares<'a>(
     updatable: &bool,
 ) -> (SplitterClient<'a>, Address) {
     let (client, contract_id) = create_splitter(e);
-    client.init(admin, name, shares, updatable);
+    client.init_splitter(admin, name, shares, updatable);
     (client, contract_id)
 }
 

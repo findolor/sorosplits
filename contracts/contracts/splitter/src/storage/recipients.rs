@@ -1,6 +1,6 @@
 use soroban_sdk::{contracttype, Address, Env, Vec};
 
-use super::bump_persistent;
+use sorosplits_utils::storage::bump_persistent;
 
 #[derive(Clone)]
 #[contracttype]

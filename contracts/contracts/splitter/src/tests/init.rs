@@ -23,7 +23,7 @@ fn happy_path() {
         },
     ];
 
-    splitter.init(&admin, &name, &shares, &true);
+    splitter.init_splitter(&admin, &name, &shares, &true);
 
     assert_eq!(splitter.get_share(&shareholder_1), Some(8050));
     assert_eq!(splitter.get_share(&shareholder_2), Some(1950));
@@ -48,10 +48,10 @@ fn test_already_initialized() {
             share: 1950,
         },
     ];
-    splitter.init(&admin, &name, &shares, &true);
+    splitter.init_splitter(&admin, &name, &shares, &true);
 
     assert_eq!(
-        splitter.try_init(&admin, &name, &shares, &true),
+        splitter.try_init_splitter(&admin, &name, &shares, &true),
         Err(Ok(Error::AlreadyInitialized))
     );
 }
@@ -72,7 +72,7 @@ fn test_low_share_count() {
     ];
 
     assert_eq!(
-        splitter.try_init(&admin, &name, &shares, &true),
+        splitter.try_init_splitter(&admin, &name, &shares, &true),
         Err(Ok(Error::LowShareCount))
     );
 }
@@ -86,7 +86,7 @@ fn test_invalid_share_total() {
     let name = Bytes::from_slice(&env, "Splitter Contract".as_bytes());
 
     assert_eq!(
-        splitter.try_init(
+        splitter.try_init_splitter(
             &admin,
             &name,
             &vec![
@@ -106,7 +106,7 @@ fn test_invalid_share_total() {
     );
 
     assert_eq!(
-        splitter.try_init(
+        splitter.try_init_splitter(
             &admin,
             &name,
             &vec![

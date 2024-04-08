@@ -5,7 +5,6 @@ extern crate std;
 use crate::{Deployer, DeployerClient};
 use alloc::vec;
 use soroban_sdk::{
-    symbol_short,
     testutils::{Address as _, AuthorizedFunction, AuthorizedInvocation},
     xdr::{
         self, ContractIdPreimage, ContractIdPreimageFromAddress, CreateContractArgs, Limits,
@@ -35,7 +34,7 @@ fn test_deploy_from_address() {
 
     // Deploy contract using deployer, and include an init function to call
     let salt = BytesN::from_array(&env, &[0; 32]);
-    let init_fn = symbol_short!("init");
+    let init_fn = Symbol::new(&env, "init_splitter");
     let init_fn_args: Vec<Val> = (
         deployer.clone(),
         Bytes::from_slice(&env, "Splitter Contract".as_bytes()),

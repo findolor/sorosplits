@@ -2,7 +2,7 @@ use soroban_sdk::{contracttype, Address, Bytes, Env};
 
 use crate::errors::Error;
 
-use super::bump_instance;
+use sorosplits_utils::storage::bump_instance;
 
 #[derive(Clone)]
 #[contracttype]

@@ -40,6 +40,16 @@ impl Deployer {
         // invoking the init result.
         (deployed_address, res)
     }
+
+    pub fn deploy_diversifier(
+        env: Env,
+        deployer: Address,
+        wasm_hash: BytesN<32>,
+        salt: BytesN<32>,
+        init_args: Vec<Val>,
+    ) -> (Address, Val) {
+        unimplemented!()
+    }
 }
 
 mod splitter_tests;

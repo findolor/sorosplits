@@ -1,7 +1,4 @@
-use soroban_sdk::{
-    token::{self, TokenClient},
-    Address, Env, Vec,
-};
+use soroban_sdk::{Address, Env, Vec};
 
 use crate::{errors::Error, storage::recipients::ShareDataKey};
 
@@ -43,14 +40,4 @@ pub fn reset_shares(env: &Env) {
         ShareDataKey::remove_share(env, &shareholder);
     }
     ShareDataKey::remove_shareholders(env);
-}
-
-pub fn get_token_client<'a>(env: &'a Env, token_address: &Address) -> TokenClient<'a> {
-    token::Client::new(env, token_address)
-}
-
-pub fn check_token(env: &Env, token_address: &Address) -> Result<(), Error> {
-    let token_client = get_token_client(env, &token_address);
-    token_client.name();
-    Ok(())
 }

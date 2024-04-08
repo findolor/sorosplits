@@ -1,9 +1,10 @@
 use soroban_fixed_point_math::FixedPoint;
 use soroban_sdk::{Address, Env};
 
+use sorosplits_utils::token::get_token_client;
+
 use crate::{
     errors::Error,
-    logic::helpers::get_token_client,
     storage::{
         config::ConfigDataKey,
         distributions::{TokenAllocations, WhitelistedTokens},

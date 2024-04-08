@@ -24,7 +24,7 @@ pub trait SplitterTrait {
     /// * `name` - The name of the contract
     /// * `shares` - The shareholders with their shares
     /// * `updatable` - Whether the contract is mutable or not
-    fn init(
+    fn init_splitter(
         env: Env,
         admin: Address,
         name: Bytes,
@@ -195,7 +195,7 @@ pub struct Splitter;
 impl SplitterTrait for Splitter {
     // ========== Execute Functions ==========
 
-    fn init(
+    fn init_splitter(
         env: Env,
         admin: Address,
         name: Bytes,
