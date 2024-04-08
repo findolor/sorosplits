@@ -5,8 +5,9 @@ use soroban_sdk::contracterror;
 #[repr(u32)]
 pub enum Error {
     NotInitialized = 1,
-    NotAllowed = 2,
-    InvalidSwapPath = 3,
-    InvalidSwapToken = 4,
-    InsufficientTokenBalance = 5,
+    NotActive = 2,
+    NotAllowed = 3,
+    InvalidSwapPath = 4,
+    InvalidSwapToken = 5,
+    InsufficientTokenBalance = 6,
 }

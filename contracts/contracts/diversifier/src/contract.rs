@@ -141,7 +141,9 @@ impl DiversifierTrait for Diversifier {
         swap_path: Vec<Address>,
         amount: i128,
     ) -> Result<(), ContractError> {
-        DiversifierConfig::get(&env)?.require_admin()?;
+        let config = DiversifierConfig::get(&env)?;
+        config.require_admin()?;
+        config.require_diversifier_active()?;
 
         // Swap path must have at least 2 elements
         if swap_path.len() < 2 {
@@ -252,8 +254,18 @@ impl SplitterContract for Diversifier {
         );
         Ok(())
     }
-    fn distribute_tokens(_env: Env, _token_address: Address, _amount: i128) -> Result<(), Error> {
-        return Err(ContractError::NotAllowed.into());
+    fn distribute_tokens(env: Env, token_address: Address, amount: i128) -> Result<(), Error> {
+        let config = DiversifierConfig::get(&env)?;
+        config.require_admin()?;
+
+        // Only allow distribution if the diversifier is inactive
+        if config.diversifier_active {
+            return Err(ContractError::NotAllowed.into());
+        }
+
+        splitter_contract::Client::new(&env, &config.splitter_address)
+            .distribute_tokens(&token_address, &amount);
+        Ok(())
     }
     fn update_shares(env: Env, shares: Vec<ShareDataKey>) -> Result<(), Error> {
         let config = DiversifierConfig::get(&env)?;

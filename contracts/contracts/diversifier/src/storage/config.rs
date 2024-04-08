@@ -9,6 +9,7 @@ use super::DiversifierDataKeys;
 pub struct DiversifierConfig {
     pub admin: Address,
     pub splitter_address: Address,
+    pub diversifier_active: bool,
 }
 impl DiversifierConfig {
     pub fn init(e: &Env, admin: Address, splitter_address: Address) {
@@ -16,6 +17,7 @@ impl DiversifierConfig {
         let config = DiversifierConfig {
             admin,
             splitter_address,
+            diversifier_active: true,
         };
         e.storage().instance().set(&key, &config);
     }
@@ -28,6 +30,14 @@ impl DiversifierConfig {
         e.storage().instance().get(&key).unwrap()
     }
 
+    pub fn toggle_diversifier_active(e: &Env) -> Result<(), Error> {
+        let config = DiversifierConfig::get(e)?;
+        e.storage()
+            .instance()
+            .set(&DiversifierDataKeys::Config, &!config.diversifier_active);
+        Ok(())
+    }
+
     pub fn exists(e: &Env) -> bool {
         let key = DiversifierDataKeys::Config;
         e.storage().instance().has(&key)
@@ -36,6 +46,14 @@ impl DiversifierConfig {
     /// Validates the admin address
     pub fn require_admin(&self) -> Result<(), Error> {
         self.admin.require_auth();
+        Ok(())
+    }
+
+    /// Validates the contract is active
+    pub fn require_diversifier_active(&self) -> Result<(), Error> {
+        if !self.diversifier_active {
+            return Err(Error::NotActive);
+        }
         Ok(())
     }
 }
