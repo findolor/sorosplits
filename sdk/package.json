@@ -1,6 +1,6 @@
 {
   "name": "@sorosplits/sdk",
-  "version": "0.0.301",
+  "version": "0.0.303",
   "module": "lib/index.js",
   "types": "lib/index.d.ts",
   "type": "module",

@@ -19,7 +19,7 @@ export interface ShareDataProps {
 }
 
 export type CallMethod =
-  | "init"
+  | "init_splitter"
   | "update_whitelisted_tokens"
   | "transfer_tokens"
   | "distribute_tokens"
@@ -33,7 +33,7 @@ export interface CallContractArgs<T extends CallMethod> {
   args: MethodArgs<T>
 }
 
-export type MethodArgs<T extends CallMethod> = T extends "init"
+export type MethodArgs<T extends CallMethod> = T extends "init_splitter"
   ? {
       admin: string
       name: string
@@ -43,9 +43,9 @@ export type MethodArgs<T extends CallMethod> = T extends "init"
   : T extends "update_whitelisted_tokens"
   ? { tokens: string[] }
   : T extends "transfer_tokens"
-  ? { token_address: string; recipient: string; amount: number }
+  ? { recipient: string; tokenAddress: string; amount: number }
   : T extends "distribute_tokens"
-  ? { token_address: string }
+  ? { tokenAddress: string; amount: number }
   : T extends "update_shares"
   ? { shares: ShareDataProps[] }
   : T extends "update_name"
@@ -59,6 +59,7 @@ export type QueryMethod =
   | "get_config"
   | "get_allocation"
   | "list_whitelisted_tokens"
+  | "get_unused_tokens"
 
 export interface QueryContractArgs<T extends QueryMethod> {
   contractId: string
@@ -71,9 +72,11 @@ export type QueryArgs<T extends QueryMethod> = T extends "list_shares"
   : T extends "get_config"
   ? {}
   : T extends "get_allocation"
-  ? { shareholder: string; token: string }
+  ? { shareholderAddress: string; tokenAddress: string }
   : T extends "list_whitelisted_tokens"
   ? {}
+  : T extends "get_unused_tokens"
+  ? { tokenAddress: string }
   : never
 
 export interface ContractConfigResult {
@@ -167,7 +170,7 @@ export class SplitterContract extends BaseContract {
         }
       ),
       nativeToScVal(Buffer.from(randomBytes(32)), { type: "bytes" }),
-      nativeToScVal("init", { type: "symbol" }),
+      nativeToScVal("init_splitter", { type: "symbol" }),
       xdr.ScVal.scvVec(splitterArgs),
     ]
 
@@ -219,10 +222,10 @@ export class SplitterContract extends BaseContract {
     let operation: xdr.Operation<Operation>
 
     switch (method) {
-      case "init":
-        let initArgs = args as MethodArgs<"init">
+      case "init_splitter":
+        let initArgs = args as MethodArgs<"init_splitter">
         operation = contract.call(
-          "init",
+          method,
           ...[
             new Address(this.walletAddress || "").toScVal(),
             xdr.ScVal.scvBytes(Buffer.from(initArgs.name, "utf-8")),
@@ -245,9 +248,9 @@ export class SplitterContract extends BaseContract {
         )
         break
       case "update_shares":
-        let updateShareArgs = args as MethodArgs<"init">
+        let updateShareArgs = args as MethodArgs<"update_shares">
         operation = contract.call(
-          "update_shares",
+          method,
           ...[
             xdr.ScVal.scvVec(
               updateShareArgs.shares.map((item) => {
@@ -273,7 +276,10 @@ export class SplitterContract extends BaseContract {
         let distributeTokensArgs = args as MethodArgs<"distribute_tokens">
         operation = contract.call(
           method,
-          ...[new Address(distributeTokensArgs.token_address).toScVal()]
+          ...[
+            new Address(distributeTokensArgs.tokenAddress).toScVal(),
+            nativeToScVal(distributeTokensArgs.amount, { type: "i128" }),
+          ]
         )
         break
       case "transfer_tokens":
@@ -281,7 +287,7 @@ export class SplitterContract extends BaseContract {
         operation = contract.call(
           method,
           ...[
-            new Address(transferTokensArgs.token_address).toScVal(),
+            new Address(transferTokensArgs.tokenAddress).toScVal(),
             new Address(transferTokensArgs.recipient).toScVal(),
             nativeToScVal(transferTokensArgs.amount, { type: "i128" }),
           ]
@@ -345,13 +351,20 @@ export class SplitterContract extends BaseContract {
         operation = contract.call(
           method,
           ...[
-            new Address(getAllocationArgs.shareholder).toScVal(),
-            new Address(getAllocationArgs.token).toScVal(),
+            new Address(getAllocationArgs.shareholderAddress).toScVal(),
+            new Address(getAllocationArgs.tokenAddress).toScVal(),
           ]
         )
         break
       case "list_whitelisted_tokens":
         operation = contract.call(method)
+        break
+      case "get_unused_tokens":
+        let getUnusedTokensArgs = args as QueryArgs<"get_unused_tokens">
+        operation = contract.call(
+          method,
+          ...[new Address(getUnusedTokensArgs.tokenAddress).toScVal()]
+        )
         break
       default:
         throw new Error("Invalid query method")
@@ -406,9 +419,10 @@ export class SplitterContract extends BaseContract {
   }
 
   private decodeDistributeTokensParams(args: xdr.ScVal[]) {
-    const tokenAddress = scValToNative(args[0])
+    const [tokenAddress, amount] = scValToNative(args[0])
     return {
       tokenAddress,
+      amount,
     }
   }
 
