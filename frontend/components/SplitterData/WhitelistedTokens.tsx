@@ -107,7 +107,7 @@ const WhitelistedTokensCard: React.FC<WhitelistedTokensCardProps> = ({
   }
 
   return (
-    <Card width="560">
+    <Card>
       <div className="flex justify-between">
         <Text
           text="Whitelisted Tokens"

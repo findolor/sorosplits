@@ -2,6 +2,7 @@ import {
   CreateSplitterDoneButton,
   CreateSplitterResetButton,
 } from "@/components/Button/Splitter"
+import Layout from "@/components/Layout"
 import ConfirmationModal from "@/components/Modal"
 import PageHeader from "@/components/PageHeader"
 import ContractInfoCard from "@/components/SplitterData/ContractInfo"
@@ -154,67 +155,69 @@ const CreateSplitter = () => {
   }
 
   return (
-    <div className="mt-10">
-      <PageHeader
-        title="Create Splitter"
-        subtitle="Create a new splitter contract for distributing tokens to shareholders."
-      />
+    <Layout>
+      <div className="mt-10">
+        <PageHeader
+          title="Create Splitter"
+          subtitle="Create a new splitter contract for distributing tokens to shareholders."
+        />
 
-      <div className="flex flex-col justify-between mt-10 px-3">
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <CreateSplitterDoneButton onClick={modalDoneOnClick} />
+        <div className="flex flex-col justify-between mt-10 px-3">
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <CreateSplitterDoneButton onClick={modalDoneOnClick} />
+            </div>
+            <CreateSplitterResetButton onClick={modalResetOnClick} />
           </div>
-          <CreateSplitterResetButton onClick={modalResetOnClick} />
+
+          <div className="flex justify-between">
+            <div className="flex flex-col gap-4 w-[560px]">
+              <ShareholdersCard
+                data={shareholderCardData}
+                onUpdate={onShareholderCardUpdate}
+                edit={true}
+                reset={resetTrigger}
+              />
+
+              <WhitelistedTokensCard
+                contractAddress={""}
+                data={whitelistTokenCardData}
+                onUpdate={onWhitelistedTokensCardUpdate}
+                edit={true}
+                reset={resetTrigger}
+              />
+            </div>
+
+            <div className="flex flex-col gap-4 w-[423px]">
+              <ContractInfoCard
+                data={contractInfoData}
+                totalDistributionsData={[]}
+                onUpdate={onContractInfoCardUpdate}
+                edit={true}
+                reset={resetTrigger}
+                create
+              />
+            </div>
+          </div>
         </div>
 
-        <div className="flex justify-between">
-          <div className="flex flex-col gap-4">
-            <ShareholdersCard
-              data={shareholderCardData}
-              onUpdate={onShareholderCardUpdate}
-              edit={true}
-              reset={resetTrigger}
-            />
-
-            <WhitelistedTokensCard
-              contractAddress={""}
-              data={whitelistTokenCardData}
-              onUpdate={onWhitelistedTokensCardUpdate}
-              edit={true}
-              reset={resetTrigger}
-            />
-          </div>
-
-          <div className="flex flex-col gap-4">
-            <ContractInfoCard
-              data={contractInfoData}
-              totalDistributionsData={[]}
-              onUpdate={onContractInfoCardUpdate}
-              edit={true}
-              reset={resetTrigger}
-              create
-            />
-          </div>
-        </div>
+        <ConfirmationModal
+          title={
+            confirmModal[1] === "done"
+              ? "You are about to create your splitter."
+              : "Are you sure you want to reset your changes?"
+          }
+          message={
+            confirmModal[1] === "done"
+              ? "Do you want to confirm your changes?"
+              : undefined
+          }
+          isOpen={confirmModal[0]}
+          onCancel={() => setConfirmModal([false, ""])}
+          onConfirm={onConfirmModal}
+        />
       </div>
-
-      <ConfirmationModal
-        title={
-          confirmModal[1] === "done"
-            ? "You are about to create your splitter."
-            : "Are you sure you want to reset your changes?"
-        }
-        message={
-          confirmModal[1] === "done"
-            ? "Do you want to confirm your changes?"
-            : undefined
-        }
-        isOpen={confirmModal[0]}
-        onCancel={() => setConfirmModal([false, ""])}
-        onConfirm={onConfirmModal}
-      />
-    </div>
+    </Layout>
   )
 }
 

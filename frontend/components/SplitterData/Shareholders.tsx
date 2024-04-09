@@ -125,7 +125,7 @@ const ShareholdersCard: React.FC<ShareholdersCardProps> = ({
   }
 
   return (
-    <Card width="560">
+    <Card>
       <div className="flex justify-between">
         <Text
           text={"Shareholders (" + internalData.length + ")"}

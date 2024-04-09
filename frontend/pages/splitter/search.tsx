@@ -29,6 +29,7 @@ import useSplitter from "@/hooks/useSplitter"
 import useToken from "@/hooks/useToken"
 import useModal from "@/hooks/useModal"
 import { getBalance } from "@/utils/getBalance"
+import Layout from "@/components/Layout"
 
 const NewSearch: React.FC = () => {
   const router = useRouter()
@@ -371,86 +372,88 @@ const NewSearch: React.FC = () => {
   }
 
   return (
-    <div className="mt-10">
-      <PageHeader
-        title="Search Splitter"
-        subtitle="Display information about a splitter contract by entering the address below."
-      />
-
-      <div className="flex justify-center mt-10">
-        <Search
-          placeholder="Enter splitter address"
-          onChange={onContractAddressChange}
-          value={contractAddress}
+    <Layout>
+      <div className="mt-10">
+        <PageHeader
+          title="Search Splitter"
+          subtitle="Display information about a splitter contract by entering the address below."
         />
-      </div>
 
-      {contractConfig && contractShares && (
-        <div className="flex flex-col justify-between mt-6 px-3">
-          {walletAddress === contractConfig.admin.toString() && (
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                {manageSplitter ? (
-                  <ManageSplitterDoneButton
-                    onClick={manageSplitterDoneOnClick}
+        <div className="flex justify-center mt-10">
+          <Search
+            placeholder="Enter splitter address"
+            onChange={onContractAddressChange}
+            value={contractAddress}
+          />
+        </div>
+
+        {contractConfig && contractShares && (
+          <div className="flex flex-col justify-between mt-6 px-3">
+            {walletAddress === contractConfig.admin.toString() && (
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  {manageSplitter ? (
+                    <ManageSplitterDoneButton
+                      onClick={manageSplitterDoneOnClick}
+                    />
+                  ) : (
+                    <ManageSplitterButton onClick={manageSplitterOnClick} />
+                  )}
+                </div>
+                {manageSplitter && (
+                  <ManageSplitterCancelButton
+                    onClick={manageSplitterCancelOnClick}
                   />
-                ) : (
-                  <ManageSplitterButton onClick={manageSplitterOnClick} />
                 )}
               </div>
-              {manageSplitter && (
-                <ManageSplitterCancelButton
-                  onClick={manageSplitterCancelOnClick}
-                />
-              )}
-            </div>
-          )}
+            )}
 
-          <div className="flex justify-between">
-            <div className="flex flex-col gap-4">
-              <ShareholdersCard
-                data={shareholdersCardData}
-                onUpdate={onShareholderCardUpdate}
-                edit={manageSplitter}
-                reset={resetTrigger}
-              />
-              <WhitelistedTokensCard
-                contractAddress={contractAddress}
-                data={whitelistedTokensCardData}
-                dataLoading={whitelistedTokensCardDataLoading}
-                onUpdate={onWhitelistedTokensCardUpdate}
-                edit={manageSplitter}
-                reset={resetTrigger}
-              />
-            </div>
-            <div className="flex flex-col gap-4">
-              <ContractInfoCard
-                data={contractInfoCardData}
-                totalDistributionsData={contractTotalDistributionsData}
-                onUpdate={onContractInfoCardUpdate}
-                edit={manageSplitter}
-                reset={resetTrigger}
-              />
-              <ActivityCard data={contractTransactions} />
+            <div className="flex justify-between">
+              <div className="flex flex-col gap-4 w-[560px]">
+                <ShareholdersCard
+                  data={shareholdersCardData}
+                  onUpdate={onShareholderCardUpdate}
+                  edit={manageSplitter}
+                  reset={resetTrigger}
+                />
+                <WhitelistedTokensCard
+                  contractAddress={contractAddress}
+                  data={whitelistedTokensCardData}
+                  dataLoading={whitelistedTokensCardDataLoading}
+                  onUpdate={onWhitelistedTokensCardUpdate}
+                  edit={manageSplitter}
+                  reset={resetTrigger}
+                />
+              </div>
+              <div className="flex flex-col gap-4 w-[423px]">
+                <ContractInfoCard
+                  data={contractInfoCardData}
+                  totalDistributionsData={contractTotalDistributionsData}
+                  onUpdate={onContractInfoCardUpdate}
+                  edit={manageSplitter}
+                  reset={resetTrigger}
+                />
+                <ActivityCard data={contractTransactions} />
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <RenderModal
-        title={
-          confirmModal[1] === "done"
-            ? "You are about to lock your splitter."
-            : "Are you sure you want to cancel your changes?"
-        }
-        message={
-          confirmModal[1] === "done"
-            ? "Do you want to confirm your changes?"
-            : undefined
-        }
-        onConfirm={onConfirm}
-      />
-    </div>
+        <RenderModal
+          title={
+            confirmModal[1] === "done"
+              ? "You are about to lock your splitter."
+              : "Are you sure you want to cancel your changes?"
+          }
+          message={
+            confirmModal[1] === "done"
+              ? "Do you want to confirm your changes?"
+              : undefined
+          }
+          onConfirm={onConfirm}
+        />
+      </div>
+    </Layout>
   )
 }
 

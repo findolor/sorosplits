@@ -57,7 +57,7 @@ const ContractInfoCard: React.FC<ContractInfoCardProps> = ({
   }
 
   return (
-    <Card width="423">
+    <Card>
       <RenderHeader value="Contract info" />
       <div className="flex flex-col pl-2 mb-3">
         <RenderRowWithAddress leftText="Owner" rightText={data.owner} />

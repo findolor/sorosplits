@@ -17,7 +17,7 @@ const OwnedSplittersCard: React.FC<OwnedSplittersCardProps> = ({
   data,
 }) => {
   return (
-    <Card width="440">
+    <Card>
       <div className="flex justify-between">
         <Text
           text="Name"

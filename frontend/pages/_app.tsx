@@ -1,12 +1,11 @@
 import "../styles/globals.css"
 
-import Layout from "@/components/Layout"
 import type { AppProps } from "next/app"
 import { Toaster } from "react-hot-toast"
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <Layout>
+    <div>
       <Component {...pageProps} />
       <Toaster
         position="top-center"
@@ -22,6 +21,6 @@ export default function App({ Component, pageProps }: AppProps) {
           top: 10,
         }}
       />
-    </Layout>
+    </div>
   )
 }

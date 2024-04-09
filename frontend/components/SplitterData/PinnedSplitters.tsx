@@ -11,7 +11,7 @@ interface PinnedSplittersCardProps {
 
 const PinnedSplittersCard: React.FC<PinnedSplittersCardProps> = ({ data }) => {
   return (
-    <Card width="440">
+    <Card>
       <div className="flex justify-between">
         <Text
           text="Name"
