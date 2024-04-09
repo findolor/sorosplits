@@ -101,11 +101,6 @@ export interface DeployAndInitContractArgs {
   updatable: boolean
 }
 
-export interface VerifyTransactionSourceAccount {
-  sourceAccount: string
-  xdrString: string
-}
-
 export interface DecodeArgs {
   xdrString: string
 }
@@ -371,20 +366,6 @@ export class SplitterContract extends BaseContract {
     }
 
     return this.processQuery(operation)
-  }
-
-  public async verifyTransactionSourceAccount({
-    sourceAccount,
-    xdrString,
-  }: VerifyTransactionSourceAccount) {
-    const publicKey = StrKey.encodeEd25519PublicKey(
-      xdr.TransactionEnvelope.fromXDR(xdrString, "base64")
-        .v1()
-        .tx()
-        .sourceAccount()
-        .ed25519()
-    )
-    return sourceAccount === publicKey
   }
 
   private decodeDeploySplitterParams(args: xdr.ScVal[]): DecodeInitResult {

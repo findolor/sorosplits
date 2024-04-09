@@ -2,6 +2,7 @@ import {
   BASE_FEE,
   Operation,
   SorobanRpc,
+  StrKey,
   TimeoutInfinite,
   Transaction,
   TransactionBuilder,
@@ -10,6 +11,11 @@ import {
 } from "@stellar/stellar-sdk"
 import { getUserInfo, signTransaction } from "@stellar/freighter-api"
 import CONFIG, { Network } from "../config"
+
+export interface VerifyTransactionSourceAccount {
+  sourceAccount: string
+  xdrString: string
+}
 
 export default class BaseContract {
   constructor(public network: Network, public walletAddress: string) {}
@@ -91,6 +97,20 @@ export default class BaseContract {
     }
 
     return confirmation
+  }
+
+  public async verifyTransactionSourceAccount({
+    sourceAccount,
+    xdrString,
+  }: VerifyTransactionSourceAccount) {
+    const publicKey = StrKey.encodeEd25519PublicKey(
+      xdr.TransactionEnvelope.fromXDR(xdrString, "base64")
+        .v1()
+        .tx()
+        .sourceAccount()
+        .ed25519()
+    )
+    return sourceAccount === publicKey
   }
 
   protected async processSingleTransaction(
