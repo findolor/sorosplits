@@ -18,6 +18,8 @@ import {
   ManageSplitterButton,
   ManageSplitterCancelButton,
   ManageSplitterDoneButton,
+  PinSplitterButton,
+  UnpinSplitterButton,
 } from "@/components/Button/Splitter"
 import WhitelistedTokensCard, {
   WhitelistedTokensCardData,
@@ -30,12 +32,13 @@ import useToken from "@/hooks/useToken"
 import useModal from "@/hooks/useModal"
 import { getBalance } from "@/utils/getBalance"
 import Layout from "@/components/Layout"
+import Loading from "@/components/Loading"
 
 const NewSearch: React.FC = () => {
   const router = useRouter()
   const splitter = useSplitter()
   const token = useToken()
-  const { walletAddress, setLoading } = useAppStore()
+  const { walletAddress, setLoading, isConnected } = useAppStore()
   const { confirmModal, onConfirmModal, onCancelModal, RenderModal } =
     useModal()
 
@@ -77,6 +80,9 @@ const NewSearch: React.FC = () => {
   // UI state
   const [manageSplitter, setManageSplitter] = useState(false)
   const [resetTrigger, setResetTrigger] = useState(0)
+
+  // TODO: Get this from api
+  const [[isPinned, isPinnedLoading], setIsPinned] = useState([false, true])
 
   useEffect(() => {
     if (router.query.address) {
@@ -206,8 +212,10 @@ const NewSearch: React.FC = () => {
 
   useEffect(() => {
     const fetch = async () => {
-      if (contractAddress === "" || contractWhitelistedTokens.length === 0)
+      if (contractAddress === "" || contractWhitelistedTokens.length === 0) {
+        setWhitelistedTokensCardDataLoading(false)
         return
+      }
 
       setWhitelistedTokensCardDataLoading(true)
 
@@ -347,7 +355,6 @@ const NewSearch: React.FC = () => {
     } catch (error: any) {
       setLoading(false)
       errorToast(error)
-      onCancelModal()
     }
   }
 
@@ -371,6 +378,27 @@ const NewSearch: React.FC = () => {
     setUpdatedContractWhitelistedTokens(data.map((i) => i.address))
   }
 
+  useEffect(() => {
+    const fetch = async () => {
+      if (!isConnected || contractAddress === "") return
+      const data = await splitter.isPinned(contractAddress)
+      setIsPinned([data, false])
+    }
+
+    fetch()
+  }, [contractAddress, isConnected])
+
+  const togglePinSplitter = async () => {
+    try {
+      if (isPinnedLoading) return
+      setIsPinned([isPinned, true])
+      await splitter.togglePin(contractAddress)
+      setIsPinned([!isPinned, false])
+    } catch (error: any) {
+      errorToast(error)
+    }
+  }
+
   return (
     <Layout>
       <div className="mt-10">
@@ -389,17 +417,34 @@ const NewSearch: React.FC = () => {
 
         {contractConfig && contractShares && (
           <div className="flex flex-col justify-between mt-6 px-3">
-            {walletAddress === contractConfig.admin.toString() && (
+            {isConnected && (
               <div className="flex items-center justify-between mb-2">
-                <div>
-                  {manageSplitter ? (
-                    <ManageSplitterDoneButton
-                      onClick={manageSplitterDoneOnClick}
-                    />
-                  ) : (
-                    <ManageSplitterButton onClick={manageSplitterOnClick} />
-                  )}
-                </div>
+                {walletAddress === contractConfig.admin.toString() && (
+                  <div>
+                    {manageSplitter ? (
+                      <ManageSplitterDoneButton
+                        onClick={manageSplitterDoneOnClick}
+                      />
+                    ) : (
+                      <ManageSplitterButton onClick={manageSplitterOnClick} />
+                    )}
+                  </div>
+                )}
+                {!manageSplitter && (
+                  <>
+                    {isPinnedLoading ? (
+                      <Loading small />
+                    ) : (
+                      <>
+                        {isPinned ? (
+                          <UnpinSplitterButton onClick={togglePinSplitter} />
+                        ) : (
+                          <PinSplitterButton onClick={togglePinSplitter} />
+                        )}
+                      </>
+                    )}
+                  </>
+                )}
                 {manageSplitter && (
                   <ManageSplitterCancelButton
                     onClick={manageSplitterCancelOnClick}

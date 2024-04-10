@@ -14,7 +14,7 @@ interface ICallMethodRequest {
   transaction: string
 }
 
-export interface IGetOwnedSplittersResponse {
+export interface SplitterResponseProps {
   address: string
   name: string
   createdAt: string
@@ -40,7 +40,7 @@ class SplitterApiService extends BaseApiService {
     return this.post(CALL_METHOD, { transaction })
   }
 
-  public async getOwnedSplitters(): Promise<IGetOwnedSplittersResponse[]> {
+  public async getOwnedSplitters(): Promise<SplitterResponseProps[]> {
     return this.get(OWNED_SPLITTERS, {})
   }
 
@@ -49,6 +49,19 @@ class SplitterApiService extends BaseApiService {
       address,
     })
     return res.transactions
+  }
+
+  public async getPinnedSplitters(): Promise<SplitterResponseProps[]> {
+    return this.get(`${BASE_PATH}/pinned`, {})
+  }
+
+  public async togglePin({ address }: ITransactionRequest): Promise<void> {
+    return this.post(`${BASE_PATH}/toggle-pin`, { address })
+  }
+
+  public async isPinned({ address }: ITransactionRequest): Promise<boolean> {
+    const res = await this.get(`${BASE_PATH}/is-pinned`, { address })
+    return res.pinned
   }
 }
 

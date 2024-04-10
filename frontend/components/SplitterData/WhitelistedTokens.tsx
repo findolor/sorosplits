@@ -151,7 +151,7 @@ const WhitelistedTokensCard: React.FC<WhitelistedTokensCardProps> = ({
               alt="Info icon"
             />
             <Text
-              text="This contract does not have any balance"
+              text="This contract does not have any whitelisted tokens"
               size="12"
               color="#687B8C"
             />

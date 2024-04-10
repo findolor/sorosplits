@@ -12,6 +12,7 @@ import ShareholdersCard, {
 import WhitelistedTokensCard, {
   WhitelistedTokensCardData,
 } from "@/components/SplitterData/WhitelistedTokens"
+import useModal from "@/hooks/useModal"
 import useSplitter from "@/hooks/useSplitter"
 import useAppStore from "@/store/index"
 import checkSplitterData from "@/utils/checkSplitterData"
@@ -24,6 +25,8 @@ const CreateSplitter = () => {
   const { push } = useRouter()
   const splitter = useSplitter()
   const { walletAddress, setLoading, isConnected } = useAppStore()
+  const { confirmModal, onConfirmModal, onCancelModal, RenderModal } =
+    useModal()
 
   const [contractName, setContractName] = useState<string>("")
   const [contractUpdatable, setContractUpdatable] = useState<boolean>(true)
@@ -32,10 +35,6 @@ const CreateSplitter = () => {
     string[]
   >([])
   const [resetTrigger, setResetTrigger] = useState<number>(0)
-  const [confirmModal, setConfirmModal] = useState<[boolean, string]>([
-    false,
-    "",
-  ])
 
   const contractInfoData = useMemo(() => {
     return {
@@ -71,14 +70,14 @@ const CreateSplitter = () => {
   }, [contractWhitelistedTokens])
 
   const modalDoneOnClick = () => {
-    setConfirmModal([true, "done"])
+    onConfirmModal("done")
   }
 
   const modalResetOnClick = () => {
-    setConfirmModal([true, "reset"])
+    onConfirmModal("reset")
   }
 
-  const onConfirmModal = async () => {
+  const onConfirm = async () => {
     if (confirmModal[1] === "reset") resetStates()
     else await deploySplitter()
   }
@@ -131,7 +130,7 @@ const CreateSplitter = () => {
     setContractShares([])
     setContractWhitelistedTokens([])
     setResetTrigger((prev) => prev + 1)
-    setConfirmModal([false, ""])
+    modalResetOnClick()
   }
 
   const onContractInfoCardUpdate = (name: string, updatable: boolean) => {
@@ -201,7 +200,7 @@ const CreateSplitter = () => {
           </div>
         </div>
 
-        <ConfirmationModal
+        <RenderModal
           title={
             confirmModal[1] === "done"
               ? "You are about to create your splitter."
@@ -212,9 +211,7 @@ const CreateSplitter = () => {
               ? "Do you want to confirm your changes?"
               : undefined
           }
-          isOpen={confirmModal[0]}
-          onCancel={() => setConfirmModal([false, ""])}
-          onConfirm={onConfirmModal}
+          onConfirm={onConfirm}
         />
       </div>
     </Layout>

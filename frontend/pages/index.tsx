@@ -10,7 +10,7 @@ import {
 import Link from "next/link"
 import useApiService from "@/hooks/useApi"
 import { useEffect, useState } from "react"
-import { IGetOwnedSplittersResponse } from "@/services/Splitter"
+import { SplitterResponseProps } from "@/services/Splitter"
 import Layout from "@/components/Layout"
 
 export default function Home() {
@@ -18,8 +18,11 @@ export default function Home() {
   const { splitterApiService } = useApiService()
 
   const [ownedSplitters, setOwnedSplitters] =
-    useState<IGetOwnedSplittersResponse[]>()
+    useState<SplitterResponseProps[]>()
   const [ownedSplittersLoading, setOwnedSplittersLoading] = useState(true)
+  const [pinnedSplitters, setPinnedSplitters] =
+    useState<SplitterResponseProps[]>()
+  const [pinnedSplittersLoading, setPinnedSplittersLoading] = useState(true)
 
   useEffect(() => {
     const fetchOwnedSplitters = async () => {
@@ -29,8 +32,11 @@ export default function Home() {
       setOwnedSplittersLoading(false)
     }
 
-    const fetchPinnedSplitters = () => {
-      // TODO: Local storage
+    const fetchPinnedSplitters = async () => {
+      setPinnedSplittersLoading(true)
+      const data = await splitterApiService.getPinnedSplitters()
+      setPinnedSplitters(data)
+      setPinnedSplittersLoading(false)
     }
 
     if (isConnected) {
@@ -95,12 +101,8 @@ export default function Home() {
                   </Link>
                 </div>
                 <PinnedSplittersCard
-                  data={[
-                    { name: "dasdas", address: "dsadasdasdas" },
-                    { name: "dasdas", address: "dsadasdasdas" },
-                    { name: "dasdas", address: "dsadasdasdas" },
-                    { name: "dasdas", address: "dsadasdasdas" },
-                  ]}
+                  loading={pinnedSplittersLoading}
+                  data={pinnedSplitters ? pinnedSplitters : []}
                 />
               </div>
             </div>

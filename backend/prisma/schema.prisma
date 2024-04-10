@@ -8,11 +8,12 @@ datasource db {
 }
 
 model User {
-  id                String             @id @default(auto()) @map("_id") @db.ObjectId
-  createdAt         DateTime           @default(now())
-  publicKey         String             @unique
-  nonce             String             @unique
-  splitterContracts SplitterContract[]
+  id                        String             @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt                 DateTime           @default(now())
+  publicKey                 String             @unique
+  nonce                     String             @unique
+  splitterContracts         SplitterContract[]
+  pinnedSplitterContractIds String[]
 }
 
 model SplitterContract {

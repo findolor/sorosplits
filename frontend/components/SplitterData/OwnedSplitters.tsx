@@ -3,6 +3,7 @@ import Text from "../Text"
 import Card from "./Card"
 import Link from "next/link"
 import Loading from "../Loading"
+import Image from "next/image"
 
 interface OwnedSplittersCardProps {
   loading: boolean
@@ -39,6 +40,21 @@ const OwnedSplittersCard: React.FC<OwnedSplittersCardProps> = ({
           <Loading small />
         ) : (
           <div className="flex flex-col mt-3 gap-1">
+            {data.length === 0 && (
+              <div className="flex w-full gap-3">
+                <Image
+                  src="/icons/info.svg"
+                  height={12}
+                  width={12}
+                  alt="Info icon"
+                />
+                <Text
+                  text="You have not created any splitters yet."
+                  size="12"
+                  color="#687B8C"
+                />
+              </div>
+            )}
             {data.map((item) => {
               return (
                 <Link

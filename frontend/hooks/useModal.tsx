@@ -13,20 +13,6 @@ const useModal = () => {
     "",
   ])
 
-  const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Escape") {
-      setConfirmModal([false, ""])
-    }
-  }
-
-  useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown)
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown)
-    }
-  }, [])
-
   const onConfirmModal = (action: string) => {
     setConfirmModal([true, action])
   }
@@ -36,6 +22,23 @@ const useModal = () => {
   }
 
   const RenderModal = ({ title, message, onConfirm }: RenderModalProps) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setConfirmModal([false, ""])
+      }
+      if (event.key === "Enter") {
+        onConfirm()
+      }
+    }
+
+    useEffect(() => {
+      window.addEventListener("keydown", handleKeyDown)
+
+      return () => {
+        window.removeEventListener("keydown", handleKeyDown)
+      }
+    }, [])
+
     return (
       <ConfirmationModal
         title={title}

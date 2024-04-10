@@ -190,6 +190,18 @@ const useSplitter = () => {
     })
   }
 
+  const togglePin = async (contractAddress: string) => {
+    return splitterApiService.togglePin({
+      address: contractAddress,
+    })
+  }
+
+  const isPinned = async (contractAddress: string) => {
+    return splitterApiService.isPinned({
+      address: contractAddress,
+    })
+  }
+
   return {
     createSplitter,
     call: {
@@ -208,6 +220,8 @@ const useSplitter = () => {
       getUnusedTokens,
     },
     getActivity,
+    togglePin,
+    isPinned,
   }
 }
 

@@ -151,6 +151,33 @@ const SearchSplitterButton = () => {
   )
 }
 
+const PinSplitterButton = ({ onClick }: { onClick: () => void }) => {
+  return (
+    <BaseButton
+      text="Pin"
+      onClick={onClick}
+      bgColor="#FFDC93"
+      icon={{
+        src: "/icons/search.svg",
+        size: 10,
+      }}
+    />
+  )
+}
+const UnpinSplitterButton = ({ onClick }: { onClick: () => void }) => {
+  return (
+    <BaseButton
+      text="Unpin"
+      onClick={onClick}
+      bgColor="#FF9E9E"
+      icon={{
+        src: "/icons/search.svg",
+        size: 10,
+      }}
+    />
+  )
+}
+
 export {
   ManageSplitterButton,
   ManageSplitterDoneButton,
@@ -160,4 +187,6 @@ export {
   CreateSplitterDoneButton,
   CreateSplitterResetButton,
   DistributeTokensButton,
+  PinSplitterButton,
+  UnpinSplitterButton,
 }
