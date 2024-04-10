@@ -17,7 +17,6 @@ import useSplitter from "@/hooks/useSplitter"
 import useAppStore from "@/store/index"
 import checkSplitterData from "@/utils/checkSplitterData"
 import { errorToast, loadingToast, successToast } from "@/utils/toast"
-import { ShareDataProps } from "@sorosplits/sdk/lib/contracts/Splitter"
 import { useRouter } from "next/router"
 import React, { useMemo, useState } from "react"
 
@@ -25,12 +24,13 @@ const CreateSplitter = () => {
   const { push } = useRouter()
   const splitter = useSplitter()
   const { walletAddress, setLoading, isConnected } = useAppStore()
-  const { confirmModal, onConfirmModal, onCancelModal, RenderModal } =
-    useModal()
+  const { confirmModal, onConfirmModal, RenderModal } = useModal()
 
   const [contractName, setContractName] = useState<string>("")
   const [contractUpdatable, setContractUpdatable] = useState<boolean>(true)
-  const [contractShares, setContractShares] = useState<ShareDataProps[]>([])
+  const [contractShares, setContractShares] = useState<ShareholderCardData[]>(
+    []
+  )
   const [contractWhitelistedTokens, setContractWhitelistedTokens] = useState<
     string[]
   >([])
@@ -48,7 +48,7 @@ const CreateSplitter = () => {
     if (!contractShares) return []
     return contractShares.map((i) => {
       return {
-        address: i.shareholder.toString(),
+        address: i.address.toString(),
         share: i.share.toString(),
         // TODO: Need to check domain in here
         domain: false,
@@ -88,17 +88,19 @@ const CreateSplitter = () => {
 
       if (!isConnected) throw new Error("Please connect your wallet.")
 
-      checkSplitterData(contractShares)
+      let shares = contractShares.map((i) => {
+        return {
+          share: Number(i.share) * 100,
+          shareholder: i.address,
+        }
+      })
+
+      checkSplitterData(shares)
 
       loadingToast("Creating your Splitter contract...")
       const contractAddress = await splitter.createSplitter(
         contractName,
-        contractShares.map((item) => {
-          return {
-            ...item,
-            share: item.share * 100,
-          }
-        }),
+        shares,
         contractUpdatable
       )
       successToast("Splitter contract initialized successfully!")
@@ -139,14 +141,7 @@ const CreateSplitter = () => {
   }
 
   const onShareholderCardUpdate = (data: ShareholderCardData[]) => {
-    setContractShares(
-      data.map((i) => {
-        return {
-          shareholder: i.address,
-          share: Number(i.share),
-        }
-      })
-    )
+    setContractShares(data)
   }
 
   const onWhitelistedTokensCardUpdate = (data: WhitelistedTokensCardData[]) => {

@@ -14,7 +14,8 @@ const checkSplitterData = (data: ShareDataProps[]) => {
     throw new Error("Shareholders must contain unique addresses")
 
   let totalShares = data.reduce((a, b) => a + b.share, 0)
-  if (totalShares !== 100) throw new Error("Total shares must be equal to 100%")
+  if (totalShares !== 10000)
+    throw new Error("Total shares must be equal to 100%")
 }
 
 export default checkSplitterData

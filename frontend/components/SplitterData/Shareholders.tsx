@@ -15,6 +15,7 @@ export interface ShareholderCardData {
   address: string
   share: string
   domain: boolean
+  domainName?: string
 }
 
 interface ShareholdersCardProps {
@@ -51,12 +52,17 @@ const ShareholdersCard: React.FC<ShareholdersCardProps> = ({
       validateShare(shareInput)
 
       setLoading(true)
-      const isDomain = await validateShareholder()
+      const [isDomain, domainAddress] = await validateShareholder()
       setLoading(false)
 
       const newData = [
         ...internalData,
-        { address: addressInput, share: shareInput, domain: isDomain },
+        {
+          address: isDomain ? domainAddress : addressInput,
+          share: shareInput,
+          domain: isDomain,
+          domainName: isDomain ? addressInput : undefined,
+        },
       ]
       setInternalData(newData)
       onUpdate(newData)
@@ -74,7 +80,7 @@ const ShareholdersCard: React.FC<ShareholdersCardProps> = ({
     onUpdate(newData)
   }
 
-  const validateShareholder = async () => {
+  const validateShareholder = async (): Promise<[boolean, string]> => {
     if (
       internalData.some((shareholder) => shareholder.address === addressInput)
     ) {
@@ -83,6 +89,7 @@ const ShareholdersCard: React.FC<ShareholdersCardProps> = ({
 
     let isValid = false
     let isDomain = false
+    let address = ""
     try {
       Keypair.fromPublicKey(addressInput)
       isValid = true
@@ -100,13 +107,14 @@ const ShareholdersCard: React.FC<ShareholdersCardProps> = ({
           )
           isValid = userAddress !== null
           isDomain = true
+          address = userAddress || ""
         }
       }
     }
     if (!isValid) {
       throw new Error("Invalid user, contract or domain address")
     }
-    return isDomain
+    return [isDomain, address]
   }
 
   const validateShare = (share: string) => {
@@ -153,7 +161,7 @@ const ShareholdersCard: React.FC<ShareholdersCardProps> = ({
                 )}
               >
                 <Text
-                  text={item.address}
+                  text={item.domain ? item.domainName || "" : item.address}
                   size="12"
                   lineHeight="12"
                   letterSpacing="-1.5"
