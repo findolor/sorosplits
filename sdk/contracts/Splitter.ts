@@ -165,7 +165,6 @@ export class SplitterContract extends BaseContract {
         }
       ),
       nativeToScVal(Buffer.from(randomBytes(32)), { type: "bytes" }),
-      nativeToScVal("init_splitter", { type: "symbol" }),
       xdr.ScVal.scvVec(splitterArgs),
     ]
 
@@ -370,7 +369,7 @@ export class SplitterContract extends BaseContract {
 
   private decodeDeploySplitterParams(args: xdr.ScVal[]): DecodeInitResult {
     const [admin, name, shares, updatable] = scValToNative(
-      xdr.ScVal.scvVec([args[4]])
+      xdr.ScVal.scvVec([args[3]])
     )[0]
     return {
       admin,
@@ -456,7 +455,7 @@ export class SplitterContract extends BaseContract {
     }
 
     switch (functionName) {
-      case "init":
+      case "init_splitter":
         throw new Error("Not implemented")
       case "deploy_splitter":
         response.args = this.decodeDeploySplitterParams(args)
