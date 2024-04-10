@@ -1,9 +1,10 @@
 use soroban_sdk::{Env, Vec};
+use sorosplits_utils::types::ShareDataKey;
 
 use crate::{
     errors::Error,
     logic::helpers::{check_shares, reset_shares, update_shares as update_shares_helper},
-    storage::{config::ConfigDataKey, recipients::ShareDataKey},
+    storage::config::ConfigDataKey,
 };
 
 pub fn execute(env: Env, shares: Vec<ShareDataKey>) -> Result<(), Error> {

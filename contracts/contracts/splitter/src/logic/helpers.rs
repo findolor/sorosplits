@@ -1,6 +1,7 @@
 use soroban_sdk::{Address, Env, Vec};
+use sorosplits_utils::types::ShareDataKey;
 
-use crate::{errors::Error, storage::recipients::ShareDataKey};
+use crate::{errors::Error, storage::recipients::RecipientKeys};
 
 /// Checks if the shares sum up to 10000
 pub fn check_shares(shares: &Vec<ShareDataKey>) -> Result<(), Error> {
@@ -27,17 +28,17 @@ pub fn update_shares(env: &Env, shares: &Vec<ShareDataKey>) {
         shareholders.push_back(share.shareholder.clone());
 
         // Store the share for each shareholder
-        ShareDataKey::save_share(&env, share.shareholder, share.share);
+        RecipientKeys::save_share(&env, share.shareholder, share.share);
     }
 
     // Store the shareholders vector
-    ShareDataKey::save_shareholders(&env, shareholders);
+    RecipientKeys::save_shareholders(&env, shareholders);
 }
 
 /// Removes all of the shareholders and their shares
 pub fn reset_shares(env: &Env) {
-    for shareholder in ShareDataKey::get_shareholders(env).iter() {
-        ShareDataKey::remove_share(env, &shareholder);
+    for shareholder in RecipientKeys::get_shareholders(env).iter() {
+        RecipientKeys::remove_share(env, &shareholder);
     }
-    ShareDataKey::remove_shareholders(env);
+    RecipientKeys::remove_shareholders(env);
 }

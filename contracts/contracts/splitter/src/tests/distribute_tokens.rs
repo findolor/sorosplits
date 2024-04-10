@@ -1,8 +1,8 @@
 use soroban_sdk::{testutils::Address as _, vec, Address, Bytes, Env};
+use sorosplits_utils::types::ShareDataKey;
 
 use crate::{
     errors::Error,
-    storage::recipients::ShareDataKey,
     tests::helpers::{
         create_splitter, create_splitter_with_default_shares, create_splitter_with_shares,
         create_token,

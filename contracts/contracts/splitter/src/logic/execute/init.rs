@@ -1,9 +1,10 @@
 use soroban_sdk::{Address, Bytes, Env, Vec};
+use sorosplits_utils::types::ShareDataKey;
 
 use crate::{
     errors::Error,
     logic::helpers::{check_shares, update_shares},
-    storage::{config::ConfigDataKey, recipients::ShareDataKey},
+    storage::config::ConfigDataKey,
 };
 
 pub fn execute(

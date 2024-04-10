@@ -1,14 +1,14 @@
 use soroban_fixed_point_math::FixedPoint;
 use soroban_sdk::{Address, Env};
 
-use sorosplits_utils::token::get_token_client;
+use sorosplits_utils::{token::get_token_client, types::ShareDataKey};
 
 use crate::{
     errors::Error,
     storage::{
         config::ConfigDataKey,
         distributions::{TokenAllocations, WhitelistedTokens},
-        recipients::ShareDataKey,
+        recipients::RecipientKeys,
     },
 };
 
@@ -38,11 +38,11 @@ pub fn execute(env: Env, token_address: Address, amount: i128) -> Result<(), Err
     }
 
     // Get the shareholders vector
-    let shareholders = ShareDataKey::get_shareholders(&env);
+    let shareholders = RecipientKeys::get_shareholders(&env);
 
     // For each shareholder, calculate the amount of tokens to distribute
     for shareholder in shareholders.iter() {
-        if let Some(ShareDataKey { share, .. }) = ShareDataKey::get_share(&env, &shareholder) {
+        if let Some(ShareDataKey { share, .. }) = RecipientKeys::get_share(&env, &shareholder) {
             // Calculate the amount of tokens to distribute
             let shareholder_allocation = amount.fixed_mul_floor(share, 10000).unwrap_or(0);
 

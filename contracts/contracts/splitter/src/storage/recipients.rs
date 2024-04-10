@@ -1,6 +1,6 @@
 use soroban_sdk::{contracttype, Address, Env, Vec};
 
-use sorosplits_utils::storage::bump_persistent;
+use sorosplits_utils::{storage::bump_persistent, types::ShareDataKey};
 
 #[derive(Clone)]
 #[contracttype]
@@ -11,14 +11,7 @@ pub enum RecipientKeys {
     /// shareholder_addr -> ShareDataKey
     Share(Address),
 }
-
-#[derive(Clone, Debug, PartialEq)]
-#[contracttype]
-pub struct ShareDataKey {
-    pub shareholder: Address,
-    pub share: i128,
-}
-impl ShareDataKey {
+impl RecipientKeys {
     /// Initializes the share for the shareholder
     pub fn save_share(e: &Env, shareholder: Address, share: i128) {
         let key = RecipientKeys::Share(shareholder.clone());

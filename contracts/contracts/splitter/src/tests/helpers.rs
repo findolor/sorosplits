@@ -1,10 +1,8 @@
 use soroban_sdk::{testutils::Address as _, token, vec, Address, Bytes, Env, Vec};
+use sorosplits_utils::types::ShareDataKey;
 use token::{Client as TokenClient, StellarAssetClient as TokenAdminClient};
 
-use crate::{
-    contract::{Splitter, SplitterClient},
-    storage::recipients::ShareDataKey,
-};
+use crate::contract::{Splitter, SplitterClient};
 
 pub fn create_splitter(e: &Env) -> (SplitterClient, Address) {
     let contract_id = &e.register_contract(None, Splitter);

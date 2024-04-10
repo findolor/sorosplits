@@ -1,8 +1,9 @@
 use soroban_sdk::{Env, Vec};
+use sorosplits_utils::types::ShareDataKey;
 
 use crate::{
     errors::Error,
-    storage::{config::ConfigDataKey, recipients::ShareDataKey},
+    storage::{config::ConfigDataKey, recipients::RecipientKeys},
 };
 
 pub fn query(env: Env) -> Result<Vec<ShareDataKey>, Error> {
@@ -12,8 +13,8 @@ pub fn query(env: Env) -> Result<Vec<ShareDataKey>, Error> {
 
     let mut shares: Vec<ShareDataKey> = Vec::new(&env);
 
-    for shareholder in ShareDataKey::get_shareholders(&env).iter() {
-        let share = ShareDataKey::get_share(&env, &shareholder).unwrap();
+    for shareholder in RecipientKeys::get_shareholders(&env).iter() {
+        let share = RecipientKeys::get_share(&env, &shareholder).unwrap();
         shares.push_back(share);
     }
 

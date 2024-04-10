@@ -1,11 +1,7 @@
 use soroban_sdk::{contract, contractimpl, contractmeta, Address, Bytes, Env, Vec};
+use sorosplits_utils::types::ShareDataKey;
 
-use crate::{
-    errors::Error,
-    logic::execute,
-    logic::query,
-    storage::{config::ConfigDataKey, recipients::ShareDataKey},
-};
+use crate::{errors::Error, logic::execute, logic::query, storage::config::ConfigDataKey};
 
 contractmeta!(
     key = "desc",
