@@ -34,7 +34,6 @@ fn test_deploy_from_address() {
 
     // Deploy contract using deployer, and include an init function to call
     let salt = BytesN::from_array(&env, &[0; 32]);
-    let init_fn = Symbol::new(&env, "init_splitter");
     let init_fn_args: Vec<Val> = (
         deployer.clone(),
         Bytes::from_slice(&env, "Splitter Contract".as_bytes()),
@@ -49,7 +48,7 @@ fn test_deploy_from_address() {
     ).into_val(&env);
     env.mock_all_auths();
     let (contract_id, init_result) =
-        deployer_client.deploy_splitter(&deployer, &wasm_hash, &salt, &init_fn, &init_fn_args);
+        deployer_client.deploy_splitter(&deployer, &wasm_hash, &salt, &init_fn_args);
 
     assert!(init_result.is_void());
 
@@ -58,14 +57,7 @@ fn test_deploy_from_address() {
         function: AuthorizedFunction::Contract((
             deployer_client.address,
             Symbol::new(&env, "deploy_splitter"),
-            (
-                deployer.clone(),
-                wasm_hash.clone(),
-                salt,
-                init_fn,
-                init_fn_args,
-            )
-                .into_val(&env),
+            (deployer.clone(), wasm_hash.clone(), salt, init_fn_args).into_val(&env),
         )),
         // From `deploy` function the 'create contract' host function has to be authorized
         sub_invocations: vec![AuthorizedInvocation {

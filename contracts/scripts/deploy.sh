@@ -25,28 +25,28 @@ export SOROSPLITS_WALLET=$(soroban config identity address sorosplits-wallet)
 echo "5. Building contracts "
 soroban contract build
 
-echo "6. Optimizing contracts "
-soroban contract optimize --wasm target/wasm32-unknown-unknown/release/sorosplits_splitter.wasm
-soroban contract optimize --wasm target/wasm32-unknown-unknown/release/sorosplits_diversifier.wasm
-soroban contract optimize --wasm target/wasm32-unknown-unknown/release/sorosplits_deployer.wasm
+# echo "6. Optimizing contracts "
+# soroban contract optimize --wasm target/wasm32-unknown-unknown/release/sorosplits_splitter.wasm
+# soroban contract optimize --wasm target/wasm32-unknown-unknown/release/sorosplits_diversifier.wasm
+# soroban contract optimize --wasm target/wasm32-unknown-unknown/release/sorosplits_deployer.wasm
 
 echo "6. Uploding the splitter contract to the network"
 export SPLITTER_CONTRACT_WASM_HASH=$(soroban contract install \
-  --wasm target/wasm32-unknown-unknown/release/sorosplits_splitter.optimized.wasm \
+  --wasm target/wasm32-unknown-unknown/release/sorosplits_splitter.wasm \
   --source sorosplits-wallet \
   --network testnet)
 printf "%s" "$SPLITTER_CONTRACT_WASM_HASH" > scripts/artifacts/splitter_contract_wasm_hash
 
 echo "7. Uploding the diversifier contract to the network"
 export DIVERSIFIER_CONTRACT_WASM_HASH=$(soroban contract install \
-  --wasm target/wasm32-unknown-unknown/release/sorosplits_diversifier.optimized.wasm \
+  --wasm target/wasm32-unknown-unknown/release/sorosplits_diversifier.wasm \
   --source sorosplits-wallet \
   --network testnet)
 printf "%s" "$DIVERSIFIER_CONTRACT_WASM_HASH" > scripts/artifacts/diversifier_contract_wasm_hash
 
 echo "8. Deploying the deployer contract to the network"
 export DEPLOYER_CONTRACT_ID=$(soroban contract deploy \
-  --wasm target/wasm32-unknown-unknown/release/sorosplits_deployer.optimized.wasm \
+  --wasm target/wasm32-unknown-unknown/release/sorosplits_deployer.wasm \
   --source sorosplits-wallet \
   --network testnet)
 printf "%s" "$DEPLOYER_CONTRACT_ID" > scripts/artifacts/deployer_contract_id
