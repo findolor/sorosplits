@@ -6,7 +6,7 @@ import Card from "./Card"
 import Switch from "../Switch"
 import { useEffect, useState } from "react"
 import AddressInput from "../Input/Address"
-import useSplitter from "@/hooks/useSplitter"
+import useSplitter from "@/hooks/contracts/useSplitter"
 import { WhitelistedTokensCardData } from "./WhitelistedTokens"
 
 export interface TokenBalanceData {

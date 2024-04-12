@@ -7,7 +7,7 @@ import Image from "next/image"
 import { errorToast } from "@/utils/toast"
 import clsx from "clsx"
 import useAppStore from "@/store/index"
-import useToken from "@/hooks/useToken"
+import useToken from "@/hooks/contracts/useToken"
 import { getBalance } from "@/utils/getBalance"
 
 export interface WhitelistedTokensCardData {
@@ -26,6 +26,7 @@ interface WhitelistedTokensCardProps {
   edit: boolean
   reset?: number
   disabled?: boolean
+  create?: boolean
 }
 
 const WhitelistedTokensCard: React.FC<WhitelistedTokensCardProps> = ({
@@ -35,6 +36,7 @@ const WhitelistedTokensCard: React.FC<WhitelistedTokensCardProps> = ({
   onUpdate,
   edit,
   reset,
+  create = false,
 }) => {
   const { loading, setLoading } = useAppStore()
   const token = useToken()
@@ -54,10 +56,10 @@ const WhitelistedTokensCard: React.FC<WhitelistedTokensCardProps> = ({
       const tokenData = await validateTokenAddress()
       setLoading(false)
 
-      const balance = await token.query.getBalance(
-        addressInput,
-        contractAddress
-      )
+      let balance
+      if (!create) {
+        balance = await token.query.getBalance(addressInput, contractAddress)
+      }
 
       const newData = [
         ...internalData,
@@ -66,7 +68,9 @@ const WhitelistedTokensCard: React.FC<WhitelistedTokensCardProps> = ({
           name: tokenData.name,
           symbol: tokenData.symbol,
           decimals: tokenData.decimals,
-          balance: getBalance(balance, tokenData.decimals).toFixed(2),
+          balance: balance
+            ? getBalance(balance, tokenData.decimals).toFixed(2)
+            : "-",
         },
       ]
       setInternalData(newData)

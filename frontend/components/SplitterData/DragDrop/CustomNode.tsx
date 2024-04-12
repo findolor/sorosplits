@@ -1,16 +1,25 @@
 import { Handle, Position } from "reactflow"
 import Text from "../../Text"
+import { ShareholderCardData } from "../Shareholders"
 
 interface CustomNodeProps {
   data: {
-    name: string
+    contractInfo: {
+      name: string
+      updatable: boolean
+    }
+    shareholders: ShareholderCardData[]
     updatable: boolean
     selected: boolean
   }
 }
 
 const CustomNode = ({
-  data: { name, updatable, selected },
+  data: {
+    contractInfo: { name, updatable },
+    shareholders,
+    selected,
+  },
 }: CustomNodeProps) => {
   return (
     <div

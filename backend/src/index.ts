@@ -1,9 +1,12 @@
 import { Elysia } from "elysia"
-import splitterRoutes from "./handlers/splitter"
-import { authenticationHandlers } from "./handlers/authentication"
 import cors from "@elysiajs/cors"
 import jwt from "@elysiajs/jwt"
 import bearer from "@elysiajs/bearer"
+import {
+  splitterHandlers,
+  authenticationHandlers,
+  deployerHandlers,
+} from "./handlers"
 import {
   AuthenticationError,
   AuthorizationError,
@@ -55,7 +58,8 @@ const application = new Elysia()
     app
       .get("/health", () => {})
       .use(authenticationHandlers)
-      .use(splitterRoutes)
+      .use(splitterHandlers)
+      .use(deployerHandlers)
   )
   .listen(3001)
 

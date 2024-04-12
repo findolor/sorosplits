@@ -81,7 +81,7 @@ export interface DecodeInitResult {
   updatable: boolean
 }
 
-export class Diversifier extends BaseContract {
+export class DiversifierContract extends BaseContract {
   constructor(network: Network, walletAddress: string) {
     super(network, walletAddress)
   }

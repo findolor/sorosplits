@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 import SoroSplitsSDK from "@sorosplits/sdk"
-import useAppStore from "../store"
+import useAppStore from "../../store"
 
 const useContracts = () => {
   const { walletAddress } = useAppStore()
@@ -17,7 +17,16 @@ const useContracts = () => {
     return new SoroSplitsSDK.NameServiceContract("testnet")
   }, [])
 
-  return { splitterContract, tokenContract, nameServiceContract }
+  const deployerContract = useMemo(() => {
+    return new SoroSplitsSDK.DeployerContract("testnet", walletAddress || "")
+  }, [walletAddress])
+
+  return {
+    splitterContract,
+    tokenContract,
+    nameServiceContract,
+    deployerContract,
+  }
 }
 
 export default useContracts

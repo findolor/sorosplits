@@ -28,8 +28,8 @@ pub struct SplitterInputData {
 #[contracttype]
 pub struct NetworkArg {
     pub id: u32,
-    pub salt: BytesN<32>,
     pub is_splitter: bool,
+    pub salt: BytesN<32>,
     pub splitter_data: SplitterData,
     pub external_inputs: Vec<SplitterInputData>,
 }
@@ -97,7 +97,7 @@ impl Deployer {
         deployer: Address,
         wasm_hashes: Map<Symbol, BytesN<32>>,
         args: Vec<NetworkArg>,
-    ) -> Vec<Address> {
+    ) -> Map<u32, Address> {
         deployer.require_auth();
 
         let splitter_wasm_hash = wasm_hashes.get(Symbol::new(&env, "splitter")).unwrap();
@@ -160,7 +160,7 @@ impl Deployer {
             }
         }
 
-        deployed_contracts.values()
+        deployed_contracts
     }
 }
 

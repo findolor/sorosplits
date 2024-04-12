@@ -4,7 +4,7 @@ import { CgClose } from "react-icons/cg"
 import { AiOutlineUserAdd } from "react-icons/ai"
 import clsx from "clsx"
 import { Contract, Keypair, StrKey } from "stellar-sdk"
-import useContracts from "@/hooks/useContracts"
+import useContracts from "@/hooks/contracts/useContracts"
 import { ShareDataProps } from "@sorosplits/sdk/lib/contracts/Splitter"
 
 interface InputData {

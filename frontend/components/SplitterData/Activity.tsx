@@ -2,7 +2,7 @@ import { CallMethod } from "@sorosplits/sdk/lib/contracts/Splitter"
 import Text from "../Text"
 import Card from "./Card"
 
-type Action = CallMethod | "deploy_splitter"
+type Action = CallMethod | "deploy_splitter" | "deploy_network"
 
 export interface SplitterContractActivity {
   action: Action
@@ -32,6 +32,8 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ data }) => {
         return "Contract name updated"
       case "update_whitelisted_tokens":
         return "Whitelisted tokens updated"
+      case "deploy_network":
+        return "Splitter created in network"
     }
   }
 

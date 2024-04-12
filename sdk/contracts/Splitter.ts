@@ -137,7 +137,6 @@ export class SplitterContract extends BaseContract {
       xdr.ScVal.scvBytes(Buffer.from(name, "utf-8")),
       xdr.ScVal.scvVec(
         shares.map((item) => {
-          xdr.ScVal
           return xdr.ScVal.scvMap([
             new xdr.ScMapEntry({
               key: xdr.ScVal.scvSymbol("share"),

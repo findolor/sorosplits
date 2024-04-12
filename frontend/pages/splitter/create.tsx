@@ -1,30 +1,22 @@
-import {
-  CreateSplitterDoneButton,
-  CreateSplitterResetButton,
-} from "@/components/Button/Splitter"
+import React, { useMemo, useState } from "react"
 import Layout from "@/components/Layout"
-import ConfirmationModal from "@/components/Modal"
 import PageHeader from "@/components/PageHeader"
-import ContractInfoCard from "@/components/SplitterData/ContractInfo"
-import ShareholdersCard, {
-  ShareholderCardData,
-} from "@/components/SplitterData/Shareholders"
-import WhitelistedTokensCard, {
-  WhitelistedTokensCardData,
-} from "@/components/SplitterData/WhitelistedTokens"
-import useModal from "@/hooks/useModal"
-import useSplitter from "@/hooks/useSplitter"
+import { ShareholderCardData } from "@/components/SplitterData/Shareholders"
+import { WhitelistedTokensCardData } from "@/components/SplitterData/WhitelistedTokens"
+import useModal from "@/hooks/modals/useConfirmation"
+import useSplitter from "@/hooks/contracts/useSplitter"
 import useAppStore from "@/store/index"
 import checkSplitterData from "@/utils/checkSplitterData"
 import { errorToast, loadingToast, successToast } from "@/utils/toast"
 import { useRouter } from "next/router"
-import React, { useMemo, useState } from "react"
+import Create from "@/components/SplitterData/Create"
 
 const CreateSplitter = () => {
   const { push } = useRouter()
   const splitter = useSplitter()
   const { walletAddress, setLoading, isConnected } = useAppStore()
-  const { confirmModal, onConfirmModal, RenderModal } = useModal()
+  const { confirmModal, onConfirmModal, RenderModal, onCancelModal } =
+    useModal()
 
   const [contractName, setContractName] = useState<string>("")
   const [contractUpdatable, setContractUpdatable] = useState<boolean>(true)
@@ -69,15 +61,15 @@ const CreateSplitter = () => {
     })
   }, [contractWhitelistedTokens])
 
-  const modalDoneOnClick = () => {
+  const doneButtonOnClick = () => {
     onConfirmModal("done")
   }
 
-  const modalResetOnClick = () => {
+  const resetButtonOnClick = () => {
     onConfirmModal("reset")
   }
 
-  const onConfirm = async () => {
+  const modalOnConfirm = async () => {
     if (confirmModal[1] === "reset") resetStates()
     else await deploySplitter()
   }
@@ -127,12 +119,11 @@ const CreateSplitter = () => {
   }
 
   const resetStates = () => {
-    setContractName("")
-    setContractUpdatable(true)
-    setContractShares([])
-    setContractWhitelistedTokens([])
+    onContractInfoCardUpdate("", true)
+    onShareholderCardUpdate([])
+    onWhitelistedTokensCardUpdate([])
     setResetTrigger((prev) => prev + 1)
-    modalResetOnClick()
+    onCancelModal()
   }
 
   const onContractInfoCardUpdate = (name: string, updatable: boolean) => {
@@ -156,44 +147,17 @@ const CreateSplitter = () => {
           subtitle="Create a new splitter contract for distributing tokens to shareholders."
         />
 
-        <div className="flex flex-col justify-between mt-10 px-3">
-          <div className="flex items-center justify-between mb-2">
-            <div>
-              <CreateSplitterDoneButton onClick={modalDoneOnClick} />
-            </div>
-            <CreateSplitterResetButton onClick={modalResetOnClick} />
-          </div>
-
-          <div className="flex justify-between">
-            <div className="flex flex-col gap-4 w-[560px]">
-              <ShareholdersCard
-                data={shareholderCardData}
-                onUpdate={onShareholderCardUpdate}
-                edit={true}
-                reset={resetTrigger}
-              />
-
-              <WhitelistedTokensCard
-                contractAddress={""}
-                data={whitelistTokenCardData}
-                onUpdate={onWhitelistedTokensCardUpdate}
-                edit={true}
-                reset={resetTrigger}
-              />
-            </div>
-
-            <div className="flex flex-col gap-4 w-[423px]">
-              <ContractInfoCard
-                data={contractInfoData}
-                totalDistributionsData={[]}
-                onUpdate={onContractInfoCardUpdate}
-                edit={true}
-                reset={resetTrigger}
-                create
-              />
-            </div>
-          </div>
-        </div>
+        <Create
+          doneButtonOnClick={doneButtonOnClick}
+          resetButtonOnClick={resetButtonOnClick}
+          contractInfoData={contractInfoData}
+          onContractInfoCardUpdate={onContractInfoCardUpdate}
+          shareholderCardData={shareholderCardData}
+          onShareholderCardUpdate={onShareholderCardUpdate}
+          whitelistTokenCardData={whitelistTokenCardData}
+          onWhitelistedTokensCardUpdate={onWhitelistedTokensCardUpdate}
+          reset={resetTrigger}
+        />
 
         <RenderModal
           title={
@@ -206,7 +170,7 @@ const CreateSplitter = () => {
               ? "Do you want to confirm your changes?"
               : undefined
           }
-          onConfirm={onConfirm}
+          onConfirm={modalOnConfirm}
         />
       </div>
     </Layout>

@@ -1,6 +1,5 @@
 import PageHeader from "@/components/PageHeader"
-import ContractInfoCard from "@/components/SplitterData/ContractInfo"
-import React, { useCallback, useState } from "react"
+import React, { useCallback, useMemo, useState } from "react"
 import ReactFlow, {
   MiniMap,
   Background,
@@ -17,13 +16,15 @@ import "reactflow/dist/style.css"
 import CustomNode from "@/components/SplitterData/DragDrop/CustomNode"
 import CustomEdge from "@/components/SplitterData/DragDrop/RemoveEdge"
 import Layout from "@/components/Layout"
-import WhitelistedTokensCard, {
-  WhitelistedTokensCardData,
-} from "@/components/SplitterData/WhitelistedTokens"
-import ShareholdersCard, {
-  ShareholderCardData,
-} from "@/components/SplitterData/Shareholders"
+import { WhitelistedTokensCardData } from "@/components/SplitterData/WhitelistedTokens"
+import { ShareholderCardData } from "@/components/SplitterData/Shareholders"
 import Card from "@/components/SplitterData/Card"
+import useDeployer, { NetworkItemProps } from "@/hooks/contracts/useDeployer"
+import { SplitterInputData } from "@sorosplits/sdk/lib/contracts/Deployer"
+import NetworkModal from "@/components/Modal/NetworkModal"
+import useAppStore from "../store"
+import useModal from "@/hooks/modals/useConfirmation"
+import { errorToast } from "@/utils/toast"
 
 interface NodeData {
   contractInfo: {
@@ -32,23 +33,62 @@ interface NodeData {
   }
   shareholders: ShareholderCardData[]
   whitelistedTokens: WhitelistedTokensCardData[]
+  selected: boolean
 }
 
 const nodeTypes = {
   customNode: CustomNode,
 }
-const initialNodes = [
+const initialNodes: Node<NodeData>[] = [
   {
     id: "1",
     position: { x: 0, y: 0 },
     type: "customNode",
-    data: { name: "Splitter 1", updatable: true, selected: true },
+    data: {
+      contractInfo: { name: "Splitter 1", updatable: true },
+      shareholders: [
+        {
+          address: "GBOAWTUJNSI5VKE3MDGY32LJF723OCQ42XYLNJWXDHCJKRZSFV3PKKMY",
+          share: "50.20",
+          domain: false,
+        },
+        {
+          address: "CC6GWVZGNUCAWJ75GFM2TU7F4VWGL4GUCS6JY2FZ6OURZTMJ73S376QA",
+          share: "49.80",
+          domain: false,
+        },
+      ],
+      whitelistedTokens: [],
+      selected: true,
+    },
   },
   {
     id: "2",
     position: { x: 0, y: 200 },
     type: "customNode",
-    data: { name: "Splitter 2", updatable: true, selected: true },
+    data: {
+      contractInfo: { name: "Splitter 2", updatable: false },
+      shareholders: [
+        {
+          address: "GAVQEABESF6XMJICZV2QG33FPSGOUVDZC26DFWKIFZHPM6JATZVNBBQ4",
+          share: "15",
+          domain: false,
+        },
+        {
+          address: "CDDFKGLR457OI6QXQ2REMS4YEL56DBUIKVH2ZCBKNGLUYWM52JMWSVNR",
+          share: "50",
+          domain: false,
+        },
+        {
+          address: "GBOAWTUJNSI5VKE3MDGY32LJF723OCQ42XYLNJWXDHCJKRZSFV3PKKMY",
+          share: "10",
+          domain: true,
+          domainName: "sorosplits.xlm",
+        },
+      ],
+      whitelistedTokens: [],
+      selected: true,
+    },
   },
 ]
 
@@ -57,8 +97,18 @@ const edgeTypes = {
 }
 
 export default function DragDrop() {
+  const { deployNetwork } = useDeployer()
+  const { walletAddress, isConnected, loading, setLoading } = useAppStore()
+  const {
+    onConfirmModal,
+    onCancelModal,
+    RenderModal,
+    confirmModal: modalState,
+  } = useModal()
+
+  const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false)
   const [resetTrigger, setResetTrigger] = useState(0)
-  const [selectedNodeIdx, setSelectedNodeIdx] = useState(0)
+  const [selectedNodeId, setSelectedNodeId] = useState(1)
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState([
     {
@@ -108,7 +158,6 @@ export default function DragDrop() {
             endLabel: "Input",
           },
         }
-        console.log(edges)
         if (
           !edges.some(
             (edge) =>
@@ -116,7 +165,6 @@ export default function DragDrop() {
               edge.id === `e${params.target}-${params.source}`
           )
         ) {
-          console.log("edge", edge)
           setEdges((edges) => edges.concat(edge))
         }
       }
@@ -130,8 +178,9 @@ export default function DragDrop() {
       position: { x: 0, y: nodes.length * 150 },
       type: "customNode",
       data: {
-        name: `Splitter ${nodes.length + 1}`,
-        updatable: true,
+        contractInfo: { name: `Splitter ${nodes.length + 1}`, updatable: true },
+        shareholders: [],
+        whitelistedTokens: [],
         selected: false,
       },
     }
@@ -141,7 +190,7 @@ export default function DragDrop() {
   const removeSplitterNode = () => {
     if (nodes.length > 1) {
       setNodes((nodes) =>
-        nodes.filter((n) => n.id !== (selectedNodeIdx + 1).toString())
+        nodes.filter((n) => n.id !== selectedNodeId.toString())
       )
     }
   }
@@ -153,28 +202,137 @@ export default function DragDrop() {
         data: { ...n.data, selected: n.id === node.id },
       }))
     )
-    setSelectedNodeIdx(parseInt(node.id) - 1)
-    setResetTrigger((prev) => prev + 1)
+    setSelectedNodeId(Number(node.id))
+    setIsNetworkModalOpen(true)
   }
 
-  const contractInfoOnUpdate = (name: string, updatable: boolean) => {
+  const selectedNode = useMemo(() => {
+    return nodes.find((n) => n.id === selectedNodeId.toString())
+  }, [nodes, selectedNodeId])
+
+  const onContractInfoCardUpdate = (name: string, updatable: boolean) => {
+    if (!selectedNode) return
     const node = {
-      ...nodes[selectedNodeIdx],
+      ...selectedNode,
       data: {
-        ...nodes[selectedNodeIdx].data,
-        name,
-        updatable,
+        ...selectedNode.data,
+        contractInfo: { name, updatable },
       },
     }
-    setNodes((nodes) =>
-      nodes.map((n) => (n.id === nodes[selectedNodeIdx].id ? node : n))
-    )
+    console.log("NODE", node.data.contractInfo)
+    setNodes((nodes) => nodes.map((n) => (n.id === selectedNode.id ? node : n)))
+  }
+
+  const onShareholderCardUpdate = (data: ShareholderCardData[]) => {
+    if (!selectedNode) return
+    const node = {
+      ...selectedNode,
+      data: {
+        ...selectedNode.data,
+        shareholders: data,
+      },
+    }
+    setNodes((nodes) => nodes.map((n) => (n.id === selectedNode.id ? node : n)))
+  }
+
+  const onWhitelistedTokensCardUpdate = (data: WhitelistedTokensCardData[]) => {
+    if (!selectedNode) return
+    const node = {
+      ...selectedNode,
+      data: {
+        ...selectedNode.data,
+        whitelistedTokens: data,
+      },
+    }
+    setNodes((nodes) => nodes.map((n) => (n.id === selectedNode.id ? node : n)))
+  }
+
+  const onInfoReset = () => {
+    if (!selectedNode) return
+    const node = {
+      ...selectedNode,
+      data: {
+        ...selectedNode.data,
+        contractInfo: {
+          name: `Splitter ${selectedNode.id}`,
+          updatable: true,
+        },
+        shareholders: [],
+        whitelistedTokens: [],
+      },
+    }
+    setNodes((nodes) => nodes.map((n) => (n.id === selectedNode.id ? node : n)))
+    setResetTrigger(resetTrigger + 1)
+    onCancelModal()
+  }
+
+  const processNodeData = (): NetworkItemProps[] => {
+    const data: NetworkItemProps[] = []
+    for (let node of nodes) {
+      data.push({
+        id: parseInt(node.id),
+        isSplitter: true,
+        data: {
+          name: node.data.contractInfo.name,
+          shares: node.data.shareholders.map((s: any) => {
+            return {
+              shareholder: s.address,
+              share: Number(s.share) * 100,
+            }
+          }),
+          updatable: node.data.contractInfo.updatable,
+        },
+        externalInputs: [],
+      })
+    }
+    return data
+  }
+
+  const parseEdgeData = (currentNodeId: number) => {
+    let data: SplitterInputData[] = []
+    for (let edge of edges) {
+      let source = parseInt(edge.source)
+      let target = parseInt(edge.target)
+
+      if (target === currentNodeId) {
+        data.push({
+          id: source,
+          share: 2500, // TODO: Get this from the user
+        })
+      }
+    }
+    return data
+  }
+
+  const deployNetworkOnClick = async () => {
+    try {
+      setLoading(true)
+
+      if (!isConnected) throw new Error("Please connect your wallet.")
+
+      let data = processNodeData()
+      for (let i = 0; i < data.length; i++) {
+        data[i].externalInputs = parseEdgeData(data[i].id)
+      }
+
+      const contracts = await deployNetwork(data)
+
+      console.log("CONTRACTS", contracts)
+    } catch (error) {
+      setLoading(false)
+      errorToast(error)
+    }
+  }
+
+  const innerModalOnConfirm = async () => {
+    if (modalState[1] === "reset") onInfoReset()
+    else await deployNetworkOnClick()
   }
 
   return (
     <Layout full>
       <div className="mt-10">
-        <PageHeader title="Drag & Drop Demo" subtitle="" />
+        <PageHeader title="Splitter Network" subtitle="" />
 
         <Card>
           <div className="flex h-fit gap-2 rounded-2xl relative">
@@ -193,6 +351,7 @@ export default function DragDrop() {
                 onNodeClick={onNodeClick}
                 panOnDrag
                 snapToGrid
+                fitView
               >
                 <Background
                   variant={BackgroundVariant.Dots}
@@ -206,6 +365,12 @@ export default function DragDrop() {
             <div className="absolute flex flex-col flex-2 gap-4 right-[24px]">
               <button
                 className="p-2 bg-[#FFDC93] rounded-lg"
+                onClick={deployNetworkOnClick}
+              >
+                DEPLOY NETWORK
+              </button>
+              <button
+                className="p-2 bg-[#FFDC93] rounded-lg"
                 onClick={addSplitterNode}
               >
                 Create Splitter
@@ -216,42 +381,36 @@ export default function DragDrop() {
               >
                 Remove Splitter
               </button>
-              {nodes[selectedNodeIdx] && (
-                <div className="flex flex-col gap-4 items-end w-[560px]">
-                  <ContractInfoCard
-                    data={{
-                      owner: "0x123",
-                      name: nodes[selectedNodeIdx].data.name,
-                      updatable: nodes[selectedNodeIdx].data.updatable,
-                    }}
-                    totalDistributionsData={[]}
-                    onUpdate={contractInfoOnUpdate}
-                    edit={true}
-                    reset={resetTrigger}
-                    create
-                  />
-                  <ShareholdersCard
-                    data={[
-                      { address: "0x123", share: "50", domain: false },
-                      { address: "0x456", share: "50", domain: false },
-                    ]}
-                    onUpdate={() => {}}
-                    edit={true}
-                    reset={resetTrigger}
-                  />
-                  <WhitelistedTokensCard
-                    contractAddress={""}
-                    data={[]}
-                    onUpdate={() => {}}
-                    edit={true}
-                    reset={resetTrigger}
-                  />
-                </div>
-              )}
             </div>
           </div>
         </Card>
       </div>
+
+      {selectedNode && (
+        <>
+          <NetworkModal
+            isOpen={isNetworkModalOpen}
+            title="Update Node"
+            doneButtonOnClick={() => setIsNetworkModalOpen(false)}
+            resetButtonOnClick={() => onConfirmModal("reset")}
+            contractInfoData={{
+              ...selectedNode.data.contractInfo,
+              owner: walletAddress || "",
+            }}
+            onContractInfoCardUpdate={onContractInfoCardUpdate}
+            shareholderCardData={selectedNode.data.shareholders}
+            onShareholderCardUpdate={onShareholderCardUpdate}
+            whitelistTokenCardData={selectedNode.data.whitelistedTokens}
+            onWhitelistedTokensCardUpdate={onWhitelistedTokensCardUpdate}
+            reset={resetTrigger}
+          />
+          <RenderModal
+            title="Are you sure you want to reset your changes?"
+            message={undefined}
+            onConfirm={innerModalOnConfirm}
+          />
+        </>
+      )}
     </Layout>
   )
 }

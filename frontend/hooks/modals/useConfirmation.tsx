@@ -1,4 +1,4 @@
-import ConfirmationModal from "@/components/Modal"
+import ConfirmationModal from "@/components/Modal/ConfirmationModal"
 import { useEffect, useState } from "react"
 
 interface RenderModalProps {

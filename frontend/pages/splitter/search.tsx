@@ -27,9 +27,9 @@ import WhitelistedTokensCard, {
 import ActivityCard, {
   SplitterContractActivity,
 } from "@/components/SplitterData/Activity"
-import useSplitter from "@/hooks/useSplitter"
-import useToken from "@/hooks/useToken"
-import useModal from "@/hooks/useModal"
+import useSplitter from "@/hooks/contracts/useSplitter"
+import useToken from "@/hooks/contracts/useToken"
+import useModal from "@/hooks/modals/useConfirmation"
 import { getBalance } from "@/utils/getBalance"
 import Layout from "@/components/Layout"
 import Loading from "@/components/Loading"

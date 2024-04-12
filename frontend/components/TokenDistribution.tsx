@@ -6,7 +6,7 @@ import useAppStore from "@/store/index"
 import Button from "./Button"
 import { DataProps } from "./SplitterData"
 import truncateAddress from "@/utils/truncateAddress"
-import useContracts from "@/hooks/useContracts"
+import useContracts from "@/hooks/contracts/useContracts"
 import useApiService from "@/hooks/useApi"
 
 interface ITokenDistribution {

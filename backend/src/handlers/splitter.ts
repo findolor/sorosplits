@@ -5,7 +5,7 @@ import { AuthenticationError } from "../errors"
 import { Prisma, PrismaClient } from "@prisma/client"
 import SoroSplitsSDK from "@sorosplits/sdk"
 
-export default new Elysia({ prefix: "/splitter" })
+const splitterHandlers = new Elysia({ prefix: "/splitter" })
   .decorate("prisma", new PrismaClient())
   .get(
     "/transactions",
@@ -53,7 +53,7 @@ export default new Elysia({ prefix: "/splitter" })
         id: true,
         publicKey: true,
         splitterContracts: true,
-        pinnedSplitterContractIds: true,
+        pinnedContractIds: true,
       },
     })
     if (!user) {
@@ -150,14 +150,12 @@ export default new Elysia({ prefix: "/splitter" })
   .post(
     "/toggle-pin",
     async ({ prisma, user, body: { address } }) => {
-      if (user.pinnedSplitterContractIds.includes(address)) {
+      if (user.pinnedContractIds.includes(address)) {
         await prisma.user.update({
           where: { id: user.id },
           data: {
-            pinnedSplitterContractIds: {
-              set: user.pinnedSplitterContractIds.filter(
-                (id) => id !== address
-              ),
+            pinnedContractIds: {
+              set: user.pinnedContractIds.filter((id) => id !== address),
             },
           },
         })
@@ -165,7 +163,7 @@ export default new Elysia({ prefix: "/splitter" })
         await prisma.user.update({
           where: { id: user.id },
           data: {
-            pinnedSplitterContractIds: {
+            pinnedContractIds: {
               push: address,
             },
           },
@@ -182,7 +180,7 @@ export default new Elysia({ prefix: "/splitter" })
   .get(
     "/is-pinned",
     async ({ user, query: { address } }) => {
-      return { pinned: user.pinnedSplitterContractIds.includes(address) }
+      return { pinned: user.pinnedContractIds.includes(address) }
     },
     {
       query: t.Object({
@@ -209,7 +207,7 @@ export default new Elysia({ prefix: "/splitter" })
   })
   .get("/pinned", async ({ prisma, user, contract }) => {
     const data = await Promise.all(
-      user.pinnedSplitterContractIds.map(async (address) => {
+      user.pinnedContractIds.map(async (address) => {
         const record = await prisma.splitterContract.findUnique({
           where: { address },
         })
@@ -230,3 +228,5 @@ export default new Elysia({ prefix: "/splitter" })
     )
     return data.filter((item) => item !== null)
   })
+
+export { splitterHandlers }

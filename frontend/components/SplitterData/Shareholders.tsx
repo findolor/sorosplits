@@ -7,7 +7,7 @@ import AddressInput from "../Input/Address"
 import ShareInput from "../Input/Share"
 import { errorToast } from "@/utils/toast"
 import { Keypair, StrKey } from "stellar-sdk"
-import useContracts from "@/hooks/useContracts"
+import useContracts from "@/hooks/contracts/useContracts"
 import Loading from "../Loading"
 import useAppStore from "@/store/index"
 
