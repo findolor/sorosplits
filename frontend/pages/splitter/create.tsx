@@ -157,6 +157,7 @@ const CreateSplitter = () => {
           whitelistTokenCardData={whitelistTokenCardData}
           onWhitelistedTokensCardUpdate={onWhitelistedTokensCardUpdate}
           reset={resetTrigger}
+          preAllocation={0}
         />
 
         <RenderModal

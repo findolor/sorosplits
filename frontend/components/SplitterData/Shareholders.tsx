@@ -57,6 +57,14 @@ const ShareholdersCard: React.FC<ShareholdersCardProps> = ({
       const [isDomain, domainAddress] = await validateShareholder()
       setLoading(false)
 
+      const isExist = internalData.some(
+        (shareholder) =>
+          shareholder.address === (isDomain ? domainAddress : addressInput)
+      )
+      if (isExist) {
+        throw new Error("Address already exists in the list")
+      }
+
       const newData = [
         ...internalData,
         {
@@ -83,12 +91,6 @@ const ShareholdersCard: React.FC<ShareholdersCardProps> = ({
   }
 
   const validateShareholder = async (): Promise<[boolean, string]> => {
-    if (
-      internalData.some((shareholder) => shareholder.address === addressInput)
-    ) {
-      throw new Error("Address already exists in the list")
-    }
-
     let isValid = false
     let isDomain = false
     let address = ""
