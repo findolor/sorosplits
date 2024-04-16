@@ -18,6 +18,7 @@ interface CreateSplitterProps {
   }
   onContractInfoCardUpdate: (name: string, updatable: boolean) => void
   shareholderCardData: ShareholderCardData[]
+  preAllocation: number
   onShareholderCardUpdate: (data: ShareholderCardData[]) => void
   whitelistTokenCardData: WhitelistedTokensCardData[]
   onWhitelistedTokensCardUpdate: (data: WhitelistedTokensCardData[]) => void
@@ -30,6 +31,7 @@ const CreateSplitter = ({
   contractInfoData,
   onContractInfoCardUpdate,
   shareholderCardData,
+  preAllocation,
   onShareholderCardUpdate,
   whitelistTokenCardData,
   onWhitelistedTokensCardUpdate,
@@ -51,6 +53,7 @@ const CreateSplitter = ({
             onUpdate={onShareholderCardUpdate}
             edit={true}
             reset={reset}
+            preAllocation={preAllocation}
           />
 
           <WhitelistedTokensCard

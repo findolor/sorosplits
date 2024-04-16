@@ -17,6 +17,7 @@ interface NetworkModalProps {
   }
   onContractInfoCardUpdate: (name: string, updatable: boolean) => void
   shareholderCardData: ShareholderCardData[]
+  preAllocation: number
   onShareholderCardUpdate: (data: ShareholderCardData[]) => void
   whitelistTokenCardData: WhitelistedTokensCardData[]
   onWhitelistedTokensCardUpdate: (data: WhitelistedTokensCardData[]) => void
@@ -31,13 +32,19 @@ const NetworkModal: React.FC<NetworkModalProps> = ({
   contractInfoData,
   onContractInfoCardUpdate,
   shareholderCardData,
+  preAllocation,
   onShareholderCardUpdate,
   whitelistTokenCardData,
   onWhitelistedTokensCardUpdate,
   reset,
 }) => {
   return (
-    <BaseModal size={1100} isOpen={isOpen} bgColor="#FBFBFB">
+    <BaseModal
+      size={1100}
+      isOpen={isOpen}
+      bgColor="#FBFBFB"
+      onOutsideClick={doneButtonOnClick}
+    >
       <Text
         text={title}
         size="22"
@@ -52,6 +59,7 @@ const NetworkModal: React.FC<NetworkModalProps> = ({
         contractInfoData={contractInfoData}
         onContractInfoCardUpdate={onContractInfoCardUpdate}
         shareholderCardData={shareholderCardData}
+        preAllocation={preAllocation}
         onShareholderCardUpdate={onShareholderCardUpdate}
         whitelistTokenCardData={whitelistTokenCardData}
         onWhitelistedTokensCardUpdate={onWhitelistedTokensCardUpdate}

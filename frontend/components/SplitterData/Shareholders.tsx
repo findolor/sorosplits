@@ -24,6 +24,7 @@ interface ShareholdersCardProps {
   edit: boolean
   reset: number
   disabled?: boolean
+  preAllocation?: number
 }
 
 const ShareholdersCard: React.FC<ShareholdersCardProps> = ({
@@ -32,6 +33,7 @@ const ShareholdersCard: React.FC<ShareholdersCardProps> = ({
   edit,
   reset,
   disabled,
+  preAllocation = 0,
 }) => {
   const { loading, setLoading } = useAppStore()
   const { nameServiceContract } = useContracts()
@@ -119,7 +121,11 @@ const ShareholdersCard: React.FC<ShareholdersCardProps> = ({
 
   const validateShare = (share: string) => {
     const shareNumber = parseFloat(share)
-    if (isNaN(shareNumber) || shareNumber <= 0 || shareNumber >= 100) {
+    if (
+      isNaN(shareNumber) ||
+      shareNumber <= 0 ||
+      shareNumber >= 100 - preAllocation
+    ) {
       throw new Error("Share must be a number between 0 and 100")
     }
     const totalShares =
@@ -127,7 +133,7 @@ const ShareholdersCard: React.FC<ShareholdersCardProps> = ({
         (acc, current) => acc + parseFloat(current.share),
         0
       ) + shareNumber
-    if (totalShares > 100) {
+    if (totalShares > 100 - preAllocation) {
       throw new Error("Total shares cannot exceed 100%")
     }
   }
@@ -231,10 +237,12 @@ const ShareholdersCard: React.FC<ShareholdersCardProps> = ({
                 )}
               </div>
               <Text
-                text={`Share total: ${internalData.reduce(
-                  (acc: number, { share }) => acc + Number(share),
-                  0
-                )}%`}
+                text={`Share total: ${
+                  internalData.reduce(
+                    (acc: number, { share }) => acc + Number(share),
+                    0
+                  ) + preAllocation
+                }%`}
                 size="12"
                 lineHeight="12"
                 letterSpacing="-1.5"

@@ -11,10 +11,13 @@ import ReactFlow, {
   Controls,
   MarkerType,
   Node,
+  ConnectionMode,
 } from "reactflow"
 import "reactflow/dist/style.css"
-import CustomNode from "@/components/SplitterData/DragDrop/CustomNode"
-import CustomEdge from "@/components/SplitterData/DragDrop/RemoveEdge"
+import CustomNode, {
+  NodeData,
+} from "@/components/SplitterData/DragDrop/CustomNode"
+import CustomEdge from "@/components/SplitterData/DragDrop/CustomEdge"
 import Layout from "@/components/Layout"
 import { WhitelistedTokensCardData } from "@/components/SplitterData/WhitelistedTokens"
 import { ShareholderCardData } from "@/components/SplitterData/Shareholders"
@@ -25,16 +28,6 @@ import NetworkModal from "@/components/Modal/NetworkModal"
 import useAppStore from "../store"
 import useModal from "@/hooks/modals/useConfirmation"
 import { errorToast } from "@/utils/toast"
-
-interface NodeData {
-  contractInfo: {
-    name: string
-    updatable: boolean
-  }
-  shareholders: ShareholderCardData[]
-  whitelistedTokens: WhitelistedTokensCardData[]
-  selected: boolean
-}
 
 const nodeTypes = {
   customNode: CustomNode,
@@ -59,7 +52,7 @@ const initialNodes: Node<NodeData>[] = [
         },
       ],
       whitelistedTokens: [],
-      selected: true,
+      selected: false,
     },
   },
   {
@@ -87,7 +80,7 @@ const initialNodes: Node<NodeData>[] = [
         },
       ],
       whitelistedTokens: [],
-      selected: true,
+      selected: false,
     },
   },
 ]
@@ -106,13 +99,14 @@ export default function DragDrop() {
     confirmModal: modalState,
   } = useModal()
 
+  const [splitterId, setSplitterId] = useState(3)
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false)
   const [resetTrigger, setResetTrigger] = useState(0)
   const [selectedNodeId, setSelectedNodeId] = useState(1)
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState([
     {
-      id: `e1-2`,
+      id: `1-2`,
       source: "1",
       target: "2",
       animated: true,
@@ -128,8 +122,7 @@ export default function DragDrop() {
         stroke: "black",
       },
       data: {
-        startLabel: "Output",
-        endLabel: "Input",
+        share: 10,
       },
     },
   ])
@@ -137,8 +130,17 @@ export default function DragDrop() {
   const onConnect = useCallback(
     (params: Edge | Connection) => {
       if (params.source && params.target) {
+        if (
+          edges.some(
+            (edge) =>
+              edge.id === `${params.source}-${params.target}` ||
+              edge.id === `${params.target}-${params.source}`
+          )
+        )
+          return
+
         const edge = {
-          id: `e${params.source}-${params.target}`,
+          id: `${params.source}-${params.target}`,
           source: params.source,
           target: params.target,
           animated: true,
@@ -154,19 +156,10 @@ export default function DragDrop() {
             stroke: "black",
           },
           data: {
-            startLabel: "Output",
-            endLabel: "Input",
+            share: 0,
           },
         }
-        if (
-          !edges.some(
-            (edge) =>
-              edge.id === `e${params.source}-${params.target}` ||
-              edge.id === `e${params.target}-${params.source}`
-          )
-        ) {
-          setEdges((edges) => edges.concat(edge))
-        }
+        setEdges((edges) => edges.concat(edge))
       }
     },
     [edges, setEdges]
@@ -174,16 +167,17 @@ export default function DragDrop() {
 
   const addSplitterNode = () => {
     const node = {
-      id: (nodes.length + 1).toString(),
+      id: splitterId.toString(),
       position: { x: 0, y: nodes.length * 150 },
       type: "customNode",
       data: {
-        contractInfo: { name: `Splitter ${nodes.length + 1}`, updatable: true },
+        contractInfo: { name: `Splitter ${splitterId}`, updatable: true },
         shareholders: [],
         whitelistedTokens: [],
         selected: false,
       },
     }
+    setSplitterId(splitterId + 1)
     setNodes((nodes) => nodes.concat(node))
   }
 
@@ -206,9 +200,30 @@ export default function DragDrop() {
     setIsNetworkModalOpen(true)
   }
 
+  const onPaneClick = () => {
+    setNodes((nds) =>
+      nds.map((n) => ({
+        ...n,
+        data: { ...n.data, selected: false },
+      }))
+    )
+    setSelectedNodeId(0)
+  }
+
   const selectedNode = useMemo(() => {
     return nodes.find((n) => n.id === selectedNodeId.toString())
   }, [nodes, selectedNodeId])
+
+  const selectedNodePreAllocations = useMemo(() => {
+    let filteredEdges = edges.filter(
+      (e) => e.target === selectedNodeId.toString()
+    )
+    if (edges.length === 0) return 0
+    return filteredEdges.reduce(
+      (acc: number, { data }) => acc + Number(data?.share) || 0,
+      0
+    )
+  }, [selectedNode])
 
   const onContractInfoCardUpdate = (name: string, updatable: boolean) => {
     if (!selectedNode) return
@@ -349,6 +364,8 @@ export default function DragDrop() {
                 nodeTypes={nodeTypes}
                 edgeTypes={edgeTypes}
                 onNodeClick={onNodeClick}
+                onPaneClick={onPaneClick}
+                connectionMode={ConnectionMode.Loose}
                 panOnDrag
                 snapToGrid
                 fitView
@@ -375,12 +392,6 @@ export default function DragDrop() {
               >
                 Create Splitter
               </button>
-              <button
-                className="p-2 bg-red-400 rounded-lg"
-                onClick={removeSplitterNode}
-              >
-                Remove Splitter
-              </button>
             </div>
           </div>
         </Card>
@@ -399,6 +410,7 @@ export default function DragDrop() {
             }}
             onContractInfoCardUpdate={onContractInfoCardUpdate}
             shareholderCardData={selectedNode.data.shareholders}
+            preAllocation={selectedNodePreAllocations}
             onShareholderCardUpdate={onShareholderCardUpdate}
             whitelistTokenCardData={selectedNode.data.whitelistedTokens}
             onWhitelistedTokensCardUpdate={onWhitelistedTokensCardUpdate}

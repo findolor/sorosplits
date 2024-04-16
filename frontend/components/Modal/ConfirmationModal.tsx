@@ -19,7 +19,12 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   onCancel,
 }) => {
   return (
-    <BaseModal size={305} isOpen={isOpen} bgColor="white">
+    <BaseModal
+      size={305}
+      isOpen={isOpen}
+      bgColor="white"
+      onOutsideClick={onCancel}
+    >
       <Text
         text={title}
         size="22"

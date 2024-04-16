@@ -66,7 +66,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ data }) => {
   }
 
   return (
-    <Card width="423">
+    <Card>
       <div className="flex justify-between">
         <Text
           text="Activity"

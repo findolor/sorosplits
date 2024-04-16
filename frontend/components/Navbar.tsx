@@ -23,6 +23,16 @@ const Navbar: React.FC = () => {
             <Text text="Search" size="15" lineHeight="20" letterSpacing="-2" />
           </button>
         </Link>
+        <Link href="/network" className="ml-6">
+          <button>
+            <Text
+              text="Create Network"
+              size="15"
+              lineHeight="20"
+              letterSpacing="-2"
+            />
+          </button>
+        </Link>
       </div>
       <Wallet />
     </nav>
