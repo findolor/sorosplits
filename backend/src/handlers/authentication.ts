@@ -3,7 +3,6 @@ import { Keypair } from "@stellar/stellar-sdk"
 import jwt from "@elysiajs/jwt"
 import bearer from "@elysiajs/bearer"
 import { PrismaClient } from "@prisma/client"
-import { randomBytes } from "node:crypto"
 import { AuthenticationError } from "../errors"
 
 const authenticationHandlers = new Elysia({ prefix: "/auth" })
@@ -22,7 +21,11 @@ const authenticationHandlers = new Elysia({ prefix: "/auth" })
       // Check if the public key is valid
       Keypair.fromPublicKey(publicKey)
 
-      const nonce = randomBytes(16).toString("hex")
+      const buffer = Buffer.alloc(15)
+      for (let i = 0; i < buffer.length; i++) {
+        buffer[i] = Math.floor(Math.random() * 256)
+      }
+      const nonce = buffer.toString("hex")
 
       const user = await prisma.user.findUnique({ where: { publicKey } })
 
