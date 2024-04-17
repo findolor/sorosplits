@@ -9,9 +9,17 @@ import {
 } from "@stellar/stellar-sdk"
 import CONFIG, { Network } from "../config"
 import BaseContract from "./Base"
-import { ShareDataProps } from "./Splitter"
-import { randomBytes } from "crypto"
+import {
+  ShareDataProps,
+  DeployAndInitContractArgs as SplitterDeployAndInitContractArgs,
+} from "./Splitter"
+import { randomBytes } from "../utils/randomBytes"
 import ba from "../utils/binascii"
+
+export interface DiversifierDeployAndInitContractArgs
+  extends SplitterDeployAndInitContractArgs {
+  isDiversifierActive: boolean
+}
 
 export interface SplitterData {
   name: string
@@ -50,6 +58,94 @@ export class DeployerContract extends BaseContract {
     super(network, walletAddress)
   }
 
+  public getDeployDiversifierOperation({
+    name,
+    shares,
+    updatable,
+    isDiversifierActive,
+  }: DiversifierDeployAndInitContractArgs): xdr.Operation {
+    const contract = new Contract(CONFIG[this.network].deployerContractId)
+
+    let splitterInitArgs = [
+      xdr.ScVal.scvBytes(Buffer.from(name, "utf-8")),
+      xdr.ScVal.scvVec(
+        shares.map((item) => {
+          return xdr.ScVal.scvMap([
+            new xdr.ScMapEntry({
+              key: xdr.ScVal.scvSymbol("share"),
+              val: nativeToScVal(item.share, { type: "i128" }),
+            }),
+            new xdr.ScMapEntry({
+              key: xdr.ScVal.scvSymbol("shareholder"),
+              val: new Address(item.shareholder.toString()).toScVal(),
+            }),
+          ])
+        })
+      ),
+      xdr.ScVal.scvBool(updatable),
+    ]
+    let diversifierInitArgs = [
+      nativeToScVal(this.walletAddress, { type: "address" }),
+      nativeToScVal(
+        Buffer.from(
+          ba.unhexlify(CONFIG[this.network].splitterWasmHash),
+          "ascii"
+        ),
+        {
+          type: "bytes",
+        }
+      ),
+      nativeToScVal(Buffer.from(randomBytes()), { type: "bytes" }),
+      xdr.ScVal.scvBool(isDiversifierActive),
+      xdr.ScVal.scvVec(splitterInitArgs),
+    ]
+
+    let diversifierDeployerArgs = [
+      nativeToScVal(this.walletAddress, { type: "address" }),
+      nativeToScVal(
+        Buffer.from(
+          ba.unhexlify(CONFIG[this.network].diversifierWasmHash),
+          "ascii"
+        ),
+        {
+          type: "bytes",
+        }
+      ),
+      nativeToScVal(Buffer.from(randomBytes()), { type: "bytes" }),
+      xdr.ScVal.scvVec(diversifierInitArgs),
+    ]
+
+    let operation = contract.call(
+      "deploy_diversifier",
+      ...diversifierDeployerArgs
+    )
+    return operation
+  }
+
+  public parseDeployedContractAddress(
+    transaction: SorobanRpc.Api.GetTransactionResponse
+  ) {
+    if (
+      transaction.status === SorobanRpc.Api.GetTransactionStatus.SUCCESS &&
+      transaction.resultMetaXdr
+    ) {
+      const buff = Buffer.from(
+        transaction.resultMetaXdr.toXDR("base64"),
+        "base64"
+      )
+      const txMeta = xdr.TransactionMeta.fromXDR(buff)
+      const contractId = txMeta
+        .v3()
+        .sorobanMeta()
+        ?.returnValue()
+        .vec()
+        ?.at(0)
+        ?.address()
+        .contractId() as Buffer
+      return StrKey.encodeContract(contractId)
+    } else throw new Error("Transaction failed")
+  }
+
   public getDeployNetworkOperation({ data }: DeployNetworkArgs): xdr.Operation {
     const contract = new Contract(CONFIG[this.network].deployerContractId)
 
@@ -58,7 +154,7 @@ export class DeployerContract extends BaseContract {
     for (let dataItem of data) {
       args.push({
         id: dataItem.id,
-        salt: Buffer.from(randomBytes(32)),
+        salt: Buffer.from(randomBytes()),
         isSplitter: dataItem.isSplitter,
         splitterData: dataItem.splitterData,
         externalInputs: dataItem.externalInputs,
@@ -193,6 +289,28 @@ export class DeployerContract extends BaseContract {
     } else throw new Error("Transaction failed")
   }
 
+  private decodeDeployDiversifierParams(args: xdr.ScVal[]) {
+    const deployArgs = scValToNative(args[3])
+    const admin = deployArgs[0]
+    const isDiversifierActive = deployArgs[3]
+    const splitterArgs = deployArgs[4]
+    const name = Buffer.from(splitterArgs[0]).toString("utf-8")
+    const shares = splitterArgs[1].map((item: any) => {
+      return {
+        shareholder: item.shareholder.toString(),
+        share: Number(BigInt(item.share)),
+      }
+    })
+    const updatable = splitterArgs[2]
+    return {
+      admin,
+      name,
+      shares,
+      updatable,
+      isDiversifierActive,
+    }
+  }
+
   private decodeDeployNetworkParams(args: xdr.ScVal[]) {
     const admin = scValToNative(args[0])
     const networkArgs = scValToNative(args[2])
@@ -247,7 +365,8 @@ export class DeployerContract extends BaseContract {
       case "deploy_splitter":
         throw new Error("Not implemented!")
       case "deploy_diversifier":
-        throw new Error("Not implemented!")
+        response.args = this.decodeDeployDiversifierParams(args)
+        break
       case "deploy_network":
         response.args = this.decodeDeployNetworkParams(args)
         break

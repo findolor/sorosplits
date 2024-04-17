@@ -9,7 +9,7 @@ import {
   scValToNative,
   xdr,
 } from "@stellar/stellar-sdk"
-import { randomBytes } from "crypto"
+import { randomBytes } from "../utils/randomBytes"
 import CONFIG, { Network } from "../config"
 import ba from "../utils/binascii"
 
@@ -163,7 +163,7 @@ export class SplitterContract extends BaseContract {
           type: "bytes",
         }
       ),
-      nativeToScVal(Buffer.from(randomBytes(32)), { type: "bytes" }),
+      nativeToScVal(Buffer.from(randomBytes()), { type: "bytes" }),
       xdr.ScVal.scvVec(splitterArgs),
     ]
 
