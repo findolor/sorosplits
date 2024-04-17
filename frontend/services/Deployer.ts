@@ -19,6 +19,13 @@ class DeployerApiService extends BaseApiService {
     super(accessToken)
   }
 
+  public async deployDiversifier({
+    transaction,
+  }: DeployNetworkProps): Promise<DeployNetworkResponseProps> {
+    const res = await this.post(DEPLOY_DIVERSIFIER, { transaction })
+    return res.contractAddress
+  }
+
   public async deployNetwork({
     transaction,
   }: DeployNetworkProps): Promise<DeployNetworkResponseProps[]> {

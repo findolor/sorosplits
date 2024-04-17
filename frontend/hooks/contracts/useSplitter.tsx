@@ -13,7 +13,7 @@ const useSplitter = () => {
     updatable: boolean
   ) => {
     const operation = splitterContract.getDeployAndInitOperation({
-      name: name,
+      name,
       shares,
       updatable,
     })

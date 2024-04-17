@@ -38,7 +38,11 @@ const initialNodes: Node<NodeData>[] = [
     position: { x: 0, y: 0 },
     type: "customNode",
     data: {
-      contractInfo: { name: "Splitter 1", updatable: true },
+      contractInfo: {
+        name: "Splitter 1",
+        updatable: true,
+        isDiversifierActive: false,
+      },
       shareholders: [
         {
           address: "GBOAWTUJNSI5VKE3MDGY32LJF723OCQ42XYLNJWXDHCJKRZSFV3PKKMY",
@@ -60,7 +64,11 @@ const initialNodes: Node<NodeData>[] = [
     position: { x: 0, y: 200 },
     type: "customNode",
     data: {
-      contractInfo: { name: "Splitter 2", updatable: false },
+      contractInfo: {
+        name: "Splitter 2",
+        updatable: false,
+        isDiversifierActive: false,
+      },
       shareholders: [
         {
           address: "GAVQEABESF6XMJICZV2QG33FPSGOUVDZC26DFWKIFZHPM6JATZVNBBQ4",
@@ -171,7 +179,11 @@ export default function DragDrop() {
       position: { x: 0, y: nodes.length * 150 },
       type: "customNode",
       data: {
-        contractInfo: { name: `Splitter ${splitterId}`, updatable: true },
+        contractInfo: {
+          name: `Splitter ${splitterId}`,
+          updatable: true,
+          isDiversifierActive: false,
+        },
         shareholders: [],
         whitelistedTokens: [],
         selected: false,
@@ -225,13 +237,17 @@ export default function DragDrop() {
     )
   }, [selectedNode])
 
-  const onContractInfoCardUpdate = (name: string, updatable: boolean) => {
+  const onContractInfoCardUpdate = (
+    name: string,
+    updatable: boolean,
+    isDiversifierActive: boolean
+  ) => {
     if (!selectedNode) return
     const node = {
       ...selectedNode,
       data: {
         ...selectedNode.data,
-        contractInfo: { name, updatable },
+        contractInfo: { name, updatable, isDiversifierActive },
       },
     }
     console.log("NODE", node.data.contractInfo)
@@ -239,6 +255,7 @@ export default function DragDrop() {
   }
 
   const onShareholderCardUpdate = (data: ShareholderCardData[]) => {
+    console.log(data)
     if (!selectedNode) return
     const node = {
       ...selectedNode,
@@ -271,6 +288,7 @@ export default function DragDrop() {
         contractInfo: {
           name: `Splitter ${selectedNode.id}`,
           updatable: true,
+          isDiversifierActive: false,
         },
         shareholders: [],
         whitelistedTokens: [],

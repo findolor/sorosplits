@@ -3,6 +3,7 @@ import AuthenticationApiService from "../services/Authentication"
 import SplitterApiService from "../services/Splitter"
 import useAppStore from "../store"
 import DeployerApiService from "@/services/Deployer"
+import DiversifierApiService from "@/services/Diversifier"
 
 const useApiService = () => {
   const { accessToken } = useAppStore()
@@ -19,7 +20,16 @@ const useApiService = () => {
     return new DeployerApiService(accessToken as string)
   }, [accessToken])
 
-  return { splitterApiService, authenticationApiService, deployerApiService }
+  const diversifierApiService = useMemo(() => {
+    return new DiversifierApiService(accessToken as string)
+  }, [accessToken])
+
+  return {
+    splitterApiService,
+    authenticationApiService,
+    deployerApiService,
+    diversifierApiService,
+  }
 }
 
 export default useApiService

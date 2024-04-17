@@ -1,5 +1,6 @@
 import {
   DeployNetworkArgs,
+  DiversifierDeployAndInitContractArgs,
   SplitterData,
   SplitterInputData,
 } from "@sorosplits/sdk/lib/contracts/Deployer"
@@ -16,6 +17,25 @@ export interface NetworkItemProps {
 const useDeployer = () => {
   const { deployerContract } = useContracts()
   const { deployerApiService } = useApiService()
+
+  const deployDiversifier = async ({
+    name,
+    shares,
+    updatable,
+    isDiversifierActive,
+  }: DiversifierDeployAndInitContractArgs) => {
+    const operation = deployerContract.getDeployDiversifierOperation({
+      name,
+      shares,
+      updatable,
+      isDiversifierActive,
+    })
+    const signedTx = await deployerContract.signTransaction([operation])
+    const contractAddress = await deployerApiService.deployDiversifier({
+      transaction: signedTx,
+    })
+    return contractAddress
+  }
 
   const deployNetwork = async (networkItems: NetworkItemProps[]) => {
     let args: DeployNetworkArgs = {
@@ -40,6 +60,7 @@ const useDeployer = () => {
   }
 
   return {
+    deployDiversifier,
     deployNetwork,
   }
 }

@@ -15,8 +15,13 @@ interface CreateSplitterProps {
     owner: string
     name: string
     updatable: boolean
+    isDiversifierActive: boolean
   }
-  onContractInfoCardUpdate: (name: string, updatable: boolean) => void
+  onContractInfoCardUpdate: (
+    name: string,
+    updatable: boolean,
+    isDiversifierActive: boolean
+  ) => void
   shareholderCardData: ShareholderCardData[]
   preAllocation: number
   onShareholderCardUpdate: (data: ShareholderCardData[]) => void
@@ -69,7 +74,6 @@ const CreateSplitter = ({
         <div className="flex flex-col gap-4 w-[423px]">
           <ContractInfoCard
             data={contractInfoData}
-            totalDistributionsData={[]}
             onUpdate={onContractInfoCardUpdate}
             edit={true}
             reset={reset}

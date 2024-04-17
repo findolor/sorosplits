@@ -4,25 +4,36 @@ import PageHeader from "@/components/PageHeader"
 import { ShareholderCardData } from "@/components/SplitterData/Shareholders"
 import { WhitelistedTokensCardData } from "@/components/SplitterData/WhitelistedTokens"
 import useModal from "@/hooks/modals/useConfirmation"
-import useSplitter from "@/hooks/contracts/useSplitter"
 import useAppStore from "@/store/index"
 import checkSplitterData from "@/utils/checkSplitterData"
 import { errorToast, loadingToast, successToast } from "@/utils/toast"
 import { useRouter } from "next/router"
 import Create from "@/components/SplitterData/Create"
+import useDeployer from "@/hooks/contracts/useDeployer"
 
 const CreateSplitter = () => {
   const { push } = useRouter()
-  const splitter = useSplitter()
+  const deployer = useDeployer()
   const { walletAddress, setLoading, isConnected } = useAppStore()
   const { confirmModal, onConfirmModal, RenderModal, onCancelModal } =
     useModal()
 
-  const [contractName, setContractName] = useState<string>("")
+  const [contractName, setContractName] = useState<string>("TESSTTT")
   const [contractUpdatable, setContractUpdatable] = useState<boolean>(true)
-  const [contractShares, setContractShares] = useState<ShareholderCardData[]>(
-    []
-  )
+  const [contractIsDiversifierActive, setContractIsDiversifierActive] =
+    useState<boolean>(false)
+  const [contractShares, setContractShares] = useState<ShareholderCardData[]>([
+    {
+      address: "GBOAWTUJNSI5VKE3MDGY32LJF723OCQ42XYLNJWXDHCJKRZSFV3PKKMY",
+      share: "20",
+      domain: false,
+    },
+    {
+      address: "CCGQUEH2MSJVP4EAYCE6USCCJ3HAE5JUPZZIKT462XXDP2ZZVJ6AAQTE",
+      share: "80",
+      domain: false,
+    },
+  ])
   const [contractWhitelistedTokens, setContractWhitelistedTokens] = useState<
     string[]
   >([])
@@ -33,8 +44,14 @@ const CreateSplitter = () => {
       owner: walletAddress || "",
       name: contractName,
       updatable: contractUpdatable,
+      isDiversifierActive: contractIsDiversifierActive,
     }
-  }, [contractName, contractUpdatable, walletAddress])
+  }, [
+    contractName,
+    contractUpdatable,
+    contractIsDiversifierActive,
+    walletAddress,
+  ])
 
   const shareholderCardData = useMemo(() => {
     if (!contractShares) return []
@@ -90,21 +107,22 @@ const CreateSplitter = () => {
       checkSplitterData(shares)
 
       loadingToast("Creating your Splitter contract...")
-      const contractAddress = await splitter.createSplitter(
-        contractName,
+      const contractAddress = await deployer.deployDiversifier({
+        name: contractName,
         shares,
-        contractUpdatable
-      )
+        updatable: contractUpdatable,
+        isDiversifierActive: contractIsDiversifierActive,
+      })
       successToast("Splitter contract initialized successfully!")
 
-      if (contractWhitelistedTokens.length != 0) {
-        loadingToast("Updating whitelisted tokens...")
-        await splitter.call.updateWhitelistedTokens(
-          contractAddress,
-          contractWhitelistedTokens
-        )
-        successToast("Whitelisted tokens updated successfully!")
-      }
+      // if (contractWhitelistedTokens.length != 0) {
+      //   loadingToast("Updating whitelisted tokens...")
+      //   await splitter.call.updateWhitelistedTokens(
+      //     contractAddress,
+      //     contractWhitelistedTokens
+      //   )
+      //   successToast("Whitelisted tokens updated successfully!")
+      // }
 
       successToast("Navigating to contract page...")
 
@@ -119,16 +137,21 @@ const CreateSplitter = () => {
   }
 
   const resetStates = () => {
-    onContractInfoCardUpdate("", true)
+    onContractInfoCardUpdate("", true, false)
     onShareholderCardUpdate([])
     onWhitelistedTokensCardUpdate([])
     setResetTrigger((prev) => prev + 1)
     onCancelModal()
   }
 
-  const onContractInfoCardUpdate = (name: string, updatable: boolean) => {
+  const onContractInfoCardUpdate = (
+    name: string,
+    updatable: boolean,
+    isDiversifierActive: boolean
+  ) => {
     setContractName(name)
     setContractUpdatable(updatable)
+    setContractIsDiversifierActive(isDiversifierActive)
   }
 
   const onShareholderCardUpdate = (data: ShareholderCardData[]) => {

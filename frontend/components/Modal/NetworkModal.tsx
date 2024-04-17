@@ -14,8 +14,13 @@ interface NetworkModalProps {
     owner: string
     name: string
     updatable: boolean
+    isDiversifierActive: boolean
   }
-  onContractInfoCardUpdate: (name: string, updatable: boolean) => void
+  onContractInfoCardUpdate: (
+    name: string,
+    updatable: boolean,
+    isDiversifierActive: boolean
+  ) => void
   shareholderCardData: ShareholderCardData[]
   preAllocation: number
   onShareholderCardUpdate: (data: ShareholderCardData[]) => void

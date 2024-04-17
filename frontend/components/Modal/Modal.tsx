@@ -27,12 +27,13 @@ const BaseModal: React.FC<BaseModalProps> = ({
       onClick={onOutsideClick}
     >
       <div
-        className="flex flex-col justify-center items-center p-6 rounded-lg shadow-lg gap-4"
+        className={`flex flex-col justify-center items-center p-6 rounded-lg shadow-lg gap-4 ${
+          loading ? "pointer-events-none" : ""
+        }`}
         style={{ width: size, backgroundColor: bgColor }}
         onClick={(event) => event.stopPropagation()} // Stop propagation here
       >
-        {loading && <Loading />}
-        {!loading && <>{children}</>}
+        {children}
       </div>
     </div>
   )

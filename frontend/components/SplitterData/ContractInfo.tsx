@@ -19,9 +19,9 @@ interface ContractInfoCardProps {
     owner: string
     name: string
     updatable: boolean
+    isDiversifierActive: boolean
   }
-  totalDistributionsData: TokenBalanceData[]
-  onUpdate: (name: string, updatable: boolean) => void
+  onUpdate: (name: string, updatable: boolean, diversifier: boolean) => void
   edit: boolean
   reset: number
   create?: boolean
@@ -29,7 +29,6 @@ interface ContractInfoCardProps {
 
 const ContractInfoCard: React.FC<ContractInfoCardProps> = ({
   data,
-  totalDistributionsData,
   onUpdate,
   edit,
   reset,
@@ -40,28 +39,36 @@ const ContractInfoCard: React.FC<ContractInfoCardProps> = ({
 
   const [contractName, setContratName] = useState(data.name)
   const [updatable, setUpdatable] = useState(data.updatable)
+  const [isDiversifierActive, setIsDiversifierActive] = useState(
+    data.isDiversifierActive
+  )
 
   useEffect(() => {
     setContratName(data.name)
     setUpdatable(data.updatable)
   }, [reset])
 
-  const switchOnChange = () => {
+  const diversifierOnChange = () => {
+    setIsDiversifierActive(!isDiversifierActive)
+    onUpdate(contractName, !updatable, !isDiversifierActive)
+  }
+
+  const updatableOnChange = () => {
     setUpdatable(!updatable)
-    onUpdate(contractName, !updatable)
+    onUpdate(contractName, !updatable, isDiversifierActive)
   }
 
   const nameOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setContratName(e.target.value)
-    onUpdate(e.target.value, updatable)
+    onUpdate(e.target.value, updatable, isDiversifierActive)
   }
 
   return (
     <Card>
       <RenderHeader value="Contract info" />
-      <div className="flex flex-col pl-2 mb-3">
+      <div className="flex flex-col pl-2">
         <RenderRowWithAddress leftText="Owner" rightText={data.owner} />
-        <div className="flex justify-between mb-3 items-center">
+        <div className="flex justify-between mb-4 items-center">
           <Text
             text="Name"
             size="12"
@@ -89,7 +96,7 @@ const ContractInfoCard: React.FC<ContractInfoCardProps> = ({
             />
           )}
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 mb-1">
           <Image src="/icons/info.svg" height={12} width={12} alt="Info icon" />
           <div className="flex items-center">
             <Text text="Shareholders & shares are" size="12" color="#687B8C" />
@@ -104,7 +111,30 @@ const ContractInfoCard: React.FC<ContractInfoCardProps> = ({
               <div className="ml-2">
                 <Switch
                   initialState={updatable}
-                  onChange={switchOnChange}
+                  onChange={updatableOnChange}
+                  locked={loading}
+                  reset={reset}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-1">
+          <Image src="/icons/info.svg" height={12} width={12} alt="Info icon" />
+          <div className="flex items-center">
+            <Text text="Diversifier is" size="12" color="#687B8C" />
+            &nbsp;
+            <Text
+              text={isDiversifierActive ? "enabled" : "disabled"}
+              size="12"
+              color="#687B8C"
+              bold
+            />
+            {(data.isDiversifierActive || create) && edit && (
+              <div className="ml-2">
+                <Switch
+                  initialState={isDiversifierActive}
+                  onChange={diversifierOnChange}
                   locked={loading}
                   reset={reset}
                 />
@@ -113,50 +143,6 @@ const ContractInfoCard: React.FC<ContractInfoCardProps> = ({
           </div>
         </div>
       </div>
-      {!edit && (
-        <>
-          <RenderHeader value="Total distributions" />
-          <div className="flex flex-col pl-2 mb-3">
-            {totalDistributionsData.length === 0 && (
-              <div className="flex gap-1">
-                <Image
-                  src="/icons/info.svg"
-                  height={12}
-                  width={12}
-                  alt="Info icon"
-                />
-                <Text
-                  text="This contract does not have any distributions"
-                  size="12"
-                  color="#687B8C"
-                />
-              </div>
-            )}
-            {totalDistributionsData.length > 0 &&
-              totalDistributionsData.map((item, idx) => (
-                <div
-                  key={idx.toString()}
-                  className="w-full flex items-center justify-between mb-2"
-                >
-                  <Text
-                    text={item.tokenData.name}
-                    size="12"
-                    lineHeight="12"
-                    letterSpacing="-1.5%"
-                    color="#323C45"
-                  />
-                  <Text
-                    text={`${item.amount} ${item.tokenData.symbol}`}
-                    size="12"
-                    lineHeight="12"
-                    letterSpacing="-1.5%"
-                    color="#323C45"
-                  />
-                </div>
-              ))}
-          </div>
-        </>
-      )}
     </Card>
   )
 }

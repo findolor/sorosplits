@@ -9,6 +9,7 @@ export interface NodeData {
   contractInfo: {
     name: string
     updatable: boolean
+    isDiversifierActive: boolean
   }
   shareholders: ShareholderCardData[]
   whitelistedTokens: WhitelistedTokensCardData[]

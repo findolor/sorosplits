@@ -21,11 +21,16 @@ const useContracts = () => {
     return new SoroSplitsSDK.DeployerContract("testnet", walletAddress || "")
   }, [walletAddress])
 
+  const diversifierContract = useMemo(() => {
+    return new SoroSplitsSDK.DiversifierContract("testnet", walletAddress || "")
+  }, [walletAddress])
+
   return {
     splitterContract,
     tokenContract,
     nameServiceContract,
     deployerContract,
+    diversifierContract,
   }
 }
 
