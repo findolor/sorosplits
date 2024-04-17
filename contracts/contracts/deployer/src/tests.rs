@@ -150,6 +150,7 @@ fn test_deploy_diversifier() {
         deployer.clone(),
         splitter_wasm_hash.clone(),
         salt.clone(),
+        true,
         splitter_init_args,
     )
         .into_val(&env);

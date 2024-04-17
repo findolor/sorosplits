@@ -153,6 +153,7 @@ impl Deployer {
                     init_args.push_back(deployer.to_val());
                     init_args.push_back(splitter_wasm_hash.to_val());
                     init_args.push_back(arg.salt.to_val());
+                    init_args.push_back(true.into_val(&env));
                     init_args.push_back(common_splitter_args.to_val());
                 }
 

@@ -45,12 +45,14 @@ pub trait DiversifierTrait {
     ///
     /// * `wasm_hash` - The hash of the Wasm code of the splitter contract.
     /// * `salt` - The salt to use for the deployment of the splitter contract.
+    /// * `is_active` - Whether the diversifier should be active after initialization.
     /// * `splitter_init_args` - The arguments to pass to the init function of the splitter contract.
     fn init_diversifier(
         env: Env,
         admin: Address,
         wasm_hash: BytesN<32>,
         salt: BytesN<32>,
+        is_active: bool,
         splitter_init_args: Vec<Val>,
     ) -> Result<(), ContractError>;
 
@@ -107,6 +109,7 @@ impl DiversifierTrait for Diversifier {
         admin: Address,
         wasm_hash: BytesN<32>,
         salt: BytesN<32>,
+        is_active: bool,
         splitter_init_args: Vec<Val>,
     ) -> Result<(), ContractError> {
         let args: Vec<Val> = vec![
@@ -120,7 +123,7 @@ impl DiversifierTrait for Diversifier {
         let splitter_address = env.deployer().with_current_contract(salt).deploy(wasm_hash);
         env.invoke_contract::<Val>(&splitter_address, &Symbol::new(&env, "init_splitter"), args);
 
-        DiversifierConfig::init(&env, admin, splitter_address);
+        DiversifierConfig::init(&env, admin, splitter_address, is_active);
 
         Ok(())
     }

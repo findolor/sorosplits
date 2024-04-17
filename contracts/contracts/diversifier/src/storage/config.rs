@@ -12,12 +12,12 @@ pub struct DiversifierConfig {
     pub diversifier_active: bool,
 }
 impl DiversifierConfig {
-    pub fn init(e: &Env, admin: Address, splitter_address: Address) {
+    pub fn init(e: &Env, admin: Address, splitter_address: Address, diversifier_active: bool) {
         let key = DiversifierDataKeys::Config;
         let config = DiversifierConfig {
             admin,
             splitter_address,
-            diversifier_active: true,
+            diversifier_active,
         };
         e.storage().instance().set(&key, &config);
     }
