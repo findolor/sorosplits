@@ -7,7 +7,7 @@ interface BaseModalProps {
   isOpen: boolean
   size: number
   bgColor: string
-  onOutsideClick: () => void
+  onOutsideClick?: () => void
 }
 
 const BaseModal: React.FC<BaseModalProps> = ({

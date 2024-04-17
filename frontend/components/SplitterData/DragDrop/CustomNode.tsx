@@ -19,7 +19,7 @@ export interface NodeData {
 const CustomNode = ({
   id,
   data: {
-    contractInfo: { name },
+    contractInfo: { name, isDiversifierActive },
     shareholders,
     whitelistedTokens,
     selected,
@@ -48,9 +48,9 @@ const CustomNode = ({
 
   return (
     <div
-      className={`h-20 w-60 border ${
-        selected ? "border-[#FF9E9E] border-2" : "border-[#C3D1DD]"
-      } bg-white rounded-xl`}
+      className={`h-20 w-60 border-2 ${
+        selected ? "border-[#FFDC93]" : "border-[#C3D1DD]"
+      } bg-white rounded-xl hover:border-[#FFDC93]`}
     >
       <Handle type="source" position={Position.Top} id="a" />
       <Handle type="source" position={Position.Right} id="b" />
@@ -59,7 +59,7 @@ const CustomNode = ({
 
       <div className="w-full h-full flex flex-col items-center pt-4 relative">
         <button
-          className="absolute top-[-10px] right-[-4px]"
+          className="absolute top-[-10px] right-[-4px] bg-red-500"
           onClick={removeNode}
         >
           <div className="flex items-center justify-center bg-white h-[20px]">
@@ -67,17 +67,31 @@ const CustomNode = ({
           </div>
         </button>
         <Text text={name} size="16" lineHeight="12" letterSpacing="-2" />
-        <div className="flex flex-col mt-2">
+        <div className="flex flex-col pt-1 items-center gap-3 w-full px-8">
           <Text
-            text={`${shareholders.length} shareholders (users)`}
-            size="10"
+            text={`${
+              isDiversifierActive ? "Diversifier" : "Splitter"
+            } contract`}
+            size="8"
             color="#687B8C"
+            lineHeight="12"
           />
-          <Text
-            text={`${splitterShareholders.length} shareholders (contracts)`}
-            size="10"
-            color="#687B8C"
-          />
+          <div className="flex justify-between w-full">
+            <Text
+              text={`${shareholders.length} user share`}
+              size="10"
+              color="black"
+              lineHeight="12"
+              bold
+            />
+            <Text
+              text={`${splitterShareholders.length} contract share`}
+              size="10"
+              color="black"
+              lineHeight="12"
+              bold
+            />
+          </div>
         </div>
       </div>
     </div>

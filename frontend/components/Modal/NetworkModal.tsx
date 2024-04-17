@@ -48,7 +48,7 @@ const NetworkModal: React.FC<NetworkModalProps> = ({
       size={1100}
       isOpen={isOpen}
       bgColor="#FBFBFB"
-      onOutsideClick={doneButtonOnClick}
+      // onOutsideClick={doneButtonOnClick}
     >
       <Text
         text={title}

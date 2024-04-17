@@ -1,3 +1,4 @@
+import clsx from "clsx"
 import React from "react"
 
 interface TextProps {
@@ -9,6 +10,7 @@ interface TextProps {
   letterSpacing?: string
   centered?: boolean
   rightAligned?: boolean
+  customStyle?: string
 }
 
 const Text: React.FC<TextProps> = ({
@@ -20,6 +22,7 @@ const Text: React.FC<TextProps> = ({
   letterSpacing = "0",
   centered = false,
   rightAligned = false,
+  customStyle = "",
 }) => {
   const classes = `
     ${bold ? "font-bold" : "font-normal"}
@@ -29,7 +32,7 @@ const Text: React.FC<TextProps> = ({
 
   return (
     <p
-      className={classes}
+      className={clsx(classes, customStyle)}
       style={{
         color,
         fontSize: `${size}px`,

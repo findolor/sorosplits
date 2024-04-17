@@ -28,6 +28,8 @@ import NetworkModal from "@/components/Modal/NetworkModal"
 import useAppStore from "../store"
 import useModal from "@/hooks/modals/useConfirmation"
 import { errorToast } from "@/utils/toast"
+import Text from "@/components/Text"
+import clsx from "clsx"
 
 const nodeTypes = {
   customNode: CustomNode,
@@ -39,19 +41,14 @@ const initialNodes: Node<NodeData>[] = [
     type: "customNode",
     data: {
       contractInfo: {
-        name: "Splitter 1",
+        name: "First Contract",
         updatable: true,
         isDiversifierActive: false,
       },
       shareholders: [
         {
           address: "GBOAWTUJNSI5VKE3MDGY32LJF723OCQ42XYLNJWXDHCJKRZSFV3PKKMY",
-          share: "50.20",
-          domain: false,
-        },
-        {
-          address: "CC6GWVZGNUCAWJ75GFM2TU7F4VWGL4GUCS6JY2FZ6OURZTMJ73S376QA",
-          share: "49.80",
+          share: "100",
           domain: false,
         },
       ],
@@ -65,28 +62,11 @@ const initialNodes: Node<NodeData>[] = [
     type: "customNode",
     data: {
       contractInfo: {
-        name: "Splitter 2",
+        name: "Second Contract",
         updatable: false,
-        isDiversifierActive: false,
+        isDiversifierActive: true,
       },
-      shareholders: [
-        {
-          address: "GAVQEABESF6XMJICZV2QG33FPSGOUVDZC26DFWKIFZHPM6JATZVNBBQ4",
-          share: "15",
-          domain: false,
-        },
-        {
-          address: "CDDFKGLR457OI6QXQ2REMS4YEL56DBUIKVH2ZCBKNGLUYWM52JMWSVNR",
-          share: "50",
-          domain: false,
-        },
-        {
-          address: "GBOAWTUJNSI5VKE3MDGY32LJF723OCQ42XYLNJWXDHCJKRZSFV3PKKMY",
-          share: "10",
-          domain: true,
-          domainName: "sorosplits.xlm",
-        },
-      ],
+      shareholders: [],
       whitelistedTokens: [],
       selected: false,
     },
@@ -95,6 +75,21 @@ const initialNodes: Node<NodeData>[] = [
 
 const edgeTypes = {
   customEdge: CustomEdge,
+}
+
+const edgeStyles = {
+  markerEnd: {
+    type: MarkerType.ArrowClosed,
+    width: 20,
+    height: 10,
+    color: "black",
+  },
+  style: {
+    stroke: "black",
+    strokeWidth: 3,
+  },
+  animated: true,
+  type: "customEdge",
 }
 
 export default function DragDrop() {
@@ -107,7 +102,7 @@ export default function DragDrop() {
     confirmModal: modalState,
   } = useModal()
 
-  const [splitterId, setSplitterId] = useState(3)
+  const [nodeId, setNodeId] = useState(3)
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false)
   const [resetTrigger, setResetTrigger] = useState(0)
   const [selectedNodeId, setSelectedNodeId] = useState(1)
@@ -117,21 +112,10 @@ export default function DragDrop() {
       id: `1-2`,
       source: "1",
       target: "2",
-      animated: true,
-      type: "customEdge",
-      markerEnd: {
-        type: MarkerType.ArrowClosed,
-        width: 20,
-        height: 10,
-        color: "black",
-      },
-      style: {
-        strokeWidth: 3,
-        stroke: "black",
-      },
       data: {
-        share: 10,
+        share: "10",
       },
+      ...edgeStyles,
     },
   ])
 
@@ -151,21 +135,10 @@ export default function DragDrop() {
           id: `${params.source}-${params.target}`,
           source: params.source,
           target: params.target,
-          animated: true,
-          type: "customEdge",
-          markerEnd: {
-            type: MarkerType.ArrowClosed,
-            width: 20,
-            height: 10,
-            color: "black",
-          },
-          style: {
-            strokeWidth: 3,
-            stroke: "black",
-          },
           data: {
-            share: 0,
+            share: "10",
           },
+          ...edgeStyles,
         }
         setEdges((edges) => edges.concat(edge))
       }
@@ -173,32 +146,24 @@ export default function DragDrop() {
     [edges, setEdges]
   )
 
-  const addSplitterNode = () => {
+  const addSplitterNode = (isDiversifierActive: boolean) => {
     const node = {
-      id: splitterId.toString(),
-      position: { x: 0, y: nodes.length * 150 },
+      id: nodeId.toString(),
+      position: { x: 0, y: nodes.length * 50 },
       type: "customNode",
       data: {
         contractInfo: {
-          name: `Splitter ${splitterId}`,
+          name: `New Contract`,
           updatable: true,
-          isDiversifierActive: false,
+          isDiversifierActive,
         },
         shareholders: [],
         whitelistedTokens: [],
         selected: false,
       },
     }
-    setSplitterId(splitterId + 1)
+    setNodeId(nodeId + 1)
     setNodes((nodes) => nodes.concat(node))
-  }
-
-  const removeSplitterNode = () => {
-    if (nodes.length > 1) {
-      setNodes((nodes) =>
-        nodes.filter((n) => n.id !== selectedNodeId.toString())
-      )
-    }
   }
 
   const onNodeClick = (_: any, node: Node) => {
@@ -250,12 +215,10 @@ export default function DragDrop() {
         contractInfo: { name, updatable, isDiversifierActive },
       },
     }
-    console.log("NODE", node.data.contractInfo)
     setNodes((nodes) => nodes.map((n) => (n.id === selectedNode.id ? node : n)))
   }
 
   const onShareholderCardUpdate = (data: ShareholderCardData[]) => {
-    console.log(data)
     if (!selectedNode) return
     const node = {
       ...selectedNode,
@@ -304,7 +267,7 @@ export default function DragDrop() {
     for (let node of nodes) {
       data.push({
         id: parseInt(node.id),
-        isSplitter: true,
+        isSplitter: !node.data.contractInfo.isDiversifierActive,
         data: {
           name: node.data.contractInfo.name,
           shares: node.data.shareholders.map((s: any) => {
@@ -328,9 +291,12 @@ export default function DragDrop() {
       let target = parseInt(edge.target)
 
       if (target === currentNodeId) {
+        if (!edge.data || edge.data.share === "0" || edge.data.share === "")
+          throw new Error("Edge must have a share value")
+
         data.push({
           id: source,
-          share: 2500, // TODO: Get this from the user
+          share: Number(edge.data.share) * 100,
         })
       }
     }
@@ -365,13 +331,18 @@ export default function DragDrop() {
   return (
     <Layout full>
       <div className="mt-10">
-        <PageHeader title="Splitter Network" subtitle="" />
+        <div className="mb-10">
+          <PageHeader
+            title="Create Contract Network"
+            subtitle="Create a network of contracts for complex distribution flows."
+          />
+        </div>
 
         <Card>
           <div className="flex h-fit gap-2 rounded-2xl relative">
             <div
               className="flex flex-1"
-              style={{ width: "100%", height: "calc(100vh - 280px)" }}
+              style={{ width: "100%", height: "calc(100vh - 300px)" }}
             >
               <ReactFlow
                 nodes={nodes}
@@ -398,18 +369,18 @@ export default function DragDrop() {
               </ReactFlow>
             </div>
             <div className="absolute flex flex-col flex-2 gap-4 right-[24px]">
-              <button
-                className="p-2 bg-[#FFDC93] rounded-lg"
+              <CreateNodeButton
+                title="Add Splitter"
+                onClick={() => addSplitterNode(false)}
+              />
+              <CreateNodeButton
+                title="Add Diversifier"
+                onClick={() => addSplitterNode(true)}
+              />
+              <CreateNodeButton
+                title="Deploy Network"
                 onClick={deployNetworkOnClick}
-              >
-                DEPLOY NETWORK
-              </button>
-              <button
-                className="p-2 bg-[#FFDC93] rounded-lg"
-                onClick={addSplitterNode}
-              >
-                Create Splitter
-              </button>
+              />
             </div>
           </div>
         </Card>
@@ -420,7 +391,10 @@ export default function DragDrop() {
           <NetworkModal
             isOpen={isNetworkModalOpen}
             title="Update Node"
-            doneButtonOnClick={() => setIsNetworkModalOpen(false)}
+            doneButtonOnClick={() => {
+              onPaneClick()
+              setIsNetworkModalOpen(false)
+            }}
             resetButtonOnClick={() => onConfirmModal("reset")}
             contractInfoData={{
               ...selectedNode.data.contractInfo,
@@ -442,5 +416,30 @@ export default function DragDrop() {
         </>
       )}
     </Layout>
+  )
+}
+
+const CreateNodeButton = ({
+  title,
+  onClick,
+}: {
+  title: string
+  onClick: () => void
+}) => {
+  return (
+    <button
+      className={clsx(
+        "flex items-center justify-center w-[240px] h-[80px] border-dashed border-4 border-[#C3D1DD] rounded-2xl bg-white",
+        "hover:border-black hover:text-black group"
+      )}
+      onClick={onClick}
+    >
+      <Text
+        text={title}
+        color="#C3D1DD"
+        size="20"
+        customStyle="group-hover:!text-black"
+      />
+    </button>
   )
 }
