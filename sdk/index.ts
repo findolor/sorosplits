@@ -3,6 +3,7 @@ import {
   TokenContract,
   NameServiceContract,
   DeployerContract,
+  DiversifierContract,
 } from "./contracts"
 import { useSplitterContract, useTokenContract } from "./hooks"
 
@@ -11,6 +12,7 @@ export default {
   TokenContract,
   NameServiceContract,
   DeployerContract,
+  DiversifierContract,
   useSplitterContract,
   useTokenContract,
 }
