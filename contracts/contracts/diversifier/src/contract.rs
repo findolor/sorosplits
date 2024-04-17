@@ -1,8 +1,9 @@
 use soroban_sdk::{
-    contract, contractimpl, contractmeta, vec, Address, Bytes, BytesN, Env, Error, String, Symbol,
-    Val, Vec,
+    auth::{ContractContext, InvokerContractAuthEntry, SubContractInvocation},
+    contract, contractimpl, contractmeta, vec, Address, Bytes, BytesN, Env, Error, IntoVal, String,
+    Symbol, Val, Vec,
 };
-use sorosplits_utils::token::{check_token, get_token_balance};
+use sorosplits_utils::token::{check_token, get_token_client};
 
 use crate::{
     errors::Error as ContractError,
@@ -17,12 +18,16 @@ mod splitter_contract {
 use splitter_contract::{ConfigDataKey, Contract as SplitterContract, ShareDataKey};
 
 mod soroswap_router {
-    soroban_sdk::contractimport!(file = "../../soroswap_router.optimized.wasm",);
+    soroban_sdk::contractimport!(file = "../../wasm_external/soroswap_router.optimized.wasm",);
 }
 use soroswap_router::Client as SoroswapRouterClient;
+mod soroswap_pair {
+    soroban_sdk::contractimport!(file = "../../wasm_external/soroswap_pair.optimized.wasm",);
+}
+use soroswap_pair::Client as SoroswapPairClient;
 
 // TESTNET
-const SOROSWAP_ROUTER_ADDRESS: &str = "CDBJEDVH46N27XEQ4QFKHIXA2LTQXKPYLL45XPANNL57RPCYPMLMDD6Y";
+const SOROSWAP_ROUTER_ADDRESS: &str = "CDGHOS7DDZ7DB24J7TMFDEAIR7LS7GLMT5J5KEZMUF6MSX5BFHCXQIB3";
 
 contractmeta!(
     key = "desc",
@@ -161,52 +166,76 @@ impl DiversifierTrait for Diversifier {
             return Err(ContractError::InvalidSwapToken);
         }
 
-        let token_balance =
-            get_token_balance(&env, &token_address, &env.current_contract_address());
+        let token_client = get_token_client(&env, &token_address);
+
+        let token_balance = token_client.balance(&env.current_contract_address());
         if token_balance == 0 || amount > token_balance {
             return Err(ContractError::InsufficientTokenBalance);
         }
 
-        let splitter_address = DiversifierConfig::get(&env).unwrap().splitter_address;
-        let sorosplits_client = splitter_contract::Client::new(&env, &splitter_address);
+        let splitter_client = splitter_contract::Client::new(&env, &config.splitter_address);
         let soroswap_router_client = SoroswapRouterClient::new(
             &env,
             &Address::from_string(&String::from_str(&env, &SOROSWAP_ROUTER_ADDRESS)),
         );
 
-        // Get the correct order of tokens
-        let (token_a, token_b) =
-            soroswap_router_client.sort_tokens(&token_address, &swap_token_address);
+        let pair_contract_address =
+            soroswap_router_client.router_pair_for(&token_address, &swap_token_address);
+        let soroswap_pair_client = SoroswapPairClient::new(&env, &pair_contract_address);
 
         // Get the reserves of the tokens
-        let (reserve_in, reserve_out) = soroswap_router_client.get_reserves(
-            &soroswap_router_client.get_factory(),
-            &token_a,
-            &token_b,
-        );
+        let (reserve_in, reserve_out) = soroswap_pair_client.get_reserves();
 
         // Get the maximum amount of tokens that will be received
         let max_amount_out =
-            soroswap_router_client.get_amount_out(&amount, &reserve_in, &reserve_out);
+            soroswap_router_client.router_get_amount_out(&amount, &reserve_in, &reserve_out);
+
+        // Authorize token transfer for the current contract
+        // Without this tokens cannot be transferred from the current contract to the pair contract
+        env.authorize_as_current_contract(vec![
+            &env,
+            InvokerContractAuthEntry::Contract(SubContractInvocation {
+                context: ContractContext {
+                    contract: token_address,
+                    fn_name: Symbol::new(&env, "transfer"),
+                    args: (
+                        env.current_contract_address(),
+                        pair_contract_address,
+                        amount,
+                    )
+                        .into_val(&env),
+                },
+                sub_invocations: vec![&env],
+            }),
+        ]);
 
         // Swap the tokens
-        let swapped_amounts = soroswap_router_client.swap_exact_tokens_for_tokens(
+        let res = soroswap_router_client.swap_exact_tokens_for_tokens(
             &amount,
             &max_amount_out,
             &swap_path,
             &env.current_contract_address(),
             &u64::MAX,
         );
-        let total_swapped_amount = swapped_amounts.iter().sum();
+        let total_swapped_amount = res.last().unwrap();
+
+        // TODO: TX will not pass if we uncomment these
+        // Max CPU instructions limit is 100M and this will exceed it
+
+        // Transfer the swapped tokens to the splitter contract
+        get_token_client(&env, &swap_token_address).transfer(
+            &env.current_contract_address(),
+            &config.splitter_address,
+            &total_swapped_amount,
+        );
 
         // Distribute the swapped tokens
-        sorosplits_client.distribute_tokens(&swap_token_address, &total_swapped_amount);
+        splitter_client.distribute_tokens(&swap_token_address, &total_swapped_amount);
 
         Ok(())
     }
 
     fn get_diversifier_config(env: Env) -> Result<DiversifierConfig, ContractError> {
-        DiversifierConfig::get(&env)?.require_admin()?;
         Ok(DiversifierConfig::get(&env).unwrap())
     }
 
@@ -214,7 +243,6 @@ impl DiversifierTrait for Diversifier {
         env: Env,
         token_address: Address,
     ) -> Result<Vec<Address>, ContractError> {
-        DiversifierConfig::get(&env)?.require_admin()?;
         Ok(DiversifierWhitelistedSwapTokens::get(&env, &token_address))
     }
 }

@@ -53,10 +53,23 @@ printf "%s" "$DEPLOYER_CONTRACT_ID" > scripts/artifacts/deployer_contract_id
 
 echo "9. Deploying the token contract to the network"
 export TOKEN_CONTRACT_ID=$(soroban contract deploy \
-  --wasm token_contract.wasm \
+  --wasm soroban_token_contract.wasm \
   --source sorosplits-wallet \
   --network testnet)
 printf "%s" "$TOKEN_CONTRACT_ID" > scripts/artifacts/token_contract_id
+
+soroban contract invoke \
+--source-account sorosplits-wallet \
+--rpc-url "$SOROBAN_RPC_URL" \
+--network-passphrase "$SOROBAN_NETWORK_PASSPHRASE" \
+--network "$NETWORK" \
+    --id "$TOKEN_CONTRACT_ID" \
+    -- \
+    initialize \
+    --admin "$SOROSPLITS_WALLET" \
+--decimal 7 \
+--name "Custom Token" \
+--symbol "CTK"
 
 echo "10. Contract deployment complete. "
 echo "Contract details: "

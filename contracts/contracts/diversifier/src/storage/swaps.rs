@@ -9,12 +9,12 @@ pub struct DiversifierWhitelistedSwapTokens {}
 impl DiversifierWhitelistedSwapTokens {
     pub fn set(e: &Env, token_address: Address, swap_tokens: Vec<Address>) {
         let key = DiversifierDataKeys::SwapTokens(token_address.clone());
-        e.storage().instance().set(&key, &swap_tokens);
+        e.storage().persistent().set(&key, &swap_tokens);
     }
 
     pub fn get(e: &Env, token_address: &Address) -> Vec<Address> {
         let key = DiversifierDataKeys::SwapTokens(token_address.clone());
-        let res: Option<Vec<Address>> = e.storage().instance().get(&key);
+        let res: Option<Vec<Address>> = e.storage().persistent().get(&key);
         match res {
             Some(tokens) => {
                 bump_persistent(e, &key);
