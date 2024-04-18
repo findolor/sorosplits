@@ -32,17 +32,31 @@ const deployerHandlers = new Elysia({ prefix: "/deployer" })
     if (!user) {
       throw new AuthenticationError("Unauthorized!")
     }
-    const contract = new SoroSplitsSDK.DeployerContract(
+    const deployerContract = new SoroSplitsSDK.DeployerContract(
       "testnet",
       user.publicKey
     )
-    return { user, contract }
+    const splitterContract = new SoroSplitsSDK.SplitterContract(
+      "testnet",
+      user.publicKey
+    )
+    const diversifierContract = new SoroSplitsSDK.DiversifierContract(
+      "testnet",
+      user.publicKey
+    )
+    return { user, deployerContract, splitterContract, diversifierContract }
   })
   .post(
-    "/network",
-    async ({ user, contract, body: { transaction }, prisma }) => {
+    "/diversifier",
+    async ({
+      user,
+      deployerContract,
+      diversifierContract,
+      body: { transaction },
+      prisma,
+    }) => {
       if (
-        !contract.verifyTransactionSourceAccount({
+        !deployerContract.verifyTransactionSourceAccount({
           sourceAccount: user.publicKey,
           xdrString: transaction,
         })
@@ -50,16 +64,88 @@ const deployerHandlers = new Elysia({ prefix: "/deployer" })
         throw new Error("Invalid source account")
       }
 
-      const decodedTransactionParams = contract.decodeTransactionParams({
-        xdrString: transaction,
+      const decodedTransactionParams = deployerContract.decodeTransactionParams(
+        {
+          xdrString: transaction,
+        }
+      )
+
+      const sendTxRes = await deployerContract.sendTransaction(transaction)
+      const getTxRes = await deployerContract.getTransaction(sendTxRes)
+      const contractAddress =
+        deployerContract.parseDeployedContractAddress(getTxRes)
+
+      const splitterAddress = (
+        await diversifierContract.query({
+          contractId: contractAddress,
+          method: "get_diversifier_config",
+          args: {},
+        })
+      ).splitter_address
+
+      const splitterRecord = await prisma.splitterContract.create({
+        data: {
+          address: splitterAddress,
+          ownerId: user.id,
+          transactions: {
+            create: {
+              action: decodedTransactionParams.functionName,
+              data: decodedTransactionParams.args as unknown as Prisma.JsonObject,
+            },
+          },
+        },
       })
+      await prisma.diversifierContract.create({
+        data: {
+          address: contractAddress,
+          ownerId: user.id,
+          splitterContractId: splitterRecord.id,
+          transactions: {
+            create: {
+              action: decodedTransactionParams.functionName,
+              data: decodedTransactionParams.args as unknown as Prisma.JsonObject,
+            },
+          },
+        },
+      })
+
+      return { contractAddress }
+    },
+    {
+      body: t.Object({
+        transaction: t.String(),
+      }),
+    }
+  )
+  .post(
+    "/network",
+    async ({
+      user,
+      deployerContract,
+      diversifierContract,
+      body: { transaction },
+      prisma,
+    }) => {
+      if (
+        !deployerContract.verifyTransactionSourceAccount({
+          sourceAccount: user.publicKey,
+          xdrString: transaction,
+        })
+      ) {
+        throw new Error("Invalid source account")
+      }
+
+      const decodedTransactionParams = deployerContract.decodeTransactionParams(
+        {
+          xdrString: transaction,
+        }
+      )
       const txParams = decodedTransactionParams.args as Record<string, any>[]
 
-      const sendTxRes = await contract.sendTransaction(transaction)
-      const getTxRes = await contract.getTransaction(sendTxRes)
-      const contracts = await contract.parseDeployedNetworkContractAddresses(
-        getTxRes
-      )
+      const sendTxRes = await deployerContract.sendTransaction(transaction)
+      const getTxRes = await deployerContract.getTransaction(sendTxRes)
+      const contracts =
+        await deployerContract.parseDeployedNetworkContractAddresses(getTxRes)
 
       for (let contract of contracts) {
         let txParam = txParams.find((item: any) => item.id === contract.id)
@@ -72,6 +158,39 @@ const deployerHandlers = new Elysia({ prefix: "/deployer" })
             data: {
               address: contract.address,
               ownerId: user.id,
+              transactions: {
+                create: {
+                  action: decodedTransactionParams.functionName,
+                  data: decodedTransactionParams.args as unknown as Prisma.JsonObject,
+                },
+              },
+            },
+          })
+        } else {
+          const splitterAddress = (
+            await diversifierContract.query({
+              contractId: contract.address,
+              method: "get_diversifier_config",
+              args: {},
+            })
+          ).splitter_address
+          const splitterRecord = await prisma.splitterContract.create({
+            data: {
+              address: splitterAddress,
+              ownerId: user.id,
+              transactions: {
+                create: {
+                  action: decodedTransactionParams.functionName,
+                  data: decodedTransactionParams.args as unknown as Prisma.JsonObject,
+                },
+              },
+            },
+          })
+          await prisma.diversifierContract.create({
+            data: {
+              address: contract.address,
+              ownerId: user.id,
+              splitterContractId: splitterRecord.id,
               transactions: {
                 create: {
                   action: decodedTransactionParams.functionName,
