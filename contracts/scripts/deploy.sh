@@ -53,7 +53,7 @@ printf "%s" "$DEPLOYER_CONTRACT_ID" > scripts/artifacts/deployer_contract_id
 
 echo "9. Deploying the token contract to the network"
 export TOKEN_CONTRACT_ID=$(soroban contract deploy \
-  --wasm soroban_token_contract.wasm \
+  --wasm wasm_external/soroban_token_contract.wasm \
   --source sorosplits-wallet \
   --network testnet)
 printf "%s" "$TOKEN_CONTRACT_ID" > scripts/artifacts/token_contract_id

@@ -81,6 +81,9 @@ pub trait DiversifierTrait {
         amount: i128,
     ) -> Result<(), ContractError>;
 
+    /// Toggles the diversifier active state.
+    fn toggle_diversifier(env: Env) -> Result<(), ContractError>;
+
     /// Gets the contract configuration.
     ///
     /// ## Returns
@@ -235,6 +238,12 @@ impl DiversifierTrait for Diversifier {
         // Distribute the swapped tokens
         splitter_client.distribute_tokens(&swap_token_address, &total_swapped_amount);
 
+        Ok(())
+    }
+
+    fn toggle_diversifier(env: Env) -> Result<(), ContractError> {
+        DiversifierConfig::get(&env)?.require_admin()?;
+        DiversifierConfig::toggle_diversifier_active(&env)?;
         Ok(())
     }
 

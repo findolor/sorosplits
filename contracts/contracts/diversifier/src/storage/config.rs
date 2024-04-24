@@ -31,10 +31,11 @@ impl DiversifierConfig {
     }
 
     pub fn toggle_diversifier_active(e: &Env) -> Result<(), Error> {
-        let config = DiversifierConfig::get(e)?;
+        let mut config = DiversifierConfig::get(e)?;
+        config.diversifier_active = !config.diversifier_active;
         e.storage()
             .instance()
-            .set(&DiversifierDataKeys::Config, &!config.diversifier_active);
+            .set(&DiversifierDataKeys::Config, &config);
         Ok(())
     }
 
