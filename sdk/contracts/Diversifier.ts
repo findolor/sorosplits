@@ -17,6 +17,7 @@ export type CallMethod =
   | "init_diversifier"
   | "update_whitelisted_swap_tokens"
   | "swap_and_distribute_tokens"
+  | "toggle_diversifier"
 
 export type MethodArgs<T extends CallMethod> = T extends "init_diversifier"
   ? {
@@ -30,6 +31,8 @@ export type MethodArgs<T extends CallMethod> = T extends "init_diversifier"
   ? { tokenAddress: string; swapTokens: string[] }
   : T extends "swap_and_distribute_tokens"
   ? { swapPath: string[]; amount: number }
+  : T extends "toggle_diversifier"
+  ? {}
   : never
 
 export interface CallContractArgs<T extends CallMethod> {
@@ -177,6 +180,9 @@ export class DiversifierContract extends BaseContract {
           ]
         )
         break
+      case "toggle_diversifier":
+        operation = contract.call(method)
+        break
       default:
         throw new Error("Invalid method")
     }
@@ -272,6 +278,8 @@ export class DiversifierContract extends BaseContract {
         break
       case "swap_and_distribute_tokens":
         response.args = this.decodeSwapAndDistributeTokensParams(args)
+        break
+      case "toggle_diversifier":
         break
       default:
         throw new Error("Invalid transaction function!")

@@ -146,7 +146,7 @@ export default class BaseContract {
     let simulatedTx = await server.simulateTransaction(tx)
 
     if (SorobanRpc.Api.isSimulationError(simulatedTx)) {
-      throw new Error("Query failed")
+      throw new Error(simulatedTx.error)
     }
     let response =
       simulatedTx as SorobanRpc.Api.SimulateTransactionSuccessResponse

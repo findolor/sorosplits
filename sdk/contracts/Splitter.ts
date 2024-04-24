@@ -26,6 +26,7 @@ export type CallMethod =
   | "update_shares"
   | "update_name"
   | "lock_contract"
+  | "withdraw_allocation"
 
 export interface CallContractArgs<T extends CallMethod> {
   contractId: string
@@ -52,6 +53,8 @@ export type MethodArgs<T extends CallMethod> = T extends "init_splitter"
   ? { name: string }
   : T extends "lock_contract"
   ? {}
+  : T extends "withdraw_allocation"
+  ? { tokenAddress: string; shareholder: string; amount: number }
   : never
 
 export type QueryMethod =
@@ -90,9 +93,11 @@ export type QueryContractResult<T extends QueryMethod> = T extends "get_config"
   : T extends "list_shares"
   ? ShareDataProps[]
   : T extends "get_allocation"
-  ? number
+  ? BigInt
   : T extends "list_whitelisted_tokens"
   ? string[]
+  : T extends "get_unused_tokens"
+  ? BigInt
   : never
 
 export interface DeployAndInitContractArgs {
@@ -305,6 +310,17 @@ export class SplitterContract extends BaseContract {
         operation = contract.call(
           method,
           ...[xdr.ScVal.scvBytes(Buffer.from(updateNameArgs.name, "utf-8"))]
+        )
+        break
+      case "withdraw_allocation":
+        let withdrawAllocationArgs = args as MethodArgs<"withdraw_allocation">
+        operation = contract.call(
+          method,
+          ...[
+            new Address(withdrawAllocationArgs.tokenAddress).toScVal(),
+            new Address(withdrawAllocationArgs.shareholder).toScVal(),
+            nativeToScVal(withdrawAllocationArgs.amount, { type: "i128" }),
+          ]
         )
         break
       default:
