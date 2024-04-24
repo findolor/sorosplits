@@ -24,8 +24,7 @@ const deployerHandlers = new Elysia({ prefix: "/deployer" })
       select: {
         id: true,
         publicKey: true,
-        splitterContracts: true,
-        diversifierContracts: true,
+        contracts: true,
         pinnedContractIds: true,
       },
     })
@@ -82,24 +81,14 @@ const deployerHandlers = new Elysia({ prefix: "/deployer" })
           args: {},
         })
       ).splitter_address
-
-      const splitterRecord = await prisma.splitterContract.create({
-        data: {
-          address: splitterAddress,
-          ownerId: user.id,
-          transactions: {
-            create: {
-              action: decodedTransactionParams.functionName,
-              data: decodedTransactionParams.args as unknown as Prisma.JsonObject,
-            },
-          },
-        },
-      })
-      await prisma.diversifierContract.create({
+      await prisma.contract.create({
         data: {
           address: contractAddress,
           ownerId: user.id,
-          splitterContractId: splitterRecord.id,
+          type: "diversifier",
+          data: {
+            splitterAddress,
+          },
           transactions: {
             create: {
               action: decodedTransactionParams.functionName,
@@ -154,10 +143,12 @@ const deployerHandlers = new Elysia({ prefix: "/deployer" })
         }
 
         if (txParam.isSplitter) {
-          await prisma.splitterContract.create({
+          await prisma.contract.create({
             data: {
               address: contract.address,
               ownerId: user.id,
+              type: "splitter",
+              data: {},
               transactions: {
                 create: {
                   action: decodedTransactionParams.functionName,
@@ -174,23 +165,14 @@ const deployerHandlers = new Elysia({ prefix: "/deployer" })
               args: {},
             })
           ).splitter_address
-          const splitterRecord = await prisma.splitterContract.create({
-            data: {
-              address: splitterAddress,
-              ownerId: user.id,
-              transactions: {
-                create: {
-                  action: decodedTransactionParams.functionName,
-                  data: decodedTransactionParams.args as unknown as Prisma.JsonObject,
-                },
-              },
-            },
-          })
-          await prisma.diversifierContract.create({
+          await prisma.contract.create({
             data: {
               address: contract.address,
               ownerId: user.id,
-              splitterContractId: splitterRecord.id,
+              type: "diversifier",
+              data: {
+                splitterAddress,
+              },
               transactions: {
                 create: {
                   action: decodedTransactionParams.functionName,

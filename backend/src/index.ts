@@ -6,6 +6,8 @@ import {
   splitterHandlers,
   authenticationHandlers,
   deployerHandlers,
+  contractHandlers,
+  unprotectedHandlers,
 } from "./handlers"
 import {
   AuthenticationError,
@@ -58,6 +60,8 @@ const application = new Elysia()
     app
       .get("/health", () => {})
       .use(authenticationHandlers)
+      .use(unprotectedHandlers)
+      .use(contractHandlers)
       .use(splitterHandlers)
       .use(deployerHandlers)
   )

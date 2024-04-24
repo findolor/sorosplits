@@ -1,5 +1,5 @@
 # > 1. OS SET UP --
-FROM ubuntu:22.04
+FROM --platform=linux/amd64 ubuntu:22.04
 
 # > 1.a -- Install various essential dependencies
 RUN apt-get update && apt-get install -y curl gnupg zip unzip

@@ -7,34 +7,6 @@ import SoroSplitsSDK from "@sorosplits/sdk"
 
 const splitterHandlers = new Elysia({ prefix: "/splitter" })
   .decorate("prisma", new PrismaClient())
-  .get(
-    "/transactions",
-    async ({ prisma, query: { address } }) => {
-      // TODO: Figure out pagination
-      const data = await prisma.splitterContract.findUnique({
-        where: { address },
-        select: {
-          transactions: {
-            take: 10,
-            select: {
-              createdAt: true,
-              action: true,
-              data: true,
-            },
-            orderBy: {
-              createdAt: "desc",
-            },
-          },
-        },
-      })
-      return data ?? { transactions: [] }
-    },
-    {
-      query: t.Object({
-        address: t.String(),
-      }),
-    }
-  )
   .use(bearer())
   .use(
     jwt({
@@ -52,7 +24,9 @@ const splitterHandlers = new Elysia({ prefix: "/splitter" })
       select: {
         id: true,
         publicKey: true,
-        splitterContracts: true,
+        contracts: {
+          where: { type: "splitter" },
+        },
         pinnedContractIds: true,
       },
     })
@@ -87,10 +61,12 @@ const splitterHandlers = new Elysia({ prefix: "/splitter" })
         getTxRes
       )
 
-      await prisma.splitterContract.create({
+      await prisma.contract.create({
         data: {
           address: contractAddress,
           ownerId: user.id,
+          type: "splitter",
+          data: {},
           transactions: {
             create: {
               action: decodedTransactionParams.functionName,
@@ -108,125 +84,5 @@ const splitterHandlers = new Elysia({ prefix: "/splitter" })
       }),
     }
   )
-  .post(
-    "/call",
-    async ({ user, contract, body: { transaction }, prisma }) => {
-      if (
-        !contract.verifyTransactionSourceAccount({
-          sourceAccount: user.publicKey,
-          xdrString: transaction,
-        })
-      ) {
-        throw new Error("Invalid source account")
-      }
-
-      const decodedTransactionParams = contract.decodeTransactionParams({
-        xdrString: transaction,
-      })
-
-      const sendTxRes = await contract.sendTransaction(transaction)
-      await contract.getTransaction(sendTxRes)
-
-      await prisma.splitterContract.update({
-        where: { address: decodedTransactionParams.contractAddress },
-        data: {
-          transactions: {
-            create: {
-              action: decodedTransactionParams.functionName,
-              data: decodedTransactionParams.args as unknown as Prisma.JsonObject,
-            },
-          },
-        },
-      })
-
-      return {}
-    },
-    {
-      body: t.Object({
-        transaction: t.String(),
-      }),
-    }
-  )
-  .post(
-    "/toggle-pin",
-    async ({ prisma, user, body: { address } }) => {
-      if (user.pinnedContractIds.includes(address)) {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: {
-            pinnedContractIds: {
-              set: user.pinnedContractIds.filter((id) => id !== address),
-            },
-          },
-        })
-      } else {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: {
-            pinnedContractIds: {
-              push: address,
-            },
-          },
-        })
-      }
-      return {}
-    },
-    {
-      body: t.Object({
-        address: t.String(),
-      }),
-    }
-  )
-  .get(
-    "/is-pinned",
-    async ({ user, query: { address } }) => {
-      return { pinned: user.pinnedContractIds.includes(address) }
-    },
-    {
-      query: t.Object({
-        address: t.String(),
-      }),
-    }
-  )
-  .get("/my-contracts", async ({ user, contract }) => {
-    const data = await Promise.all(
-      user.splitterContracts.map(async (record) => {
-        const item = await contract.query({
-          contractId: record.address,
-          method: "get_config",
-          args: {},
-        })
-        return {
-          address: record.address,
-          name: Buffer.from(item.name).toString("utf-8"),
-          createdAt: record.createdAt,
-        }
-      })
-    )
-    return data
-  })
-  .get("/pinned", async ({ prisma, user, contract }) => {
-    const data = await Promise.all(
-      user.pinnedContractIds.map(async (address) => {
-        const record = await prisma.splitterContract.findUnique({
-          where: { address },
-        })
-        if (!record) {
-          return null
-        }
-        const item = await contract.query({
-          contractId: record.address,
-          method: "get_config",
-          args: {},
-        })
-        return {
-          address: record.address,
-          name: Buffer.from(item.name).toString("utf-8"),
-          createdAt: record.createdAt,
-        }
-      })
-    )
-    return data.filter((item) => item !== null)
-  })
 
 export { splitterHandlers }
