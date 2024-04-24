@@ -10,6 +10,7 @@ import { Keypair, StrKey } from "stellar-sdk"
 import useContracts from "@/hooks/contracts/useContracts"
 import Loading from "../Loading"
 import useAppStore from "@/store/index"
+import { truncateAddressMega } from "@/utils/truncateAddress"
 
 export interface ShareholderCardData {
   address: string
@@ -168,12 +169,19 @@ const ShareholdersCard: React.FC<ShareholdersCardProps> = ({
                   edit && "border-2 border-[#EBF2F7] p-4 px-2"
                 )}
               >
-                <Text
-                  text={item.domain ? item.domainName || "" : item.address}
-                  size="12"
-                  lineHeight="12"
-                  letterSpacing="-1.5"
-                />
+                <button onClick={() => alert("copied")}>
+                  <Text
+                    text={
+                      item.domain
+                        ? item.domainName || ""
+                        : truncateAddressMega(item.address)
+                    }
+                    size="12"
+                    lineHeight="12"
+                    letterSpacing="-1.5"
+                    customStyle="hover:underline"
+                  />
+                </button>
                 <Text
                   text={item.share + "%"}
                   size="12"

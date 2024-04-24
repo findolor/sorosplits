@@ -15,7 +15,6 @@ export interface WhitelistedTokensCardData {
   name: string
   symbol: string
   decimals: number
-  balance: string
 }
 
 interface WhitelistedTokensCardProps {
@@ -122,13 +121,6 @@ const WhitelistedTokensCard: React.FC<WhitelistedTokensCardProps> = ({
         />
         <div className="flex items-center gap-4">
           <Text
-            text="Balance"
-            size="14"
-            lineHeight="16"
-            letterSpacing="-1.5"
-            color="#687B8C"
-          />
-          <Text
             text="Symbol"
             size="14"
             lineHeight="16"
@@ -178,12 +170,6 @@ const WhitelistedTokensCard: React.FC<WhitelistedTokensCardProps> = ({
                     letterSpacing="-1.5"
                   />
                   <div className="flex items-center">
-                    <Text
-                      text={item.balance}
-                      size="12"
-                      lineHeight="12"
-                      letterSpacing="-1.5"
-                    />
                     <div className="w-[65px] flex justify-end">
                       <Text
                         text={item.symbol}

@@ -49,7 +49,7 @@ const PinnedSplittersCard: React.FC<PinnedSplittersCardProps> = ({
                   alt="Info icon"
                 />
                 <Text
-                  text="You have not pinned any splitters yet."
+                  text="You have not pinned any contracts yet."
                   size="12"
                   color="#687B8C"
                 />

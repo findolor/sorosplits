@@ -1,6 +1,5 @@
 import React from "react"
 import useAppStore from "../../store"
-import Loading from "../Loading"
 
 interface BaseModalProps {
   children: React.ReactNode

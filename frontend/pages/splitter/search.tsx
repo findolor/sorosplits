@@ -2,9 +2,7 @@ import { useRouter } from "next/router"
 import { useEffect, useMemo, useState } from "react"
 import Search from "@/components/Input/Search"
 import PageHeader from "@/components/PageHeader"
-import ContractInfoCard, {
-  TokenBalanceData,
-} from "@/components/SplitterData/ContractInfo"
+import ContractInfoCard from "@/components/SplitterData/ContractInfo"
 import ShareholdersCard, {
   ShareholderCardData,
 } from "@/components/SplitterData/Shareholders"
@@ -12,7 +10,6 @@ import {
   ContractConfigResult,
   ShareDataProps,
 } from "@sorosplits/sdk/lib/contracts/Splitter"
-import { ContractConfigResult as DiversifierConfigResult } from "@sorosplits/sdk/lib/contracts/Diversifier"
 import useAppStore from "@/store/index"
 import { loadingToast, successToast, errorToast } from "@/utils/toast"
 import {
@@ -31,10 +28,10 @@ import ActivityCard, {
 import useSplitter from "@/hooks/contracts/useSplitter"
 import useToken from "@/hooks/contracts/useToken"
 import useModal from "@/hooks/modals/useConfirmation"
-import { getBalance } from "@/utils/getBalance"
 import Layout from "@/components/Layout"
 import Loading from "@/components/Loading"
 import useDiversifier from "@/hooks/contracts/useDiversifier"
+import TokenBalancesCard from "@/components/SplitterData/TokenBalancesCard"
 
 const NewSearch: React.FC = () => {
   const router = useRouter()
@@ -53,7 +50,8 @@ const NewSearch: React.FC = () => {
   // Initial state for contract data
   // Comes from the contract itself
   const [contractOwner, setContractOwner] = useState("")
-  const [isDiversifierActive, setIsDiversifierActive] = useState(false)
+  const [contractIsDiversifierActive, setContractIsDiversifierActive] =
+    useState(false)
   const [contractConfig, setContractConfig] = useState<ContractConfigResult>()
   const [contractShares, setContractShares] = useState<ShareDataProps[]>()
   const [contractWhitelistedTokens, setContractWhitelistedTokens] = useState<
@@ -71,12 +69,14 @@ const NewSearch: React.FC = () => {
     whitelistedTokensCardDataLoading,
     setWhitelistedTokensCardDataLoading,
   ] = useState(true)
-  const [contractTotalDistributionsData, setContractTotalDistributionsData] =
-    useState<TokenBalanceData[]>([])
 
   // Updated state for contract data
   const [updatedContractName, setUpdatedContractName] = useState("")
   const [updatedContractUpdatable, setUpdatedContractUpdatable] = useState(true)
+  const [
+    updatedContractIsDiversifierActive,
+    setUpdatedContractIsDiversifierActive,
+  ] = useState(false)
   const [updatedContractShares, setUpdatedContractShares] = useState<
     ShareDataProps[]
   >([])
@@ -133,45 +133,29 @@ const NewSearch: React.FC = () => {
     return diversifierContractAddress || splitterContractAddress
   }, [diversifierContractAddress, splitterContractAddress])
 
-  // Returns if the diversifier is active and address of the splitter contract
-  const getDiversifierConfig = async (): Promise<
-    [boolean, DiversifierConfigResult | undefined]
-  > => {
-    try {
-      const diversifierConfig = await diversifier.query.getDiversifierConfig(
-        searchAddress
-      )
-      return [true, diversifierConfig]
-    } catch (error) {
-      return [false, undefined]
-    }
-  }
-
   useEffect(() => {
     const fetchContractData = setTimeout(async () => {
       try {
         resetContractData()
         if (searchAddress === "") return
+        setDiversifierContractAddress(searchAddress)
 
         loadingToast("Searching for contract...")
 
-        let splitterAddress
+        const diversifierConfig = await diversifier.query.getDiversifierConfig(
+          searchAddress
+        )
 
-        const [isDiversifier, diversifierConfig] = await getDiversifierConfig()
-        setIsDiversifierActive(isDiversifier)
+        setContractOwner(diversifierConfig.admin)
+        setContractIsDiversifierActive(diversifierConfig.diversifier_active)
+        setUpdatedContractIsDiversifierActive(
+          diversifierConfig.diversifier_active
+        )
 
-        if (isDiversifier) {
-          if (!diversifierConfig)
-            throw new Error("Diversifier config not found")
-          splitterAddress = diversifierConfig.splitter_address.toString()
-          setContractOwner(diversifierConfig.admin)
-          setDiversifierContractAddress(searchAddress)
-        } else splitterAddress = searchAddress
-
-        setSplitterContractAddress(searchAddress)
+        const splitterAddress = diversifierConfig.splitter_address.toString()
+        setSplitterContractAddress(splitterAddress)
 
         const config = await splitter.query.getConfig(splitterAddress)
-        if (!isDiversifier) setContractOwner(config.admin)
         setContractConfig(config)
         setUpdatedContractName(new TextDecoder().decode(config.name).toString())
         setUpdatedContractUpdatable(config.updatable)
@@ -192,11 +176,9 @@ const NewSearch: React.FC = () => {
         setContractWhitelistedTokens(whitelistedTokens)
         setUpdatedContractWhitelistedTokens(whitelistedTokens)
 
-        if (isDiversifier) {
-          // TODO: Call diversifer contract queries
-        }
+        // TODO: Call diversifier contract queries
 
-        successToast("Splitter contract found!")
+        successToast("Contract found!")
       } catch (error: any) {
         resetContractData()
         errorToast(error)
@@ -210,6 +192,7 @@ const NewSearch: React.FC = () => {
   const resetContractData = () => {
     setContractConfig(undefined)
     setContractShares(undefined)
+    setContractIsDiversifierActive(false)
     setContractWhitelistedTokens([])
     setWhitelistedTokensCardData([])
     setWhitelistedTokensCardDataLoading(true)
@@ -225,7 +208,12 @@ const NewSearch: React.FC = () => {
     if (contractShares && contractConfig && contractWhitelistedTokens) {
       fetch()
     }
-  }, [contractShares, contractConfig, contractWhitelistedTokens])
+  }, [
+    contractShares,
+    contractConfig,
+    contractWhitelistedTokens,
+    contractIsDiversifierActive,
+  ])
 
   const shareholdersCardData = useMemo(() => {
     if (!contractShares) return []
@@ -251,9 +239,9 @@ const NewSearch: React.FC = () => {
       owner: contractOwner,
       name: new TextDecoder().decode(contractConfig.name).toString(),
       updatable: contractConfig.updatable,
-      isDiversifierActive,
+      isDiversifierActive: contractIsDiversifierActive,
     }
-  }, [isDiversifierActive, contractConfig])
+  }, [contractIsDiversifierActive, contractConfig])
 
   useEffect(() => {
     const fetch = async () => {
@@ -264,25 +252,23 @@ const NewSearch: React.FC = () => {
 
       setWhitelistedTokensCardDataLoading(true)
 
-      let whitelistedTokensCardData: WhitelistedTokensCardData[] = []
+      const tokenDataPromises = contractWhitelistedTokens.map(
+        async (tokenAddress) => {
+          const [name, symbol, decimals] = await Promise.all([
+            token.query.getName(tokenAddress),
+            token.query.getSymbol(tokenAddress),
+            token.query.getDecimal(tokenAddress),
+          ])
 
-      for (let tokenAddress of contractWhitelistedTokens) {
-        const tokenName = await token.query.getName(tokenAddress)
-        const tokenSymbol = await token.query.getSymbol(tokenAddress)
-        const tokenDecimal = await token.query.getDecimal(tokenAddress)
-        const tokenAmount = await token.query.getBalance(
-          tokenAddress,
-          contractAddress
-        )
-
-        whitelistedTokensCardData.push({
-          address: tokenAddress,
-          name: tokenName,
-          symbol: tokenSymbol,
-          decimals: tokenDecimal,
-          balance: getBalance(tokenAmount, tokenDecimal).toFixed(2),
-        })
-      }
+          return {
+            address: tokenAddress,
+            name,
+            symbol,
+            decimals,
+          }
+        }
+      )
+      const whitelistedTokensCardData = await Promise.all(tokenDataPromises)
 
       setWhitelistedTokensCardData(whitelistedTokensCardData)
       setWhitelistedTokensCardDataLoading(false)
@@ -309,6 +295,8 @@ const NewSearch: React.FC = () => {
       new TextDecoder().decode(contractConfig.name).toString()
     const updatableUpdated =
       updatedContractUpdatable != contractConfig.updatable
+    const isDiversifierActiveUpdated =
+      updatedContractIsDiversifierActive != contractIsDiversifierActive
     const sharesUpdated =
       JSON.stringify(
         updatedContractShares.sort((a, b) =>
@@ -334,13 +322,14 @@ const NewSearch: React.FC = () => {
     return {
       name: nameUpdated,
       updatable: updatableUpdated,
+      isDiversifierActive: isDiversifierActiveUpdated,
       shares: sharesUpdated,
       whitelistedTokens: whitelistedTokensUpdated,
     }
   }
 
   const updateSplitter = async () => {
-    loadingToast("Updating your Splitter contract...")
+    loadingToast("Updating your contract...")
 
     try {
       setLoading(true)
@@ -349,6 +338,7 @@ const NewSearch: React.FC = () => {
       if (
         !updates.name &&
         !updates.updatable &&
+        !updates.isDiversifierActive &&
         !updates.shares &&
         !updates.whitelistedTokens
       ) {
@@ -373,6 +363,10 @@ const NewSearch: React.FC = () => {
           })
         })
       }
+      if (updates.isDiversifierActive) {
+        await diversifier.call.toggleDiversifier(contractAddress)
+        setContractIsDiversifierActive(updatedContractIsDiversifierActive)
+      }
       if (updates.shares) {
         await splitter.call.updateShares(
           contractAddress,
@@ -395,7 +389,7 @@ const NewSearch: React.FC = () => {
 
       setLoading(false)
       setManageSplitter(false)
-      successToast("Splitter contract updated successfully!")
+      successToast("Contract updated successfully!")
       onCancelModal()
     } catch (error: any) {
       setLoading(false)
@@ -403,9 +397,14 @@ const NewSearch: React.FC = () => {
     }
   }
 
-  const onContractInfoCardUpdate = (name: string, updatable: boolean) => {
+  const onContractInfoCardUpdate = (
+    name: string,
+    updatable: boolean,
+    isDiversifierActive: boolean
+  ) => {
     setUpdatedContractName(name)
     setUpdatedContractUpdatable(updatable)
+    setUpdatedContractIsDiversifierActive(isDiversifierActive)
   }
 
   const onShareholderCardUpdate = (data: ShareholderCardData[]) => {
@@ -448,13 +447,13 @@ const NewSearch: React.FC = () => {
     <Layout>
       <div className="mt-10">
         <PageHeader
-          title="Search Splitter"
-          subtitle="Display information about a splitter contract by entering the address below."
+          title="Search Contract"
+          subtitle="Display information about a contract by entering the address below."
         />
 
         <div className="flex justify-center mt-10">
           <Search
-            placeholder="Enter splitter address"
+            placeholder="Enter contract address"
             onChange={onSearchAddressChange}
             value={searchAddress}
           />
@@ -498,8 +497,8 @@ const NewSearch: React.FC = () => {
               </div>
             )}
 
-            <div className="flex justify-between">
-              <div className="flex flex-col gap-4 w-[560px]">
+            <div className="flex justify-between gap-4">
+              <div className="flex flex-col gap-4 w-full">
                 <ShareholdersCard
                   data={shareholdersCardData}
                   onUpdate={onShareholderCardUpdate}
@@ -515,12 +514,16 @@ const NewSearch: React.FC = () => {
                   reset={resetTrigger}
                 />
               </div>
-              <div className="flex flex-col gap-4 w-[423px]">
+              <div className="flex flex-col gap-4 w-full">
                 <ContractInfoCard
                   data={contractInfoCardData}
                   onUpdate={onContractInfoCardUpdate}
                   edit={manageSplitter}
                   reset={resetTrigger}
+                />
+                <TokenBalancesCard
+                  data={whitelistedTokensCardData}
+                  contractAddress={contractAddress}
                 />
                 <ActivityCard data={contractTransactions} />
               </div>
@@ -531,7 +534,7 @@ const NewSearch: React.FC = () => {
         <RenderModal
           title={
             confirmModal[1] === "done"
-              ? "You are about to lock your splitter."
+              ? "You are about to lock your configuration."
               : "Are you sure you want to cancel your changes?"
           }
           message={

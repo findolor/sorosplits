@@ -49,7 +49,7 @@ const OwnedSplittersCard: React.FC<OwnedSplittersCardProps> = ({
                   alt="Info icon"
                 />
                 <Text
-                  text="You have not created any splitters yet."
+                  text="You have not created any contracts yet."
                   size="12"
                   color="#687B8C"
                 />

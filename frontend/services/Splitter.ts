@@ -2,15 +2,10 @@ import BaseApiService from "./Base"
 
 const BASE_PATH = "splitter"
 const CREATE_SPLITTER = `${BASE_PATH}/create`
-const CALL_METHOD = `${BASE_PATH}/call`
 const OWNED_SPLITTERS = `${BASE_PATH}/my-contracts`
 const TRANSACTIONS = `${BASE_PATH}/transactions`
 
 interface ICreateSplitterRequest {
-  transaction: string
-}
-
-interface ICallMethodRequest {
   transaction: string
 }
 
@@ -36,10 +31,6 @@ class SplitterApiService extends BaseApiService {
     return res.contractAddress
   }
 
-  public async callMethod({ transaction }: ICallMethodRequest): Promise<void> {
-    return this.post(CALL_METHOD, { transaction })
-  }
-
   public async getOwnedSplitters(): Promise<SplitterResponseProps[]> {
     return this.get(OWNED_SPLITTERS, {})
   }
@@ -49,19 +40,6 @@ class SplitterApiService extends BaseApiService {
       address,
     })
     return res.transactions
-  }
-
-  public async getPinnedSplitters(): Promise<SplitterResponseProps[]> {
-    return this.get(`${BASE_PATH}/pinned`, {})
-  }
-
-  public async togglePin({ address }: ITransactionRequest): Promise<void> {
-    return this.post(`${BASE_PATH}/toggle-pin`, { address })
-  }
-
-  public async isPinned({ address }: ITransactionRequest): Promise<boolean> {
-    const res = await this.get(`${BASE_PATH}/is-pinned`, { address })
-    return res.pinned
   }
 }
 

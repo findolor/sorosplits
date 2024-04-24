@@ -34,8 +34,7 @@ const ContractInfoCard: React.FC<ContractInfoCardProps> = ({
   reset,
   create,
 }) => {
-  const { loading, walletAddress } = useAppStore()
-  const splitter = useSplitter()
+  const { loading } = useAppStore()
 
   const [contractName, setContratName] = useState(data.name)
   const [updatable, setUpdatable] = useState(data.updatable)
@@ -46,11 +45,12 @@ const ContractInfoCard: React.FC<ContractInfoCardProps> = ({
   useEffect(() => {
     setContratName(data.name)
     setUpdatable(data.updatable)
+    setIsDiversifierActive(data.isDiversifierActive)
   }, [reset])
 
   const diversifierOnChange = () => {
     setIsDiversifierActive(!isDiversifierActive)
-    onUpdate(contractName, !updatable, !isDiversifierActive)
+    onUpdate(contractName, updatable, !isDiversifierActive)
   }
 
   const updatableOnChange = () => {
@@ -130,7 +130,7 @@ const ContractInfoCard: React.FC<ContractInfoCardProps> = ({
               color="#687B8C"
               bold
             />
-            {(data.isDiversifierActive || create) && edit && (
+            {edit && (
               <div className="ml-2">
                 <Switch
                   initialState={isDiversifierActive}

@@ -5,7 +5,7 @@ import { SplitterContractActivity } from "@/components/SplitterData/Activity"
 
 const useSplitter = () => {
   const { splitterContract } = useContracts()
-  const { splitterApiService } = useApiService()
+  const { splitterApiService, contractApiService } = useApiService()
 
   const createSplitter = async (
     name: string,
@@ -24,6 +24,13 @@ const useSplitter = () => {
     return contractAddress
   }
 
+  const callContract = async (signature: string) => {
+    await contractApiService.callMethod({
+      transaction: signature,
+      contractType: "splitter",
+    })
+  }
+
   const updateName = async (contractAddress: string, name: string) => {
     const signature = await splitterContract.signTransaction([
       splitterContract.getCallOperation({
@@ -34,9 +41,7 @@ const useSplitter = () => {
         },
       }),
     ])
-    await splitterApiService.callMethod({
-      transaction: signature,
-    })
+    await callContract(signature)
   }
 
   const updateShares = async (
@@ -52,9 +57,7 @@ const useSplitter = () => {
         },
       }),
     ])
-    await splitterApiService.callMethod({
-      transaction: signature,
-    })
+    await callContract(signature)
   }
 
   const lockContract = async (contractAddress: string) => {
@@ -65,9 +68,7 @@ const useSplitter = () => {
         args: {},
       }),
     ])
-    await splitterApiService.callMethod({
-      transaction: signature,
-    })
+    await callContract(signature)
   }
 
   const updateWhitelistedTokens = async (
@@ -83,9 +84,7 @@ const useSplitter = () => {
         },
       }),
     ])
-    await splitterApiService.callMethod({
-      transaction: signature,
-    })
+    await callContract(signature)
   }
 
   const distributeTokens = async (
@@ -103,9 +102,7 @@ const useSplitter = () => {
         },
       }),
     ])
-    await splitterApiService.callMethod({
-      transaction: signature,
-    })
+    await callContract(signature)
   }
 
   const transferTokens = async (
@@ -125,9 +122,27 @@ const useSplitter = () => {
         },
       }),
     ])
-    await splitterApiService.callMethod({
-      transaction: signature,
-    })
+    await callContract(signature)
+  }
+
+  const withdrawAllocation = async (
+    contractAddress: string,
+    tokenAddress: string,
+    shareholder: string,
+    amount: number
+  ) => {
+    const signature = await splitterContract.signTransaction([
+      splitterContract.getCallOperation({
+        contractId: contractAddress,
+        method: "withdraw_allocation",
+        args: {
+          tokenAddress,
+          shareholder,
+          amount,
+        },
+      }),
+    ])
+    await callContract(signature)
   }
 
   const getConfig = async (contractAddress: string) => {
@@ -185,19 +200,19 @@ const useSplitter = () => {
   const getActivity = async (
     contractAddress: string
   ): Promise<SplitterContractActivity[]> => {
-    return splitterApiService.getTransactions({
+    return contractApiService.getTransactions({
       address: contractAddress,
     })
   }
 
   const togglePin = async (contractAddress: string) => {
-    return splitterApiService.togglePin({
+    return contractApiService.togglePin({
       address: contractAddress,
     })
   }
 
   const isPinned = async (contractAddress: string) => {
-    return splitterApiService.isPinned({
+    return contractApiService.isPinned({
       address: contractAddress,
     })
   }
@@ -211,6 +226,7 @@ const useSplitter = () => {
       updateWhitelistedTokens,
       distributeTokens,
       transferTokens,
+      withdrawAllocation,
     },
     query: {
       getConfig,

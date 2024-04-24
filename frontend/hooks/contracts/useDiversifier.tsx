@@ -3,7 +3,14 @@ import useApiService from "../useApi"
 
 const useDiversifier = () => {
   const { diversifierContract } = useContracts()
-  const { diversifierApiService } = useApiService()
+  const { contractApiService } = useApiService()
+
+  const callContract = async (signature: string) => {
+    await contractApiService.callMethod({
+      transaction: signature,
+      contractType: "diversifier",
+    })
+  }
 
   const updateWhitelistedSwapTokens = async (
     contractId: string,
@@ -20,9 +27,7 @@ const useDiversifier = () => {
         },
       }),
     ])
-    await diversifierApiService.callMethod({
-      transaction: signature,
-    })
+    await callContract(signature)
   }
 
   const swapAndDistributeTokens = async (
@@ -40,9 +45,18 @@ const useDiversifier = () => {
         },
       }),
     ])
-    await diversifierApiService.callMethod({
-      transaction: signature,
-    })
+    await callContract(signature)
+  }
+
+  const toggleDiversifier = async (contractId: string) => {
+    const signature = await diversifierContract.signTransaction([
+      diversifierContract.getCallOperation({
+        contractId,
+        method: "toggle_diversifier",
+        args: {},
+      }),
+    ])
+    await callContract(signature)
   }
 
   const getDiversifierConfig = async (contractId: string) => {
@@ -70,6 +84,7 @@ const useDiversifier = () => {
     call: {
       updateWhitelistedSwapTokens,
       swapAndDistributeTokens,
+      toggleDiversifier,
     },
     query: {
       getDiversifierConfig,

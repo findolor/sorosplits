@@ -15,7 +15,7 @@ import Layout from "@/components/Layout"
 
 export default function Home() {
   const { isConnected } = useAppStore()
-  const { splitterApiService } = useApiService()
+  const { contractApiService } = useApiService()
 
   const [ownedSplitters, setOwnedSplitters] =
     useState<SplitterResponseProps[]>()
@@ -27,14 +27,14 @@ export default function Home() {
   useEffect(() => {
     const fetchOwnedSplitters = async () => {
       setOwnedSplittersLoading(true)
-      const data = await splitterApiService.getOwnedSplitters()
+      const data = await contractApiService.getOwned()
       setOwnedSplitters(data)
       setOwnedSplittersLoading(false)
     }
 
     const fetchPinnedSplitters = async () => {
       setPinnedSplittersLoading(true)
-      const data = await splitterApiService.getPinnedSplitters()
+      const data = await contractApiService.getPinned()
       setPinnedSplitters(data)
       setPinnedSplittersLoading(false)
     }
@@ -72,7 +72,7 @@ export default function Home() {
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <Text
-                    text="Owned Splitters"
+                    text="Owned Contracts"
                     size="20"
                     lineHeight="24"
                     letterSpacing="-2"
@@ -90,7 +90,7 @@ export default function Home() {
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <Text
-                    text="Pinned Splitters"
+                    text="Pinned Contracts"
                     size="20"
                     lineHeight="24"
                     letterSpacing="-2"

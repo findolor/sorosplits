@@ -166,8 +166,8 @@ const CreateSplitter = () => {
     <Layout>
       <div className="mt-10">
         <PageHeader
-          title="Create Splitter"
-          subtitle="Create a new splitter contract for distributing tokens to shareholders."
+          title="Create Contract"
+          subtitle="Create a new contract for distributing tokens to shareholders."
         />
 
         <Create
@@ -186,7 +186,7 @@ const CreateSplitter = () => {
         <RenderModal
           title={
             confirmModal[1] === "done"
-              ? "You are about to create your splitter."
+              ? "You are about to create your contract."
               : "Are you sure you want to reset your changes?"
           }
           message={

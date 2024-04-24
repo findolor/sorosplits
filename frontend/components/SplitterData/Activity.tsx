@@ -1,8 +1,14 @@
-import { CallMethod } from "@sorosplits/sdk/lib/contracts/Splitter"
+import { CallMethod as SplitterCallMethod } from "@sorosplits/sdk/lib/contracts/Splitter"
+import { CallMethod as DiversifierCallMethod } from "@sorosplits/sdk/lib/contracts/Diversifier"
 import Text from "../Text"
 import Card from "./Card"
 
-type Action = CallMethod | "deploy_splitter" | "deploy_network"
+type Action =
+  | SplitterCallMethod
+  | DiversifierCallMethod
+  | "deploy_splitter"
+  | "deploy_network"
+  | "deploy_diversifier"
 
 export interface SplitterContractActivity {
   action: Action
@@ -19,7 +25,10 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ data }) => {
     switch (action) {
       case "deploy_splitter":
       case "init_splitter":
-        return "Splitter created"
+        return "Splitter contract created"
+      case "deploy_diversifier":
+      case "init_diversifier":
+        return "Diversifier contract created"
       case "update_shares":
         return "Shareholders & shares are updated"
       case "distribute_tokens":
@@ -34,6 +43,10 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ data }) => {
         return "Whitelisted tokens updated"
       case "deploy_network":
         return "Splitter created in network"
+      case "toggle_diversifier":
+        return "Diversifier is toggled"
+      default:
+        return action
     }
   }
 
@@ -81,7 +94,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ data }) => {
           return (
             <div
               key={index.toString()}
-              className="h-[28px] w-[405px] rounded-[8px] flex justify-between items-center px-1 pr-4"
+              className="h-[28px] w-full rounded-[8px] flex justify-between items-center px-1 pr-4"
             >
               <Text
                 text={decodeAction(item.action)}

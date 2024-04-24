@@ -20,7 +20,7 @@ const Layout: React.FC<LayoutProps> = ({ children, full = undefined }) => {
       </div>
       <main
         className={`${
-          full ? "max-w-[1440px]" : "max-w-[1024px]"
+          full ? "w-screen px-10" : "max-w-[1024px]"
         } mx-auto pb-16`}
       >
         {children}
