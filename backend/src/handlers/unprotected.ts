@@ -14,18 +14,6 @@ const unprotectedHandlers = new Elysia()
       exp: "7d",
     })
   )
-  .get("test", async () => {
-    const splitterContract = new SoroSplitsSDK.SplitterContract(
-      "testnet",
-      "GBOAWTUJNSI5VKE3MDGY32LJF723OCQ42XYLNJWXDHCJKRZSFV3PKKMY"
-    )
-    const data = await splitterContract.query({
-      contractId: "CBUVBAG33GWTO42OFI626AWWYA6UK4B5KJZTGOTNVKX54R25ZKSLURPY",
-      method: "get_config",
-      args: {},
-    })
-    return data
-  })
   .get(
     "contract/transactions",
     async ({ prisma, query: { address } }) => {
