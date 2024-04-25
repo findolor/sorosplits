@@ -3,7 +3,6 @@ import { Network } from "../../config"
 import SplitterContract, {
   CallContractArgs,
   CallMethod,
-  DeployAndInitContractArgs,
   QueryContractArgs,
   QueryContractResult,
   QueryMethod,
@@ -23,14 +22,14 @@ export const useSplitterContract = (
     setSplitterContract(splitterContract)
   }, [walletAddress])
 
-  const deployAndInit = async ({
-    name,
-    shares,
-    updatable,
-  }: DeployAndInitContractArgs) => {
-    await checkFreighterConnection()
-    return splitterContract.deployAndInit({ name, shares, updatable })
-  }
+  // const deployAndInit = async ({
+  //   name,
+  //   shares,
+  //   updatable,
+  // }: SplitterDeployAndInitContractArgs) => {
+  //   await checkFreighterConnection()
+  //   return splitterContract.deployAndInit({ name, shares, updatable })
+  // }
 
   const query = async <T extends QueryMethod>({
     contractId,
@@ -51,7 +50,7 @@ export const useSplitterContract = (
   }
 
   return {
-    deployAndInit,
+    // deployAndInit,
     query,
     call,
   }
