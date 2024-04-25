@@ -3,7 +3,6 @@ import cors from "@elysiajs/cors"
 import jwt from "@elysiajs/jwt"
 import bearer from "@elysiajs/bearer"
 import {
-  splitterHandlers,
   authenticationHandlers,
   deployerHandlers,
   contractHandlers,
@@ -62,7 +61,6 @@ const application = new Elysia()
       .use(authenticationHandlers)
       .use(unprotectedHandlers)
       .use(contractHandlers)
-      .use(splitterHandlers)
       .use(deployerHandlers)
   )
   .listen(3001)
