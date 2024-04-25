@@ -459,6 +459,10 @@ const NewSearch: React.FC = () => {
           />
         </div>
 
+        <div className="flex w-full justify-center mt-10">
+          TODO: Write contract address to send funds to
+        </div>
+
         {contractConfig && contractShares && (
           <div className="flex flex-col justify-between mt-6 px-3">
             {isConnected && (
@@ -523,7 +527,9 @@ const NewSearch: React.FC = () => {
                 />
                 <TokenBalancesCard
                   data={whitelistedTokensCardData}
-                  contractAddress={contractAddress}
+                  isDiversifierActive={contractIsDiversifierActive}
+                  diversifierContractAddress={diversifierContractAddress}
+                  splitterContractAddress={splitterContractAddress}
                 />
                 <ActivityCard data={contractTransactions} />
               </div>

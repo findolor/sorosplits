@@ -12,33 +12,38 @@ import { errorToast, loadingToast } from "@/utils/toast"
 
 interface TokenBalancesCardProps {
   data: WhitelistedTokensCardData[]
-  contractAddress: string
+  isDiversifierActive: boolean
+  diversifierContractAddress: string
+  splitterContractAddress: string
 }
 
 const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
   data,
-  contractAddress,
+  isDiversifierActive,
+  diversifierContractAddress,
+  splitterContractAddress,
 }) => {
   const token = useToken()
   const splitter = useSplitter()
-  const { walletAddress, loading, setLoading, isConnected } = useAppStore()
+  const { walletAddress, setLoading, isConnected } = useAppStore()
 
   const [allocation, setAllocation] = useState<string[]>([])
-  const [unused, setUnused] = useState<string[]>([])
-  const [total, setTotal] = useState<string[]>([])
+  const [waitingForDistribution, setWaitingForDistribution] = useState<
+    string[]
+  >([])
 
   useEffect(() => {
     if (data.length === 0) return
 
     fetchBalanceData()
-  }, [data, contractAddress, walletAddress])
+  }, [data, diversifierContractAddress, walletAddress])
 
   const fetchBalanceData = async () => {
     const allocationRes = walletAddress
       ? await Promise.all(
           data.map((item) => {
             return splitter.query.getAllocation(
-              contractAddress,
+              splitterContractAddress,
               item.address,
               walletAddress
             )
@@ -53,27 +58,39 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
         : allocationRes.map(() => "-")
     )
 
-    const unusedRes = await Promise.all(
+    // TODO: Think about what to show for balance
+
+    const diversifierTotalRes = await Promise.all(
       data.map((item) => {
-        return splitter.query.getUnusedTokens(contractAddress, item.address)
-      })
-    )
-    setUnused(
-      unusedRes.map((item, index) => {
-        return getBalance(item, data[index].decimals).toFixed(2)
+        return token.query.getBalance(item.address, diversifierContractAddress)
       })
     )
 
-    const totalRes = await Promise.all(
-      data.map((item) => {
-        return token.query.getBalance(item.address, contractAddress)
-      })
-    )
-    setTotal(
-      totalRes.map((item, index) => {
-        return getBalance(item, data[index].decimals).toFixed(2)
-      })
-    )
+    if (isDiversifierActive) {
+      setWaitingForDistribution(
+        diversifierTotalRes.map((item, index) => {
+          return getBalance(item, data[index].decimals).toFixed(2)
+        })
+      )
+    } else {
+      const unusedRes = await Promise.all(
+        data.map((item) => {
+          return splitter.query.getUnusedTokens(
+            splitterContractAddress,
+            item.address
+          )
+        })
+      )
+      let total = []
+      for (let i = 0; i < data.length; i++) {
+        total.push(diversifierTotalRes[i] + unusedRes[i])
+      }
+      setWaitingForDistribution(
+        total.map((item, index) => {
+          return getBalance(item, data[index].decimals).toFixed(2)
+        })
+      )
+    }
   }
 
   const handleWithdrawAllocation = async (index: number) => {
@@ -85,7 +102,7 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
       loadingToast("Withdrawal in progress...")
 
       await splitter.call.withdrawAllocation(
-        contractAddress,
+        splitterContractAddress,
         data[index].address,
         walletAddress || "",
         1000
@@ -109,10 +126,10 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
       loadingToast("Transfer in progress...")
 
       await splitter.call.transferTokens(
-        contractAddress,
+        diversifierContractAddress,
         data[index].address,
         walletAddress || "",
-        1000000000
+        50000000
       )
 
       loadingToast("Transfer successful")
@@ -133,9 +150,9 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
       loadingToast("Distribution in progress...")
 
       await splitter.call.distributeTokens(
-        contractAddress,
+        diversifierContractAddress,
         data[index].address,
-        5000000000
+        50000000
       )
 
       loadingToast("Distribution successful")
@@ -165,15 +182,15 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
             letterSpacing="-1.5"
             color="#687B8C"
           />
-          <Text
+          {/* <Text
             text="Unallocated"
             size="14"
             lineHeight="16"
             letterSpacing="-1.5"
             color="#687B8C"
-          />
+          /> */}
           <Text
-            text="Total"
+            text="Waiting for Distribution"
             size="14"
             lineHeight="16"
             letterSpacing="-1.5"
@@ -238,17 +255,18 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
                   lineHeight="12"
                   letterSpacing="-1.5"
                 />
-                <div className="w-[110px] flex justify-end">
+                {/* <div className="w-[110px] flex justify-end">
                   <Text
                     text={unused[index]}
                     size="12"
                     lineHeight="12"
                     letterSpacing="-1.5"
                   />
-                </div>
-                <div className="w-[65px] flex justify-end">
+                </div> */}
+                {/* <div className="w-[65px] flex justify-end"> */}
+                <div className="w-[190px] flex justify-end">
                   <Text
-                    text={total[index]}
+                    text={waitingForDistribution[index]}
                     size="12"
                     lineHeight="12"
                     letterSpacing="-1.5"
