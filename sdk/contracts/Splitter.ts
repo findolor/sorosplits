@@ -9,9 +9,7 @@ import {
   scValToNative,
   xdr,
 } from "@stellar/stellar-sdk"
-import { randomBytes } from "../utils/randomBytes"
-import CONFIG, { Network } from "../config"
-import ba from "../utils/binascii"
+import { Network } from "../config"
 
 export interface ShareDataProps {
   share: number
@@ -100,12 +98,6 @@ export type QueryContractResult<T extends QueryMethod> = T extends "get_config"
   ? BigInt
   : never
 
-export interface DeployAndInitContractArgs {
-  name: string
-  shares: ShareDataProps[]
-  updatable: boolean
-}
-
 export interface DecodeArgs {
   xdrString: string
 }
@@ -130,61 +122,15 @@ export class SplitterContract extends BaseContract {
     super(network, walletAddress)
   }
 
-  public getDeployAndInitOperation({
-    name,
-    shares,
-    updatable,
-  }: DeployAndInitContractArgs): xdr.Operation {
-    const contract = new Contract(CONFIG[this.network].deployerContractId)
-
-    let splitterArgs = [
-      new Address(this.walletAddress || "").toScVal(),
-      xdr.ScVal.scvBytes(Buffer.from(name, "utf-8")),
-      xdr.ScVal.scvVec(
-        shares.map((item) => {
-          return xdr.ScVal.scvMap([
-            new xdr.ScMapEntry({
-              key: xdr.ScVal.scvSymbol("share"),
-              val: nativeToScVal(item.share, { type: "i128" }),
-            }),
-            new xdr.ScMapEntry({
-              key: xdr.ScVal.scvSymbol("shareholder"),
-              val: new Address(item.shareholder.toString()).toScVal(),
-            }),
-          ])
-        })
-      ),
-      xdr.ScVal.scvBool(updatable),
-    ]
-
-    let deployerArgs = [
-      nativeToScVal(this.walletAddress, { type: "address" }),
-      nativeToScVal(
-        Buffer.from(
-          ba.unhexlify(CONFIG[this.network].splitterWasmHash),
-          "ascii"
-        ),
-        {
-          type: "bytes",
-        }
-      ),
-      nativeToScVal(Buffer.from(randomBytes()), { type: "bytes" }),
-      xdr.ScVal.scvVec(splitterArgs),
-    ]
-
-    let operation = contract.call("deploy_splitter", ...deployerArgs)
-    return operation
-  }
-
-  public async deployAndInit({
-    name,
-    shares,
-    updatable,
-  }: DeployAndInitContractArgs) {
-    let operation = this.getDeployAndInitOperation({ name, shares, updatable })
-    const transaction = await this.processSingleTransaction(operation)
-    return this.parseDeployedContractAddress(transaction)
-  }
+  // public async deployAndInit({
+  //   name,
+  //   shares,
+  //   updatable,
+  // }: DeployAndInitContractArgs) {
+  //   let operation = this.getDeployAndInitOperation({ name, shares, updatable })
+  //   const transaction = await this.processSingleTransaction(operation)
+  //   return this.parseDeployedContractAddress(transaction)
+  // }
 
   public async parseDeployedContractAddress(
     transaction: SorobanRpc.Api.GetTransactionResponse
@@ -382,29 +328,12 @@ export class SplitterContract extends BaseContract {
     return this.processQuery(operation)
   }
 
-  private decodeDeploySplitterParams(args: xdr.ScVal[]): DecodeInitResult {
-    const [admin, name, shares, updatable] = scValToNative(
-      xdr.ScVal.scvVec([args[3]])
-    )[0]
-    return {
-      admin,
-      name: Buffer.from(name).toString("utf-8"),
-      shares: shares.map((item) => {
-        return {
-          shareholder: item.shareholder.toString(),
-          share: Number(BigInt(item.share)),
-        }
-      }),
-      updatable,
-    }
-  }
-
   private decodeUpdateSharesParams(
     args: xdr.ScVal[]
   ): DecodeUpdateSharesResult {
     const shares = scValToNative(args[0])
     return {
-      shares: shares.map((item) => {
+      shares: shares.map((item: any) => {
         return {
           shareholder: item.shareholder.toString(),
           share: Number(BigInt(item.share)),
@@ -472,9 +401,6 @@ export class SplitterContract extends BaseContract {
     switch (functionName) {
       case "init_splitter":
         throw new Error("Not implemented")
-      case "deploy_splitter":
-        response.args = this.decodeDeploySplitterParams(args)
-        break
       case "update_shares":
         response.args = this.decodeUpdateSharesParams(args)
         break

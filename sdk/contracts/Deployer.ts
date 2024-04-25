@@ -9,12 +9,15 @@ import {
 } from "@stellar/stellar-sdk"
 import CONFIG, { Network } from "../config"
 import BaseContract from "./Base"
-import {
-  ShareDataProps,
-  DeployAndInitContractArgs as SplitterDeployAndInitContractArgs,
-} from "./Splitter"
+import { ShareDataProps } from "./Splitter"
 import { randomBytes } from "../utils/randomBytes"
 import ba from "../utils/binascii"
+
+export interface SplitterDeployAndInitContractArgs {
+  name: string
+  shares: ShareDataProps[]
+  updatable: boolean
+}
 
 export interface DiversifierDeployAndInitContractArgs
   extends SplitterDeployAndInitContractArgs {
@@ -56,6 +59,52 @@ export interface DecodeArgs {
 export class DeployerContract extends BaseContract {
   constructor(network: Network, walletAddress: string) {
     super(network, walletAddress)
+  }
+
+  public getDeployAndInitOperation({
+    name,
+    shares,
+    updatable,
+  }: SplitterDeployAndInitContractArgs): xdr.Operation {
+    const contract = new Contract(CONFIG[this.network].deployerContractId)
+
+    let splitterArgs = [
+      new Address(this.walletAddress || "").toScVal(),
+      xdr.ScVal.scvBytes(Buffer.from(name, "utf-8")),
+      xdr.ScVal.scvVec(
+        shares.map((item) => {
+          return xdr.ScVal.scvMap([
+            new xdr.ScMapEntry({
+              key: xdr.ScVal.scvSymbol("share"),
+              val: nativeToScVal(item.share, { type: "i128" }),
+            }),
+            new xdr.ScMapEntry({
+              key: xdr.ScVal.scvSymbol("shareholder"),
+              val: new Address(item.shareholder.toString()).toScVal(),
+            }),
+          ])
+        })
+      ),
+      xdr.ScVal.scvBool(updatable),
+    ]
+
+    let deployerArgs = [
+      nativeToScVal(this.walletAddress, { type: "address" }),
+      nativeToScVal(
+        Buffer.from(
+          ba.unhexlify(CONFIG[this.network].splitterWasmHash),
+          "ascii"
+        ),
+        {
+          type: "bytes",
+        }
+      ),
+      nativeToScVal(Buffer.from(randomBytes()), { type: "bytes" }),
+      xdr.ScVal.scvVec(splitterArgs),
+    ]
+
+    let operation = contract.call("deploy_splitter", ...deployerArgs)
+    return operation
   }
 
   public getDeployDiversifierOperation({
@@ -289,6 +338,23 @@ export class DeployerContract extends BaseContract {
     } else throw new Error("Transaction failed")
   }
 
+  private decodeDeploySplitterParams(args: xdr.ScVal[]) {
+    const [admin, name, shares, updatable] = scValToNative(
+      xdr.ScVal.scvVec([args[3]])
+    )[0]
+    return {
+      admin,
+      name: Buffer.from(name).toString("utf-8"),
+      shares: shares.map((item: any) => {
+        return {
+          shareholder: item.shareholder.toString(),
+          share: Number(BigInt(item.share)),
+        }
+      }),
+      updatable,
+    }
+  }
+
   private decodeDeployDiversifierParams(args: xdr.ScVal[]) {
     const deployArgs = scValToNative(args[3])
     const admin = deployArgs[0]
@@ -363,7 +429,8 @@ export class DeployerContract extends BaseContract {
 
     switch (functionName) {
       case "deploy_splitter":
-        throw new Error("Not implemented!")
+        response.args = this.decodeDeploySplitterParams(args)
+        break
       case "deploy_diversifier":
         response.args = this.decodeDeployDiversifierParams(args)
         break

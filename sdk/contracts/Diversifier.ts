@@ -80,30 +80,6 @@ export class DiversifierContract extends BaseContract {
     super(network, walletAddress)
   }
 
-  public parseDeployedContractAddress(
-    transaction: SorobanRpc.Api.GetTransactionResponse
-  ) {
-    if (
-      transaction.status === SorobanRpc.Api.GetTransactionStatus.SUCCESS &&
-      transaction.resultMetaXdr
-    ) {
-      const buff = Buffer.from(
-        transaction.resultMetaXdr.toXDR("base64"),
-        "base64"
-      )
-      const txMeta = xdr.TransactionMeta.fromXDR(buff)
-      const contractId = txMeta
-        .v3()
-        .sorobanMeta()
-        ?.returnValue()
-        .vec()
-        ?.at(0)
-        ?.address()
-        .contractId() as Buffer
-      return StrKey.encodeContract(contractId)
-    } else throw new Error("Transaction failed")
-  }
-
   public getCallOperation<T extends CallMethod>({
     contractId,
     method,
