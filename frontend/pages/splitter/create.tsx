@@ -12,11 +12,13 @@ import Create from "@/components/SplitterData/Create"
 import useDeployer from "@/hooks/contracts/useDeployer"
 import useSplitter from "@/hooks/contracts/useSplitter"
 import { WhitelistedSwapTokensCardData } from "@/components/SplitterData/WhitelistedSwapTokens"
+import useDiversifier from "@/hooks/contracts/useDiversifier"
 
 const CreateSplitter = () => {
   const { push } = useRouter()
   const deployer = useDeployer()
   const splitter = useSplitter()
+  const diversifier = useDiversifier()
   const { walletAddress, setLoading, isConnected } = useAppStore()
   const { confirmModal, onConfirmModal, RenderModal, onCancelModal } =
     useModal()
@@ -114,6 +116,18 @@ const CreateSplitter = () => {
           contractWhitelistedTokens.map((i) => i.address)
         )
         successToast("Whitelisted tokens updated successfully!")
+      }
+
+      if (contractIsDiversifierActive) {
+        loadingToast("Updating whitelisted swap tokens...")
+        for (let item of contractWhitelistedSwapTokens) {
+          await diversifier.call.updateWhitelistedSwapTokens(
+            contractAddress,
+            item.token.address,
+            item.swapTokens.map((i) => i.address)
+          )
+        }
+        successToast("Whitelisted swap tokens updated successfully!")
       }
 
       successToast("Navigating to contract page...")

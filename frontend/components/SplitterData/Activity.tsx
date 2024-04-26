@@ -30,11 +30,11 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ data }) => {
       case "init_diversifier":
         return "Diversifier contract created"
       case "update_shares":
-        return "Shareholders & shares are updated"
+        return "Shareholders & shares updated"
       case "distribute_tokens":
         return "Distributed tokens"
       case "lock_contract":
-        return "Shareholders & shares are locked"
+        return "Shareholders & shares locked"
       case "transfer_tokens":
         return "Transferred unused tokens"
       case "update_name":
@@ -45,6 +45,8 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ data }) => {
         return "Splitter created in network"
       case "toggle_diversifier":
         return "Diversifier is toggled"
+      case "update_whitelisted_swap_tokens":
+        return "Whitelisted swap tokens updated"
       default:
         return action
     }

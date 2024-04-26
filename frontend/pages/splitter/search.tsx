@@ -217,6 +217,7 @@ const NewSearch: React.FC = () => {
     setContractShares(undefined)
     setContractIsDiversifierActive(false)
     setContractWhitelistedTokens([])
+    setContractWhitelistedSwapTokens([])
     setWhitelistedTokensCardData([])
     setWhitelistedTokensCardDataLoading(true)
     setWhitelistedSwapTokensCardData([])
@@ -238,6 +239,7 @@ const NewSearch: React.FC = () => {
     contractConfig,
     contractWhitelistedTokens,
     contractIsDiversifierActive,
+    contractWhitelistedSwapTokens,
   ])
 
   const shareholdersCardData = useMemo(() => {
@@ -299,7 +301,11 @@ const NewSearch: React.FC = () => {
 
   useEffect(() => {
     const fetch = async () => {
-      if (contractAddress === "" || whitelistedTokensCardData.length === 0) {
+      if (
+        contractAddress === "" ||
+        whitelistedTokensCardData.length === 0 ||
+        contractWhitelistedSwapTokens.length === 0
+      ) {
         setWhitelistedSwapTokensCardDataLoading(false)
         return
       }
@@ -310,17 +316,10 @@ const NewSearch: React.FC = () => {
         async (item) => {
           let response = []
           for (let tokenAddress of item) {
-            const [name, symbol, decimals] = await Promise.all([
-              token.query.getName(tokenAddress),
-              token.query.getSymbol(tokenAddress),
-              token.query.getDecimal(tokenAddress),
-            ])
-
+            const details = await token.getTokenDetails(tokenAddress)
             response.push({
+              ...details,
               address: tokenAddress,
-              name,
-              symbol,
-              decimals,
             })
           }
           return response
@@ -336,13 +335,18 @@ const NewSearch: React.FC = () => {
           }
         }
       )
+
       setWhitelistedSwapTokensCardData(whitelistedSwapTokensCardData)
       setWhitelistedSwapTokensOG(whitelistedSwapTokensCardData)
       setWhitelistedSwapTokensCardDataLoading(false)
     }
 
     fetch()
-  }, [contractAddress, whitelistedTokensCardData])
+  }, [
+    contractAddress,
+    whitelistedTokensCardData,
+    contractWhitelistedSwapTokens,
+  ])
 
   const onConfirm = async () => {
     if (confirmModal[1] === "cancel") {
@@ -386,6 +390,17 @@ const NewSearch: React.FC = () => {
       JSON.stringify(
         contractWhitelistedTokens.sort((a, b) => a.localeCompare(b))
       )
+    const whitelistedSwapTokensUpdated =
+      JSON.stringify(
+        updatedContractWhitelistedSwapTokens.sort((a, b) =>
+          a.join().localeCompare(b.join())
+        )
+      ) !=
+      JSON.stringify(
+        contractWhitelistedSwapTokens.sort((a, b) =>
+          a.join().localeCompare(b.join())
+        )
+      )
 
     return {
       name: nameUpdated,
@@ -393,6 +408,7 @@ const NewSearch: React.FC = () => {
       isDiversifierActive: isDiversifierActiveUpdated,
       shares: sharesUpdated,
       whitelistedTokens: whitelistedTokensUpdated,
+      whitelistedSwapTokens: whitelistedSwapTokensUpdated,
     }
   }
 
@@ -408,7 +424,8 @@ const NewSearch: React.FC = () => {
         !updates.updatable &&
         !updates.isDiversifierActive &&
         !updates.shares &&
-        !updates.whitelistedTokens
+        !updates.whitelistedTokens &&
+        !updates.whitelistedSwapTokens
       ) {
         throw new Error("No changes detected")
       }
@@ -453,6 +470,17 @@ const NewSearch: React.FC = () => {
           updatedContractWhitelistedTokens
         )
         setContractWhitelistedTokens(updatedContractWhitelistedTokens)
+      }
+      if (updates.whitelistedSwapTokens) {
+        for (let index in updatedContractWhitelistedTokens) {
+          const tokenAddress = updatedContractWhitelistedTokens[index]
+          await diversifier.call.updateWhitelistedSwapTokens(
+            contractAddress,
+            tokenAddress,
+            updatedContractWhitelistedSwapTokens[index]
+          )
+        }
+        setContractWhitelistedSwapTokens(updatedContractWhitelistedSwapTokens)
       }
 
       setLoading(false)
@@ -501,6 +529,7 @@ const NewSearch: React.FC = () => {
   const onWhitelistedSwapTokensCardUpdate = (
     data: WhitelistedSwapTokensCardData[]
   ) => {
+    setWhitelistedSwapTokensCardData(data)
     setUpdatedContractWhitelistedSwapTokens(
       data.map((i) => i.swapTokens.map((j) => j.address))
     )
@@ -599,7 +628,7 @@ const NewSearch: React.FC = () => {
                   onUpdate={onWhitelistedTokensCardUpdate}
                   edit={manageSplitter}
                 />
-                {!contractIsDiversifierActive && (
+                {contractIsDiversifierActive && (
                   <WhitelistedSwapTokensCard
                     data={whitelistedSwapTokensCardData}
                     dataLoading={whitelistedSwapTokensCardDataLoading}
