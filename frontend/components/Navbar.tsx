@@ -9,29 +9,21 @@ const Navbar: React.FC = () => {
     <nav className="flex justify-between items-center h-16 px-6">
       <div className="flex items-center">
         <Link href="/">
-          <button>
-            <Image src="/logo.svg" alt="Logo" height={80} width={80} />
-          </button>
+          <Image src="/logo.svg" alt="Logo" height={80} width={140} />
         </Link>
         <Link href="/splitter/create" className="ml-10">
-          <button>
-            <Text text="Create" size="15" lineHeight="20" letterSpacing="-2" />
-          </button>
+          <Text text="Create" size="15" lineHeight="20" letterSpacing="-2" />
         </Link>
         <Link href="/splitter/search" className="ml-6">
-          <button>
-            <Text text="Search" size="15" lineHeight="20" letterSpacing="-2" />
-          </button>
+          <Text text="Search" size="15" lineHeight="20" letterSpacing="-2" />
         </Link>
         <Link href="/network" className="ml-6">
-          <button>
-            <Text
-              text="Create Network"
-              size="15"
-              lineHeight="20"
-              letterSpacing="-2"
-            />
-          </button>
+          <Text
+            text="Create Network"
+            size="15"
+            lineHeight="20"
+            letterSpacing="-2"
+          />
         </Link>
       </div>
       <Wallet />

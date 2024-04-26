@@ -8,8 +8,6 @@ import { errorToast } from "@/utils/toast"
 import clsx from "clsx"
 import useAppStore from "@/store/index"
 import useToken from "@/hooks/contracts/useToken"
-import { getBalance } from "@/utils/getBalance"
-
 export interface WhitelistedTokensCardData {
   address: string
   name: string
@@ -18,7 +16,6 @@ export interface WhitelistedTokensCardData {
 }
 
 interface WhitelistedTokensCardProps {
-  contractAddress: string
   data: WhitelistedTokensCardData[]
   dataLoading?: boolean
   onUpdate: (data: WhitelistedTokensCardData[]) => void
@@ -29,13 +26,11 @@ interface WhitelistedTokensCardProps {
 }
 
 const WhitelistedTokensCard: React.FC<WhitelistedTokensCardProps> = ({
-  contractAddress,
   data,
   dataLoading,
   onUpdate,
   edit,
   reset,
-  create = false,
 }) => {
   const { loading, setLoading } = useAppStore()
   const token = useToken()
@@ -55,11 +50,6 @@ const WhitelistedTokensCard: React.FC<WhitelistedTokensCardProps> = ({
       const tokenData = await validateTokenAddress()
       setLoading(false)
 
-      let balance
-      if (!create) {
-        balance = await token.query.getBalance(addressInput, contractAddress)
-      }
-
       const newData = [
         ...internalData,
         {
@@ -67,9 +57,6 @@ const WhitelistedTokensCard: React.FC<WhitelistedTokensCardProps> = ({
           name: tokenData.name,
           symbol: tokenData.symbol,
           decimals: tokenData.decimals,
-          balance: balance
-            ? getBalance(balance, tokenData.decimals).toFixed(2)
-            : "-",
         },
       ]
       setInternalData(newData)
@@ -89,24 +76,9 @@ const WhitelistedTokensCard: React.FC<WhitelistedTokensCardProps> = ({
 
   const validateTokenAddress = async () => {
     if (internalData.some((token) => token.address === addressInput)) {
-      throw new Error("Address already exists in the list")
+      throw new Error("Token address already exists in the list")
     }
-
-    const res = await Promise.all([
-      token.query.getName(addressInput),
-      token.query.getSymbol(addressInput),
-      token.query.getDecimal(addressInput),
-    ])
-
-    if (!res) {
-      throw new Error("Token query failed")
-    }
-
-    return {
-      name: res[0] as string,
-      symbol: res[1] as string,
-      decimals: res[2] as number,
-    }
+    return token.getTokenDetails(addressInput)
   }
 
   return (
@@ -164,7 +136,7 @@ const WhitelistedTokensCard: React.FC<WhitelistedTokensCardProps> = ({
                   )}
                 >
                   <Text
-                    text={item.name}
+                    text={`${index + 1}. ${item.name}`}
                     size="12"
                     lineHeight="12"
                     letterSpacing="-1.5"

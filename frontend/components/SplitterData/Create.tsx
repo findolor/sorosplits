@@ -4,6 +4,9 @@ import {
 } from "../Button/Splitter"
 import ContractInfoCard from "./ContractInfo"
 import ShareholdersCard, { ShareholderCardData } from "./Shareholders"
+import WhitelistedSwapTokensCard, {
+  WhitelistedSwapTokensCardData,
+} from "./WhitelistedSwapTokens"
 import WhitelistedTokensCard, {
   WhitelistedTokensCardData,
 } from "./WhitelistedTokens"
@@ -27,6 +30,10 @@ interface CreateSplitterProps {
   onShareholderCardUpdate: (data: ShareholderCardData[]) => void
   whitelistTokenCardData: WhitelistedTokensCardData[]
   onWhitelistedTokensCardUpdate: (data: WhitelistedTokensCardData[]) => void
+  whitelistSwapTokenCardData: WhitelistedSwapTokensCardData[]
+  onWhitelistedSwapTokensCardUpdate: (
+    data: WhitelistedSwapTokensCardData[]
+  ) => void
   reset: number
 }
 
@@ -40,6 +47,8 @@ const CreateSplitter = ({
   onShareholderCardUpdate,
   whitelistTokenCardData,
   onWhitelistedTokensCardUpdate,
+  whitelistSwapTokenCardData,
+  onWhitelistedSwapTokensCardUpdate,
   reset,
 }: CreateSplitterProps) => {
   return (
@@ -62,13 +71,19 @@ const CreateSplitter = ({
           />
 
           <WhitelistedTokensCard
-            contractAddress={""}
             data={whitelistTokenCardData}
             onUpdate={onWhitelistedTokensCardUpdate}
             edit={true}
             reset={reset}
-            create
           />
+
+          {contractInfoData.isDiversifierActive && (
+            <WhitelistedSwapTokensCard
+              data={whitelistSwapTokenCardData}
+              onUpdate={onWhitelistedSwapTokensCardUpdate}
+              edit={true}
+            />
+          )}
         </div>
 
         <div className="flex flex-col gap-4 w-[423px]">

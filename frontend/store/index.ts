@@ -1,5 +1,16 @@
 import { create } from "zustand"
 
+export interface TokenListItem {
+  network: string
+  assets: {
+    code: string
+    contract: string
+    decimals: number
+    icon: string
+    name: string
+  }[]
+}
+
 interface AppState {
   isConnected: boolean
   setIsConnected: (value: boolean) => void
@@ -12,6 +23,9 @@ interface AppState {
 
   accessToken: string | null
   setAccessToken: (value: string) => void
+
+  tokenList: TokenListItem[]
+  setTokenList: (value: TokenListItem[]) => void
 }
 
 const useAppStore = create<AppState>()((set) => ({
@@ -26,6 +40,9 @@ const useAppStore = create<AppState>()((set) => ({
 
   accessToken: null,
   setAccessToken: (value: string) => set(() => ({ accessToken: value })),
+
+  tokenList: [],
+  setTokenList: (value: TokenListItem[]) => set(() => ({ tokenList: value })),
 }))
 
 export default useAppStore

@@ -224,7 +224,7 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
                 // "hover:bg-[#EBF2F7] hover:cursor-pointer"
               )}
             >
-              <button
+              {/* <button
                 onClick={() => handleWithdrawAllocation(index)}
                 className="text-[10px] bg-[#F2F2F2] text-[#687B8C] px-2 py-1 rounded-[8px] hover:bg-[#EBF2F7]"
               >
@@ -241,7 +241,7 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
                 className="text-[10px] bg-[#F2F2F2] text-[#687B8C] px-2 py-1 rounded-[8px] hover:bg-[#EBF2F7]"
               >
                 DT
-              </button>
+              </button> */}
               <Text
                 text={item.name}
                 size="12"

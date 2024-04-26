@@ -15,7 +15,7 @@ import Layout from "@/components/Layout"
 
 export default function Home() {
   const { isConnected } = useAppStore()
-  const { contractApiService } = useApiService()
+  const { contractApiService, tokenApiService } = useApiService()
 
   const [ownedSplitters, setOwnedSplitters] =
     useState<SplitterResponseProps[]>()

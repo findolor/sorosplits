@@ -10,10 +10,13 @@ import { errorToast, loadingToast, successToast } from "@/utils/toast"
 import { useRouter } from "next/router"
 import Create from "@/components/SplitterData/Create"
 import useDeployer from "@/hooks/contracts/useDeployer"
+import useSplitter from "@/hooks/contracts/useSplitter"
+import { WhitelistedSwapTokensCardData } from "@/components/SplitterData/WhitelistedSwapTokens"
 
 const CreateSplitter = () => {
   const { push } = useRouter()
   const deployer = useDeployer()
+  const splitter = useSplitter()
   const { walletAddress, setLoading, isConnected } = useAppStore()
   const { confirmModal, onConfirmModal, RenderModal, onCancelModal } =
     useModal()
@@ -35,8 +38,10 @@ const CreateSplitter = () => {
     },
   ])
   const [contractWhitelistedTokens, setContractWhitelistedTokens] = useState<
-    string[]
+    WhitelistedTokensCardData[]
   >([])
+  const [contractWhitelistedSwapTokens, setContractWhitelistedSwapTokensCard] =
+    useState<WhitelistedSwapTokensCardData[]>([])
   const [resetTrigger, setResetTrigger] = useState<number>(0)
 
   const contractInfoData = useMemo(() => {
@@ -64,19 +69,6 @@ const CreateSplitter = () => {
       }
     })
   }, [contractShares])
-
-  const whitelistTokenCardData = useMemo(() => {
-    if (!contractWhitelistedTokens) return []
-    return contractWhitelistedTokens.map((i) => {
-      return {
-        address: i,
-        name: "",
-        symbol: "",
-        decimals: 0,
-        balance: "0.00",
-      }
-    })
-  }, [contractWhitelistedTokens])
 
   const doneButtonOnClick = () => {
     onConfirmModal("done")
@@ -115,14 +107,14 @@ const CreateSplitter = () => {
       })
       successToast("Splitter contract initialized successfully!")
 
-      // if (contractWhitelistedTokens.length != 0) {
-      //   loadingToast("Updating whitelisted tokens...")
-      //   await splitter.call.updateWhitelistedTokens(
-      //     contractAddress,
-      //     contractWhitelistedTokens
-      //   )
-      //   successToast("Whitelisted tokens updated successfully!")
-      // }
+      if (contractWhitelistedTokens.length != 0) {
+        loadingToast("Updating whitelisted tokens...")
+        await splitter.call.updateWhitelistedTokens(
+          contractAddress,
+          contractWhitelistedTokens.map((i) => i.address)
+        )
+        successToast("Whitelisted tokens updated successfully!")
+      }
 
       successToast("Navigating to contract page...")
 
@@ -159,7 +151,16 @@ const CreateSplitter = () => {
   }
 
   const onWhitelistedTokensCardUpdate = (data: WhitelistedTokensCardData[]) => {
-    setContractWhitelistedTokens(data.map((i) => i.address))
+    setContractWhitelistedTokens(data)
+    setContractWhitelistedSwapTokensCard(
+      data.map((i) => ({ token: i, swapTokens: [] }))
+    )
+  }
+
+  const onWhitelistedSwapTokensCardUpdate = (
+    data: WhitelistedSwapTokensCardData[]
+  ) => {
+    setContractWhitelistedSwapTokensCard(data)
   }
 
   return (
@@ -177,8 +178,10 @@ const CreateSplitter = () => {
           onContractInfoCardUpdate={onContractInfoCardUpdate}
           shareholderCardData={shareholderCardData}
           onShareholderCardUpdate={onShareholderCardUpdate}
-          whitelistTokenCardData={whitelistTokenCardData}
+          whitelistTokenCardData={contractWhitelistedTokens}
           onWhitelistedTokensCardUpdate={onWhitelistedTokensCardUpdate}
+          whitelistSwapTokenCardData={contractWhitelistedSwapTokens}
+          onWhitelistedSwapTokensCardUpdate={onWhitelistedSwapTokensCardUpdate}
           reset={resetTrigger}
           preAllocation={0}
         />

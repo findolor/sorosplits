@@ -1,9 +1,24 @@
+import useApiService from "@/hooks/useApi"
 import "../styles/globals.css"
 
 import type { AppProps } from "next/app"
+import { useEffect } from "react"
 import { Toaster } from "react-hot-toast"
+import useAppStore, { TokenListItem } from "../store"
 
 export default function App({ Component, pageProps }: AppProps) {
+  const { tokenList, setTokenList } = useAppStore()
+  const { tokenApiService } = useApiService()
+
+  useEffect(() => {
+    if (tokenList.length > 0) return
+    const fetch = async () => {
+      const data = (await tokenApiService.getTokenList()) as TokenListItem[]
+      setTokenList(data)
+    }
+    fetch()
+  }, [])
+
   return (
     <div>
       <Component {...pageProps} />
