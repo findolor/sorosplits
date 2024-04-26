@@ -1,6 +1,6 @@
 import { useMemo } from "react"
-import AuthenticationApiService from "../services/Authentication"
-import SplitterApiService from "../services/Splitter"
+import AuthenticationApiService from "@/services/Authentication"
+import SplitterApiService from "@/services/Splitter"
 import useAppStore from "../store"
 import DeployerApiService from "@/services/Deployer"
 import DiversifierApiService from "@/services/Diversifier"
