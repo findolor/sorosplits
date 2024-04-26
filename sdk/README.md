@@ -1,4 +1,4 @@
-# SoroSplits SDK
+# Sorosplits SDK
 
 ## Installation
 

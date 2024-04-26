@@ -39,7 +39,7 @@ const useWallet = () => {
       const signedBlob = (await signBlob(
         btoa(
           JSON.stringify({
-            message: "SoroSplits connection message for authentication",
+            message: "Sorosplits connection message for authentication",
             nonce,
           })
         ),

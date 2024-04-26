@@ -2,7 +2,6 @@ import { Elysia, t } from "elysia"
 import jwt from "@elysiajs/jwt"
 import bearer from "@elysiajs/bearer"
 import { PrismaClient } from "@prisma/client"
-import SoroSplitsSDK from "@sorosplits/sdk"
 
 const unprotectedHandlers = new Elysia()
   .decorate("prisma", new PrismaClient())

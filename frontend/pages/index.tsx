@@ -49,7 +49,7 @@ export default function Home() {
     <Layout>
       <div className="flex flex-col items-center pt-10">
         <Text
-          text="Welcome to SoroSplits"
+          text="Welcome to Sorosplits"
           size="28"
           lineHeight="32"
           letterSpacing="-2"
@@ -57,7 +57,7 @@ export default function Home() {
         />
         <div className="mt-6 mb-12 px-44">
           <Text
-            text="SoroSplits is a set of smart contracts & interfaces to enable split transactions and revenue sharing across multiple parties in the Stellar ecosystem."
+            text="Sorosplits is a set of smart contracts & interfaces to enable split transactions and revenue sharing across multiple parties in the Stellar ecosystem."
             size="15"
             lineHeight="20"
             letterSpacing="-2"

@@ -3,7 +3,7 @@ import jwt from "@elysiajs/jwt"
 import { Elysia, t } from "elysia"
 import { AuthenticationError } from "../errors"
 import { Prisma, PrismaClient } from "@prisma/client"
-import SoroSplitsSDK from "@sorosplits/sdk"
+import SorosplitsSDK from "@sorosplits/sdk"
 
 const deployerHandlers = new Elysia({ prefix: "/deployer" })
   .decorate("prisma", new PrismaClient())
@@ -31,15 +31,15 @@ const deployerHandlers = new Elysia({ prefix: "/deployer" })
     if (!user) {
       throw new AuthenticationError("Unauthorized!")
     }
-    const deployerContract = new SoroSplitsSDK.DeployerContract(
+    const deployerContract = new SorosplitsSDK.DeployerContract(
       "testnet",
       user.publicKey
     )
-    const splitterContract = new SoroSplitsSDK.SplitterContract(
+    const splitterContract = new SorosplitsSDK.SplitterContract(
       "testnet",
       user.publicKey
     )
-    const diversifierContract = new SoroSplitsSDK.DiversifierContract(
+    const diversifierContract = new SorosplitsSDK.DiversifierContract(
       "testnet",
       user.publicKey
     )

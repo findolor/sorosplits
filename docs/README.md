@@ -1,3 +1,3 @@
-# SoroSplits Documentation
+# Sorosplits Documentation
 
 Made with Docusaurus.

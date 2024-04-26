@@ -4,11 +4,11 @@ sidebar_position: 1
 
 # Overview
 
-Welcome to the SoroSplits platform, your gateway to creating and managing Splitter Contracts with ease and precision. Our platform is designed to streamline the process of token distribution among shareholders, providing a user-friendly interface that bridges the gap between complex smart contract operations and accessible, everyday use.
+Welcome to the Sorosplits platform, your gateway to creating and managing Splitter Contracts with ease and precision. Our platform is designed to streamline the process of token distribution among shareholders, providing a user-friendly interface that bridges the gap between complex smart contract operations and accessible, everyday use.
 
 ## Simplifying Smart Contract Management
 
-SoroSplits offers a seamless experience for users to engage with the Soroban network's powerful smart contract capabilities. From the initial creation of a Splitter Contract to the final distribution of tokens, our platform ensures that each step is intuitive and secure.
+Sorosplits offers a seamless experience for users to engage with the Soroban network's powerful smart contract capabilities. From the initial creation of a Splitter Contract to the final distribution of tokens, our platform ensures that each step is intuitive and secure.
 
 ## Key Features
 
@@ -19,4 +19,4 @@ SoroSplits offers a seamless experience for users to engage with the Soroban net
 
 ## Designed for Accessibility
 
-Whether you're a seasoned blockchain veteran or new to the world of smart contracts, SoroSplits is tailored to provide a straightforward experience. We've removed the barriers to entry, making it possible for anyone to leverage the power of smart contracts for token distribution.
+Whether you're a seasoned blockchain veteran or new to the world of smart contracts, Sorosplits is tailored to provide a straightforward experience. We've removed the barriers to entry, making it possible for anyone to leverage the power of smart contracts for token distribution.

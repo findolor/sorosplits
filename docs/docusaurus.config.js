@@ -4,49 +4,49 @@
 // There are various equivalent ways to declare your Docusaurus config.
 // See: https://docusaurus.io/docs/api/docusaurus-config
 
-import {themes as prismThemes} from 'prism-react-renderer';
+import { themes as prismThemes } from "prism-react-renderer"
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'SoroSplits Documentation',
-  tagline: 'Documentation for SoroSplits smart contracts and platform.',
-  favicon: 'img/favicon.ico',
+  title: "Sorosplits Documentation",
+  tagline: "Documentation for Sorosplits smart contracts and platform.",
+  favicon: "img/favicon.ico",
 
   // Set the production url of your site here
-  url: 'https://docs.sorosplits.xyz',
+  url: "https://docs.sorosplits.xyz",
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/',
+  baseUrl: "/",
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'SoroSplits', // Usually your GitHub org/user name.
-  projectName: 'sorosplits-docs', // Usually your repo name.
+  // organizationName: "findolor", // Usually your GitHub org/user name.
+  // projectName: "sorosplits", // Usually your repo name.
 
-  onBrokenLinks: 'throw',
-  onBrokenMarkdownLinks: 'warn',
+  onBrokenLinks: "throw",
+  onBrokenMarkdownLinks: "warn",
 
   // Even if you don't use internationalization, you can use this field to set
   // useful metadata like html lang. For example, if your site is Chinese, you
   // may want to replace "en" with "zh-Hans".
   i18n: {
-    defaultLocale: 'en',
-    locales: ['en'],
+    defaultLocale: "en",
+    locales: ["en"],
   },
 
   presets: [
     [
-      'classic',
+      "classic",
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         docs: {
-          routeBasePath: '/',
-          sidebarPath: './sidebars.js',
+          routeBasePath: "/",
+          sidebarPath: "./sidebars.js",
         },
         theme: {
-          customCss: './src/css/custom.css',
+          customCss: "./src/css/custom.css",
         },
-        blog: false
+        blog: false,
       }),
     ],
   ],
@@ -55,10 +55,10 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: 'SoroSplits',
+        title: "Sorosplits",
         logo: {
-          alt: 'SoroSplits Logo',
-          src: 'img/logo.jpg',
+          alt: "Sorosplits Logo",
+          src: "img/logo.jpg",
         },
         items: [
           // {
@@ -68,19 +68,19 @@ const config = {
           //   label: 'Tutorial',
           // },
           {
-            href: 'https://sorosplits.xyz',
-            label: 'Platform',
-            position: 'right',
+            href: "https://sorosplits.xyz",
+            label: "Platform",
+            position: "right",
           },
           {
-            href: 'https://github.com/orgs/SoroSplits/repositories',
-            label: 'GitHub',
-            position: 'right',
+            href: "https://github.com/orgs/Sorosplits/repositories",
+            label: "GitHub",
+            position: "right",
           },
         ],
       },
       footer: {
-        style: 'light',
+        style: "light",
         /* links: [
           {
             title: 'Docs',
@@ -113,24 +113,24 @@ const config = {
             items: [
               {
                 label: 'GitHub',
-                href: 'https://github.com/SoroSplits/repositories',
+                href: 'https://github.com/Sorosplits/repositories',
               },
             ],
           },
         ], */
-        copyright: `Copyright © ${new Date().getFullYear()} SoroSplits`,
+        copyright: `Copyright © ${new Date().getFullYear()} Sorosplits`,
       },
       prism: {
         theme: prismThemes.github,
         darkTheme: prismThemes.dracula,
-        additionalLanguages: ['rust']
+        additionalLanguages: ["rust"],
       },
       colorMode: {
-        defaultMode: 'light',
+        defaultMode: "light",
         disableSwitch: true,
         respectPrefersColorScheme: false,
-      }
+      },
     }),
-};
+}
 
-export default config;
+export default config

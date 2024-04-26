@@ -53,7 +53,7 @@ const authenticationHandlers = new Elysia({ prefix: "/auth" })
 
       const nonce = user.nonce
       const signingData = {
-        message: "SoroSplits connection message for authentication",
+        message: "Sorosplits connection message for authentication",
         nonce,
       }
 
