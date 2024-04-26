@@ -1,6 +1,6 @@
-# SoroSplits UI
+# Sorosplits UI
 
-This is the frontend repository for SoroSplits.
+This is the frontend repository for Sorosplits.
 
 ## Getting Started
 

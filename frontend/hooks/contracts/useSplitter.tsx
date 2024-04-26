@@ -1,4 +1,4 @@
-import { ShareDataProps } from "@sorosplits/sdk/lib/contracts/Splitter"
+import { ShareDataProps } from "sorosplits-sdk/lib/contracts/Splitter"
 import useContracts from "./useContracts"
 import useApiService from "../useApi"
 import { SplitterContractActivity } from "@/components/SplitterData/Activity"

@@ -23,7 +23,7 @@ import { WhitelistedTokensCardData } from "@/components/SplitterData/Whitelisted
 import { ShareholderCardData } from "@/components/SplitterData/Shareholders"
 import Card from "@/components/SplitterData/Card"
 import useDeployer, { NetworkItemProps } from "@/hooks/contracts/useDeployer"
-import { SplitterInputData } from "@sorosplits/sdk/lib/contracts/Deployer"
+import { SplitterInputData } from "sorosplits-sdk/lib/contracts/Deployer"
 import NetworkModal from "@/components/Modal/NetworkModal"
 import useAppStore from "../store"
 import useModal from "@/hooks/modals/useConfirmation"

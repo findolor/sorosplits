@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import SorosplitsSDK from "@sorosplits/sdk"
+import SorosplitsSDK from "sorosplits-sdk"
 import useAppStore from "../../store"
 
 const useContracts = () => {

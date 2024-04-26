@@ -1,4 +1,4 @@
-import { ShareDataProps } from "@sorosplits/sdk/lib/contracts/Splitter"
+import { ShareDataProps } from "sorosplits-sdk/lib/contracts/Splitter"
 
 const checkSplitterData = (data: ShareDataProps[]) => {
   if (data.length < 2) throw new Error("Please enter at least two shareholders")

@@ -1,5 +1,5 @@
-import { CallMethod as SplitterCallMethod } from "@sorosplits/sdk/lib/contracts/Splitter"
-import { CallMethod as DiversifierCallMethod } from "@sorosplits/sdk/lib/contracts/Diversifier"
+import { CallMethod as SplitterCallMethod } from "sorosplits-sdk/lib/contracts/Splitter"
+import { CallMethod as DiversifierCallMethod } from "sorosplits-sdk/lib/contracts/Diversifier"
 import Text from "../Text"
 import Card from "./Card"
 

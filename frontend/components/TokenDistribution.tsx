@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
-import { TokenResult } from "@sorosplits/sdk/lib/contracts/Token"
+import { TokenResult } from "sorosplits-sdk/lib/contracts/Token"
 import Input from "./Input"
 import { errorToast, loadingToast, successToast } from "@/utils/toast"
 import useAppStore from "@/store/index"

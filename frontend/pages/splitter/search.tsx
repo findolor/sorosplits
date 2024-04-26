@@ -9,7 +9,7 @@ import ShareholdersCard, {
 import {
   ContractConfigResult,
   ShareDataProps,
-} from "@sorosplits/sdk/lib/contracts/Splitter"
+} from "sorosplits-sdk/lib/contracts/Splitter"
 import useAppStore from "@/store/index"
 import { loadingToast, successToast, errorToast } from "@/utils/toast"
 import {

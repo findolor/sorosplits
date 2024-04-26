@@ -3,5 +3,5 @@
 ## Installation
 
 ```bash
-npm install @sorosplits/sdk
+npm install sorosplits-sdk
 ```

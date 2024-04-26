@@ -3,7 +3,7 @@ import jwt from "@elysiajs/jwt"
 import { Elysia, t } from "elysia"
 import { AuthenticationError } from "../errors"
 import { Prisma, PrismaClient } from "@prisma/client"
-import SorosplitsSDK from "@sorosplits/sdk"
+import SorosplitsSDK from "sorosplits-sdk"
 
 const deployerHandlers = new Elysia({ prefix: "/deployer" })
   .decorate("prisma", new PrismaClient())

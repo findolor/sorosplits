@@ -3,7 +3,7 @@ import {
   DiversifierDeployAndInitContractArgs,
   SplitterData,
   SplitterInputData,
-} from "@sorosplits/sdk/lib/contracts/Deployer"
+} from "sorosplits-sdk/lib/contracts/Deployer"
 import useContracts from "./useContracts"
 import useApiService from "../useApi"
 
