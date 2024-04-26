@@ -30,6 +30,7 @@ import useModal from "@/hooks/modals/useConfirmation"
 import { errorToast } from "@/utils/toast"
 import Text from "@/components/Text"
 import clsx from "clsx"
+import { WhitelistedSwapTokensCardData } from "@/components/SplitterData/WhitelistedSwapTokens"
 
 const nodeTypes = {
   customNode: CustomNode,
@@ -53,6 +54,7 @@ const initialNodes: Node<NodeData>[] = [
         },
       ],
       whitelistedTokens: [],
+      whitelistedSwapTokens: [],
       selected: false,
     },
   },
@@ -68,6 +70,7 @@ const initialNodes: Node<NodeData>[] = [
       },
       shareholders: [],
       whitelistedTokens: [],
+      whitelistedSwapTokens: [],
       selected: false,
     },
   },
@@ -159,6 +162,7 @@ export default function DragDrop() {
         },
         shareholders: [],
         whitelistedTokens: [],
+        whitelistedSwapTokens: [],
         selected: false,
       },
     }
@@ -237,6 +241,20 @@ export default function DragDrop() {
       data: {
         ...selectedNode.data,
         whitelistedTokens: data,
+      },
+    }
+    setNodes((nodes) => nodes.map((n) => (n.id === selectedNode.id ? node : n)))
+  }
+
+  const onWhitelistedSwapTokensCardUpdate = (
+    data: WhitelistedSwapTokensCardData[]
+  ) => {
+    if (!selectedNode) return
+    const node = {
+      ...selectedNode,
+      data: {
+        ...selectedNode.data,
+        whitelistedSwapTokens: data,
       },
     }
     setNodes((nodes) => nodes.map((n) => (n.id === selectedNode.id ? node : n)))
@@ -406,6 +424,12 @@ export default function DragDrop() {
             onShareholderCardUpdate={onShareholderCardUpdate}
             whitelistTokenCardData={selectedNode.data.whitelistedTokens}
             onWhitelistedTokensCardUpdate={onWhitelistedTokensCardUpdate}
+            whitelistedSwapTokenCardData={
+              selectedNode.data.whitelistedSwapTokens
+            }
+            onWhitelistedSwapTokensCardUpdate={
+              onWhitelistedSwapTokensCardUpdate
+            }
             reset={resetTrigger}
           />
           <RenderModal

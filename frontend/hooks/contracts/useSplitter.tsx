@@ -5,24 +5,7 @@ import { SplitterContractActivity } from "@/components/SplitterData/Activity"
 
 const useSplitter = () => {
   const { splitterContract } = useContracts()
-  const { splitterApiService, contractApiService } = useApiService()
-
-  const createSplitter = async (
-    name: string,
-    shares: ShareDataProps[],
-    updatable: boolean
-  ) => {
-    const operation = splitterContract.getDeployAndInitOperation({
-      name,
-      shares,
-      updatable,
-    })
-    const signedTx = await splitterContract.signTransaction([operation])
-    const contractAddress = await splitterApiService.createSplitter({
-      transaction: signedTx,
-    })
-    return contractAddress
-  }
+  const { contractApiService } = useApiService()
 
   const callContract = async (signature: string) => {
     await contractApiService.callMethod({
@@ -218,7 +201,6 @@ const useSplitter = () => {
   }
 
   return {
-    createSplitter,
     call: {
       updateName,
       updateShares,

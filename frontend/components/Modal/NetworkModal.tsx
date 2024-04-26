@@ -4,6 +4,7 @@ import BaseModal from "./Modal"
 import { ShareholderCardData } from "../SplitterData/Shareholders"
 import { WhitelistedTokensCardData } from "../SplitterData/WhitelistedTokens"
 import CreateSplitter from "../SplitterData/Create"
+import { WhitelistedSwapTokensCardData } from "../SplitterData/WhitelistedSwapTokens"
 
 interface NetworkModalProps {
   isOpen: boolean
@@ -26,6 +27,10 @@ interface NetworkModalProps {
   onShareholderCardUpdate: (data: ShareholderCardData[]) => void
   whitelistTokenCardData: WhitelistedTokensCardData[]
   onWhitelistedTokensCardUpdate: (data: WhitelistedTokensCardData[]) => void
+  whitelistedSwapTokenCardData: WhitelistedSwapTokensCardData[]
+  onWhitelistedSwapTokensCardUpdate: (
+    data: WhitelistedSwapTokensCardData[]
+  ) => void
   reset: number
 }
 
@@ -41,6 +46,8 @@ const NetworkModal: React.FC<NetworkModalProps> = ({
   onShareholderCardUpdate,
   whitelistTokenCardData,
   onWhitelistedTokensCardUpdate,
+  whitelistedSwapTokenCardData,
+  onWhitelistedSwapTokensCardUpdate,
   reset,
 }) => {
   return (
@@ -68,6 +75,8 @@ const NetworkModal: React.FC<NetworkModalProps> = ({
         onShareholderCardUpdate={onShareholderCardUpdate}
         whitelistTokenCardData={whitelistTokenCardData}
         onWhitelistedTokensCardUpdate={onWhitelistedTokensCardUpdate}
+        whitelistSwapTokenCardData={whitelistedSwapTokenCardData}
+        onWhitelistedSwapTokensCardUpdate={onWhitelistedSwapTokensCardUpdate}
         reset={reset}
       />
     </BaseModal>

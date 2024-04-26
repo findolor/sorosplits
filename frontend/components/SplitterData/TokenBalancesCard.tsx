@@ -83,11 +83,11 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
       )
       let total = []
       for (let i = 0; i < data.length; i++) {
-        total.push(diversifierTotalRes[i] + unusedRes[i])
+        total.push(Number(diversifierTotalRes[i]) + Number(unusedRes[i]))
       }
       setWaitingForDistribution(
         total.map((item, index) => {
-          return getBalance(item, data[index].decimals).toFixed(2)
+          return getBalance(BigInt(item), data[index].decimals).toFixed(2)
         })
       )
     }

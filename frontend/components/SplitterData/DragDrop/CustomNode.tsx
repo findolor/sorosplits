@@ -4,6 +4,7 @@ import { ShareholderCardData } from "../Shareholders"
 import { WhitelistedTokensCardData } from "../WhitelistedTokens"
 import Image from "next/image"
 import { useMemo } from "react"
+import { WhitelistedSwapTokensCardData } from "../WhitelistedSwapTokens"
 
 export interface NodeData {
   contractInfo: {
@@ -13,6 +14,7 @@ export interface NodeData {
   }
   shareholders: ShareholderCardData[]
   whitelistedTokens: WhitelistedTokensCardData[]
+  whitelistedSwapTokens: WhitelistedSwapTokensCardData[]
   selected: boolean
 }
 
@@ -21,7 +23,6 @@ const CustomNode = ({
   data: {
     contractInfo: { name, isDiversifierActive },
     shareholders,
-    whitelistedTokens,
     selected,
   },
 }: {
