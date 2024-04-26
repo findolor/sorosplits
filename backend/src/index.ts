@@ -55,14 +55,11 @@ const application = new Elysia()
         }
     }
   })
-  .group("/api", (app) =>
-    app
-      .get("/health", () => {})
-      .use(authenticationHandlers)
-      .use(unprotectedHandlers)
-      .use(contractHandlers)
-      .use(deployerHandlers)
-  )
+  .get("/health", () => {})
+  .use(authenticationHandlers)
+  .use(unprotectedHandlers)
+  .use(contractHandlers)
+  .use(deployerHandlers)
   .listen(3001)
 
 console.log(
