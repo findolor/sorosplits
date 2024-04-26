@@ -1,6 +1,6 @@
 {
   "name": "@sorosplits/sdk",
-  "version": "0.0.303",
+  "version": "0.0.1",
   "module": "lib/index.js",
   "types": "lib/index.d.ts",
   "type": "module",
@@ -11,8 +11,8 @@
     "access": "public"
   },
   "dependencies": {
-    "@stellar/freighter-api": "^1.7.1",
-    "@stellar/stellar-sdk": "^11.2.2",
+    "@stellar/freighter-api": "^2.0.0",
+    "@stellar/stellar-sdk": "^11.3.0",
     "react": "^18.2.0"
   },
   "devDependencies": {
