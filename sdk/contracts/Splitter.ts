@@ -343,7 +343,8 @@ export class SplitterContract extends BaseContract {
   }
 
   private decodeDistributeTokensParams(args: xdr.ScVal[]) {
-    const [tokenAddress, amount] = scValToNative(args[0])
+    const tokenAddress = scValToNative(args[0])
+    const amount = scValToNative(args[1])
     return {
       tokenAddress,
       amount,
@@ -351,7 +352,9 @@ export class SplitterContract extends BaseContract {
   }
 
   private decodeTransferTokensParams(args: xdr.ScVal[]) {
-    const [tokenAddress, recipient, amount] = scValToNative(args[0])
+    const tokenAddress = scValToNative(args[0])
+    const recipient = scValToNative(args[1])
+    const amount = scValToNative(args[2])
     return {
       tokenAddress: tokenAddress.toString(),
       recipient: recipient.toString(),
@@ -369,7 +372,7 @@ export class SplitterContract extends BaseContract {
   private decodeUpdateWhitelistedTokensParams(args: xdr.ScVal[]) {
     const tokens = scValToNative(args[0])
     return {
-      tokens: tokens.map((item) => {
+      tokens: tokens.map((item: any) => {
         return item.toString()
       }),
     }

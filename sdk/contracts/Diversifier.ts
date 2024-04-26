@@ -204,19 +204,21 @@ export class DiversifierContract extends BaseContract {
   }
 
   private decodeUpdateWhitelistedSwapTokensParams(args: xdr.ScVal[]) {
-    const [tokenAddress, swapTokens] = scValToNative(args[0])
+    const tokenAddress = scValToNative(args[0])
+    const swapTokens = scValToNative(args[1])
     return {
       tokenAddress: tokenAddress.toString(),
-      swapTokens: swapTokens.map((item) => {
+      swapTokens: swapTokens.map((item: any) => {
         return item.toString()
       }),
     }
   }
 
   private decodeSwapAndDistributeTokensParams(args: xdr.ScVal[]) {
-    const [swapPaths, amount] = scValToNative(args[0])
+    const swapPaths = scValToNative(args[0])
+    const amount = scValToNative(args[1])
     return {
-      swapPaths: swapPaths.map((item) => {
+      swapPaths: swapPaths.map((item: any) => {
         return item.toString()
       }),
       amount: Number(BigInt(amount)),
