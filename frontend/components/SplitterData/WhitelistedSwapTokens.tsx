@@ -179,7 +179,7 @@ const WhitelistedSwapTokensCard: React.FC<WhitelistedSwapTokensCardProps> = ({
                 key={item.token.address}
                 className="flex w-full flex-col gap-1 items-end"
               >
-                <button
+                <div
                   onClick={() => setSelectedTokenIdx(index)}
                   className="flex w-full"
                 >
@@ -216,7 +216,7 @@ const WhitelistedSwapTokensCard: React.FC<WhitelistedSwapTokensCardProps> = ({
                       </div>
                     </div>
                   </div>
-                </button>
+                </div>
                 {internalData.find(
                   (i) => item.token.address === i.token.address
                 )?.swapTokens?.length === 0 &&
