@@ -4,7 +4,7 @@ import Text from "../Text"
 import Card from "./Card"
 import Loading from "../Loading"
 import Image from "next/image"
-import { errorToast } from "@/utils/toast"
+import { errorToast, successToast } from "@/utils/toast"
 import clsx from "clsx"
 import useAppStore from "@/store/index"
 import useToken from "@/hooks/contracts/useToken"
@@ -123,10 +123,10 @@ const WhitelistedSwapTokensCard: React.FC<WhitelistedSwapTokensCardProps> = ({
     return token.getTokenDetails(addressInput)
   }
 
-  // CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC
-  // CBT5F2FSLHR4JERVHBIIQXQLONE4HZ5E4KC7W7NTR5NGPSH6KQ4AX4Y7
-  // CBYSL2H7BJ43BWMYEMDPAAET3SF7QVRFVDDV3ODGKWDZGNPRHJICIQPQ
-  // CBE6AVU4JNOJ2UGKQJ5F75377G4GEF4BDWMHD7OPU5C4HMIDCJ3L4AYL
+  const tokenCopyOnClick = (address: string) => {
+    navigator.clipboard.writeText(address)
+    successToast("Address copied to clipboard")
+  }
 
   return (
     <Card>
@@ -191,12 +191,17 @@ const WhitelistedSwapTokensCard: React.FC<WhitelistedSwapTokensCardProps> = ({
                       selectedTokenIdx === index && "border-[#FFDC93]"
                     )}
                   >
-                    <Text
-                      text={`${index + 1}. ${item.token.name}`}
-                      size="12"
-                      lineHeight="12"
-                      letterSpacing="-1.5"
-                    />
+                    <button
+                      onClick={() => tokenCopyOnClick(item.token.address)}
+                    >
+                      <Text
+                        text={`${index + 1}. ${item.token.name}`}
+                        size="12"
+                        lineHeight="12"
+                        letterSpacing="-1.5"
+                        customStyle="hover:underline cursor-pointer"
+                      />
+                    </button>
                     <div className="flex items-center">
                       <div className="w-[65px] flex justify-end">
                         <Text
@@ -249,12 +254,17 @@ const WhitelistedSwapTokensCard: React.FC<WhitelistedSwapTokensCardProps> = ({
                             edit && "border-2 border-[#EBF2F7] p-4 px-2"
                           )}
                         >
-                          <Text
-                            text={`${swapIndex + 1}. ${swapToken.name}`}
-                            size="12"
-                            lineHeight="12"
-                            letterSpacing="-1.5"
-                          />
+                          <button
+                            onClick={() => tokenCopyOnClick(swapToken.address)}
+                          >
+                            <Text
+                              text={`${swapIndex + 1}. ${swapToken.name}`}
+                              size="12"
+                              lineHeight="12"
+                              letterSpacing="-1.5"
+                              customStyle="hover:underline cursor-pointer"
+                            />
+                          </button>
                           <div className="flex items-center">
                             <div className="w-[65px] flex justify-end">
                               <Text

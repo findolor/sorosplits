@@ -642,6 +642,7 @@ const NewSearch: React.FC = () => {
               <div className="flex flex-col gap-4 w-full">
                 <ContractInfoCard
                   data={contractInfoCardData}
+                  splitterAddress={splitterContractAddress}
                   onUpdate={onContractInfoCardUpdate}
                   edit={manageSplitter}
                   reset={resetTrigger}

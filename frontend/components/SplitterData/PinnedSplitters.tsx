@@ -59,7 +59,7 @@ const PinnedSplittersCard: React.FC<PinnedSplittersCardProps> = ({
               return (
                 <Link
                   key={item.address}
-                  href={`/splitter/search?address=${item.address}`}
+                  href={`/search?address=${item.address}`}
                 >
                   <div
                     key={index.toString()}

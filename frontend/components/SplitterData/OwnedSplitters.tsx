@@ -59,7 +59,7 @@ const OwnedSplittersCard: React.FC<OwnedSplittersCardProps> = ({
               return (
                 <Link
                   key={item.address}
-                  href={`/splitter/search?address=${item.address}`}
+                  href={`/search?address=${item.address}`}
                 >
                   <div className="h-[28px] rounded-[8px] flex justify-between items-center hover:bg-[#EBF2F7] hover:cursor-pointer p-4 px-2">
                     <Text

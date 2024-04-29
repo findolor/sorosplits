@@ -5,7 +5,7 @@ import clsx from "clsx"
 import Image from "next/image"
 import AddressInput from "../Input/Address"
 import ShareInput from "../Input/Share"
-import { errorToast } from "@/utils/toast"
+import { errorToast, successToast } from "@/utils/toast"
 import { Keypair, StrKey } from "stellar-sdk"
 import useContracts from "@/hooks/contracts/useContracts"
 import Loading from "../Loading"
@@ -137,6 +137,11 @@ const ShareholdersCard: React.FC<ShareholdersCardProps> = ({
     }
   }
 
+  const shareholderOnClick = async (item: ShareholderCardData) => {
+    navigator.clipboard.writeText(item.address)
+    successToast("Address copied to clipboard")
+  }
+
   return (
     <Card>
       <div className="flex justify-between">
@@ -165,7 +170,7 @@ const ShareholdersCard: React.FC<ShareholdersCardProps> = ({
                   edit && "border-2 border-[#EBF2F7] p-4 px-2"
                 )}
               >
-                <button onClick={() => alert("copied")}>
+                <button onClick={() => shareholderOnClick(item)}>
                   <Text
                     text={
                       item.domain

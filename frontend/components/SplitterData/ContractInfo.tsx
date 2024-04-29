@@ -8,6 +8,7 @@ import { useEffect, useState } from "react"
 import AddressInput from "../Input/Address"
 import useSplitter from "@/hooks/contracts/useSplitter"
 import { WhitelistedTokensCardData } from "./WhitelistedTokens"
+import { successToast } from "@/utils/toast"
 
 export interface TokenBalanceData {
   tokenData: WhitelistedTokensCardData
@@ -21,6 +22,7 @@ interface ContractInfoCardProps {
     updatable: boolean
     isDiversifierActive: boolean
   }
+  splitterAddress?: string
   onUpdate: (name: string, updatable: boolean, diversifier: boolean) => void
   edit: boolean
   reset: number
@@ -29,6 +31,7 @@ interface ContractInfoCardProps {
 
 const ContractInfoCard: React.FC<ContractInfoCardProps> = ({
   data,
+  splitterAddress,
   onUpdate,
   edit,
   reset,
@@ -68,7 +71,7 @@ const ContractInfoCard: React.FC<ContractInfoCardProps> = ({
       <RenderHeader value="Contract info" />
       <div className="flex flex-col pl-2">
         <RenderRowWithAddress leftText="Owner" rightText={data.owner} />
-        <div className="flex justify-between mb-4 items-center">
+        <div className="flex justify-between mb-2 items-center">
           <Text
             text="Name"
             size="12"
@@ -96,7 +99,13 @@ const ContractInfoCard: React.FC<ContractInfoCardProps> = ({
             />
           )}
         </div>
-        <div className="flex items-center gap-1 mb-1">
+        {!edit && splitterAddress && (
+          <RenderRowWithAddress
+            leftText="Splitter Contract Address"
+            rightText={splitterAddress}
+          />
+        )}
+        <div className="flex items-center gap-1 mb-1 mt-1">
           <Image src="/icons/info.svg" height={12} width={12} alt="Info icon" />
           <div className="flex items-center">
             <Text text="Shareholders & shares are" size="12" color="#687B8C" />
@@ -170,6 +179,11 @@ const RenderRowWithAddress = ({
 }) => {
   const { walletAddress } = useAppStore()
 
+  const copyAddress = () => {
+    navigator.clipboard.writeText(rightText)
+    successToast("Address copied to clipboard")
+  }
+
   return (
     <div className="flex justify-between mb-2 items-center">
       <Text
@@ -179,15 +193,18 @@ const RenderRowWithAddress = ({
         letterSpacing="-1.5%"
         color="#323C45"
       />
-      <Text
-        text={
-          walletAddress === rightText ? "You" : truncateAddressLong(rightText)
-        }
-        size="12"
-        lineHeight="12"
-        letterSpacing="-1.5%"
-        color="#323C45"
-      />
+      <button onClick={copyAddress}>
+        <Text
+          text={
+            walletAddress === rightText ? "You" : truncateAddressLong(rightText)
+          }
+          size="12"
+          lineHeight="12"
+          letterSpacing="-1.5%"
+          color="#323C45"
+          customStyle="hover:underline cursor-pointer"
+        />
+      </button>
     </div>
   )
 }

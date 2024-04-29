@@ -4,7 +4,7 @@ import Text from "../Text"
 import Card from "./Card"
 import Loading from "../Loading"
 import Image from "next/image"
-import { errorToast } from "@/utils/toast"
+import { errorToast, successToast } from "@/utils/toast"
 import clsx from "clsx"
 import useAppStore from "@/store/index"
 import useToken from "@/hooks/contracts/useToken"
@@ -81,6 +81,11 @@ const WhitelistedTokensCard: React.FC<WhitelistedTokensCardProps> = ({
     return token.getTokenDetails(addressInput)
   }
 
+  const tokenOnClick = async (address: string) => {
+    navigator.clipboard.writeText(address)
+    successToast("Address copied to clipboard")
+  }
+
   return (
     <Card>
       <div className="flex justify-between">
@@ -135,12 +140,15 @@ const WhitelistedTokensCard: React.FC<WhitelistedTokensCardProps> = ({
                     edit && "border-2 border-[#EBF2F7] p-4 px-2"
                   )}
                 >
-                  <Text
-                    text={`${index + 1}. ${item.name}`}
-                    size="12"
-                    lineHeight="12"
-                    letterSpacing="-1.5"
-                  />
+                  <button onClick={() => tokenOnClick(item.address)}>
+                    <Text
+                      text={`${index + 1}. ${item.name}`}
+                      size="12"
+                      lineHeight="12"
+                      letterSpacing="-1.5"
+                      customStyle="hover:underline cursor-pointer"
+                    />
+                  </button>
                   <div className="flex items-center">
                     <div className="w-[65px] flex justify-end">
                       <Text
