@@ -3,6 +3,8 @@ import {
   setAllowed,
   getUserInfo,
   signBlob,
+  getNetworkDetails,
+  isConnected as isConnectedFreighter,
 } from "@stellar/freighter-api"
 import useAppStore from "../store"
 import { errorToast } from "../utils/toast"
@@ -22,6 +24,11 @@ const useWallet = () => {
   const connect = async () => {
     try {
       setLoading(true)
+
+      const installed = await isConnectedFreighter()
+      if (!installed) {
+        throw new Error("Freighter is not installed")
+      }
 
       const allowed = await isAllowed()
       if (!allowed) {
