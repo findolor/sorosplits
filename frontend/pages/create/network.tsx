@@ -454,17 +454,11 @@ const CreateNodeButton = ({
   return (
     <button
       className={clsx(
-        "flex items-center justify-center w-[240px] h-[80px] border-dashed border-4 border-[#C3D1DD] rounded-2xl bg-white",
-        "hover:border-black hover:text-black group"
+        "flex items-center justify-center w-[240px] h-[80px] border-4 border-black rounded-2xl bg-white"
       )}
       onClick={onClick}
     >
-      <Text
-        text={title}
-        color="#C3D1DD"
-        size="20"
-        customStyle="group-hover:!text-black"
-      />
+      <Text text={title} color="#000000" size="20" />
     </button>
   )
 }

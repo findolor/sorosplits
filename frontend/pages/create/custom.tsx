@@ -172,7 +172,7 @@ const CreateCustomSplitter = () => {
     <Layout>
       <div className="mt-10">
         <PageHeader
-          title="Create Contract"
+          title="Create Custom Contract"
           subtitle="Create a new contract for distributing tokens to shareholders."
         />
 
