@@ -31,6 +31,7 @@ import { errorToast } from "@/utils/toast"
 import Text from "@/components/Text"
 import clsx from "clsx"
 import { WhitelistedSwapTokensCardData } from "@/components/SplitterData/WhitelistedSwapTokens"
+import parseContractError from "@/utils/parseContractError"
 
 const nodeTypes = {
   customNode: CustomNode,
@@ -335,9 +336,9 @@ export default function DragDrop() {
       const contracts = await deployNetwork(data)
 
       console.log("CONTRACTS", contracts)
-    } catch (error) {
+    } catch (error: any) {
       setLoading(false)
-      errorToast(error)
+      errorToast(parseContractError(error))
     }
   }
 
