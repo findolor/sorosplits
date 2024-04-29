@@ -14,7 +14,7 @@ import useSplitter from "@/hooks/contracts/useSplitter"
 import { WhitelistedSwapTokensCardData } from "@/components/SplitterData/WhitelistedSwapTokens"
 import useDiversifier from "@/hooks/contracts/useDiversifier"
 
-const CreateSplitter = () => {
+const CreateCustomSplitter = () => {
   const { push } = useRouter()
   const deployer = useDeployer()
   const splitter = useSplitter()
@@ -209,4 +209,4 @@ const CreateSplitter = () => {
   )
 }
 
-export default CreateSplitter
+export default CreateCustomSplitter

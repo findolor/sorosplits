@@ -78,7 +78,7 @@ export default function Home() {
                     letterSpacing="-2"
                     bold
                   />
-                  <Link href="/splitter/create">
+                  <Link href="/create">
                     <CreateSplitterButton />
                   </Link>
                 </div>
@@ -96,7 +96,7 @@ export default function Home() {
                     letterSpacing="-2"
                     bold
                   />
-                  <Link href="/splitter/search">
+                  <Link href="/search">
                     <SearchSplitterButton />
                   </Link>
                 </div>

@@ -11,19 +11,11 @@ const Navbar: React.FC = () => {
         <Link href="/">
           <Image src="/logo.svg" alt="Logo" height={80} width={140} />
         </Link>
-        <Link href="/splitter/create" className="ml-10">
+        <Link href="/create" className="ml-10">
           <Text text="Create" size="15" lineHeight="20" letterSpacing="-2" />
         </Link>
-        <Link href="/splitter/search" className="ml-6">
+        <Link href="/search" className="ml-6">
           <Text text="Search" size="15" lineHeight="20" letterSpacing="-2" />
-        </Link>
-        <Link href="/network" className="ml-6">
-          <Text
-            text="Create Network"
-            size="15"
-            lineHeight="20"
-            letterSpacing="-2"
-          />
         </Link>
       </div>
       <Wallet />
