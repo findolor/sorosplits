@@ -3,7 +3,8 @@ import Layout from "@/components/Layout"
 import PageHeader from "@/components/PageHeader"
 import { ShareholderCardData } from "@/components/SplitterData/Shareholders"
 import { WhitelistedTokensCardData } from "@/components/SplitterData/WhitelistedTokens"
-import useModal from "@/hooks/modals/useConfirmation"
+import useConfirmationModal from "@/hooks/modals/useConfirmation"
+import useCustomSuccess from "@/hooks/modals/useCustomSuccess"
 import useAppStore from "@/store/index"
 import checkSplitterData from "@/utils/checkSplitterData"
 import { errorToast, loadingToast, successToast } from "@/utils/toast"
@@ -20,8 +21,13 @@ const CreateCustomSplitter = () => {
   const splitter = useSplitter()
   const diversifier = useDiversifier()
   const { walletAddress, setLoading, isConnected } = useAppStore()
+
   const { confirmModal, onConfirmModal, RenderModal, onCancelModal } =
-    useModal()
+    useConfirmationModal()
+  const {
+    RenderModal: CustomSuccessModal,
+    setIsOpen: setCustomSuccessModalIsOpen,
+  } = useCustomSuccess()
 
   const [contractName, setContractName] = useState<string>("")
   const [contractUpdatable, setContractUpdatable] = useState<boolean>(true)
@@ -36,6 +42,9 @@ const CreateCustomSplitter = () => {
   const [contractWhitelistedSwapTokens, setContractWhitelistedSwapTokensCard] =
     useState<WhitelistedSwapTokensCardData[]>([])
   const [resetTrigger, setResetTrigger] = useState<number>(0)
+
+  const [diversifierAddress, setDiversifierAddress] = useState("")
+  const [splitterAddress, setSplitterAddress] = useState("")
 
   const contractInfoData = useMemo(() => {
     return {
@@ -121,12 +130,15 @@ const CreateCustomSplitter = () => {
         successToast("Whitelisted swap tokens updated successfully!")
       }
 
-      successToast("Navigating to contract page...")
+      const diversifierConfig = await diversifier.query.getDiversifierConfig(
+        contractAddress
+      )
+      setDiversifierAddress(contractAddress)
+      setSplitterAddress(diversifierConfig.splitter_address)
 
-      setTimeout(() => {
-        setLoading(false)
-        push(`/splitter/search?address=${contractAddress}`)
-      }, 2000)
+      setLoading(false)
+      onCancelModal()
+      setCustomSuccessModalIsOpen(true)
     } catch (error: any) {
       setLoading(false)
       errorToast(error)
@@ -168,6 +180,14 @@ const CreateCustomSplitter = () => {
     setContractWhitelistedSwapTokensCard(data)
   }
 
+  const successModalOnConfirm = () => {
+    successToast("Navigating to contract page...")
+    setTimeout(() => {
+      setLoading(false)
+      push(`/search?address=${diversifierAddress}`)
+    }, 1000)
+  }
+
   return (
     <Layout>
       <div className="mt-10">
@@ -203,6 +223,13 @@ const CreateCustomSplitter = () => {
               : undefined
           }
           onConfirm={modalOnConfirm}
+        />
+        <CustomSuccessModal
+          contractAddresses={{
+            splitter: splitterAddress,
+            diversifier: diversifierAddress,
+          }}
+          onConfirm={successModalOnConfirm}
         />
       </div>
     </Layout>

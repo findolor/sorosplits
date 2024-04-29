@@ -39,6 +39,7 @@ const CreateContract = () => {
                       size="18"
                       lineHeight="20"
                       color="#000000"
+                      bold
                     />
                     <Text
                       text={item.subtitle}
