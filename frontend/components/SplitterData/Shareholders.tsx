@@ -124,11 +124,7 @@ const ShareholdersCard: React.FC<ShareholdersCardProps> = ({
 
   const validateShare = (share: string) => {
     const shareNumber = parseFloat(share)
-    if (
-      isNaN(shareNumber) ||
-      shareNumber <= 0 ||
-      shareNumber >= 100 - preAllocation
-    ) {
+    if (isNaN(shareNumber) || shareNumber < 0 || shareNumber > 100) {
       throw new Error("Share must be a number between 0 and 100")
     }
     const totalShares =
