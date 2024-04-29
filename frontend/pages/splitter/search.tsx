@@ -628,7 +628,9 @@ const NewSearch: React.FC = () => {
                   onUpdate={onWhitelistedTokensCardUpdate}
                   edit={manageSplitter}
                 />
-                {contractIsDiversifierActive && (
+                {(manageSplitter
+                  ? updatedContractIsDiversifierActive
+                  : contractIsDiversifierActive) && (
                   <WhitelistedSwapTokensCard
                     data={whitelistedSwapTokensCardData}
                     dataLoading={whitelistedSwapTokensCardDataLoading}

@@ -23,22 +23,13 @@ const CreateSplitter = () => {
   const { confirmModal, onConfirmModal, RenderModal, onCancelModal } =
     useModal()
 
-  const [contractName, setContractName] = useState<string>("TESSTTT")
+  const [contractName, setContractName] = useState<string>("")
   const [contractUpdatable, setContractUpdatable] = useState<boolean>(true)
   const [contractIsDiversifierActive, setContractIsDiversifierActive] =
     useState<boolean>(false)
-  const [contractShares, setContractShares] = useState<ShareholderCardData[]>([
-    {
-      address: "GBOAWTUJNSI5VKE3MDGY32LJF723OCQ42XYLNJWXDHCJKRZSFV3PKKMY",
-      share: "20",
-      domain: false,
-    },
-    {
-      address: "CCGQUEH2MSJVP4EAYCE6USCCJ3HAE5JUPZZIKT462XXDP2ZZVJ6AAQTE",
-      share: "80",
-      domain: false,
-    },
-  ])
+  const [contractShares, setContractShares] = useState<ShareholderCardData[]>(
+    []
+  )
   const [contractWhitelistedTokens, setContractWhitelistedTokens] = useState<
     WhitelistedTokensCardData[]
   >([])
