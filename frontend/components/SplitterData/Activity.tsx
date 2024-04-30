@@ -2,6 +2,7 @@ import { CallMethod as SplitterCallMethod } from "sorosplits-sdk/lib/contracts/S
 import { CallMethod as DiversifierCallMethod } from "sorosplits-sdk/lib/contracts/Diversifier"
 import Text from "../Text"
 import Card from "./Card"
+import { truncateAddressLong } from "@/utils/truncateAddress"
 
 type Action =
   | SplitterCallMethod
@@ -21,32 +22,38 @@ interface ActivityCardProps {
 }
 
 const ActivityCard: React.FC<ActivityCardProps> = ({ data }) => {
-  const decodeAction = (action: Action) => {
+  const decodeAction = (action: Action, data: Record<string, any>) => {
     switch (action) {
       case "deploy_splitter":
       case "init_splitter":
-        return "Splitter contract created"
+        return "Contract creation"
       case "deploy_diversifier":
       case "init_diversifier":
-        return "Diversifier contract created"
+        return "Contract creation"
       case "update_shares":
-        return "Shareholders & shares updated"
+        return "Shareholders & shares update"
       case "distribute_tokens":
-        return "Distributed tokens"
+        return `Token distribution - ${truncateAddressLong(
+          data["tokenAddress"]
+        )}`
       case "lock_contract":
-        return "Shareholders & shares locked"
+        return "Shareholders & shares locke"
       case "transfer_tokens":
-        return "Transferred unused tokens"
+        return "Unused tokens transfer"
       case "update_name":
-        return "Contract name updated"
+        return "Contract name update"
       case "update_whitelisted_tokens":
-        return "Whitelisted tokens updated"
+        return "Whitelisted tokens update"
       case "deploy_network":
-        return "Splitter created in network"
+        return "Network contract creation"
       case "toggle_diversifier":
-        return "Diversifier is toggled"
+        return "Diversifier state update"
       case "update_whitelisted_swap_tokens":
-        return "Whitelisted swap tokens updated"
+        return "Whitelisted swap tokens update"
+      case "withdraw_allocation":
+        return `Allocation withdrawal - ${truncateAddressLong(
+          data["shareholder"]
+        )}`
       default:
         return action
     }
@@ -96,10 +103,15 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ data }) => {
           return (
             <div
               key={index.toString()}
-              className="h-[28px] w-full rounded-[8px] flex justify-between items-center px-1 pr-4"
+              className="h-[28px] w-full rounded-[8px] flex justify-between items-center px-1 pr-4 cursor-pointer"
+              data-tooltip-id="hover-tooltip"
+              data-tooltip-html={JSON.stringify(item.data, null, 2).replace(
+                /\n/g,
+                "<br>"
+              )}
             >
               <Text
-                text={decodeAction(item.action)}
+                text={decodeAction(item.action, item.data)}
                 size="12"
                 lineHeight="12"
                 letterSpacing="-1.5"
