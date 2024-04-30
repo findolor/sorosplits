@@ -336,6 +336,21 @@ impl SplitterContract for Diversifier {
         );
         Ok(())
     }
+    fn withdraw_external_allocation(
+        env: Env,
+        splitter_address: Address,
+        token_address: Address,
+        amount: i128,
+    ) -> Result<(), Error> {
+        let config = DiversifierConfig::get(&env)?;
+        config.require_admin()?;
+
+        // TODO: Look at this function
+
+        splitter_contract::Client::new(&env, &config.splitter_address)
+            .withdraw_external_allocation(&splitter_address, &token_address, &amount);
+        Ok(())
+    }
     fn update_name(env: Env, name: Bytes) -> Result<(), Error> {
         let config = DiversifierConfig::get(&env)?;
         config.require_admin()?;
