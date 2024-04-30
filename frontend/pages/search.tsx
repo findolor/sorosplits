@@ -200,6 +200,7 @@ const NewSearch: React.FC = () => {
           )
         )
         setContractWhitelistedSwapTokens(swapTokensRes)
+        setUpdatedContractWhitelistedSwapTokens(swapTokensRes)
 
         successToast("Contract found!")
       } catch (error: any) {
