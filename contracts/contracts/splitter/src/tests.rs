@@ -7,3 +7,4 @@ mod update_name;
 mod update_shares;
 mod update_whitelisted_tokens;
 mod withdraw_allocation;
+mod withdraw_external_allocation;

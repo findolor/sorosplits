@@ -116,6 +116,20 @@ pub trait SplitterTrait {
         amount: i128,
     ) -> Result<(), Error>;
 
+    /// Withdraws the allocation of the current contract from another splitter contract.
+    ///
+    /// ## Arguments
+    ///
+    /// * `splitter_address` - The address of the splitter contract
+    /// * `token_address` - The address of the token to withdraw
+    /// * `amount` - The amount of tokens to withdraw
+    fn withdraw_external_allocation(
+        env: Env,
+        splitter_address: Address,
+        token_address: Address,
+        amount: i128,
+    ) -> Result<(), Error>;
+
     // ========== Query Functions ==========
 
     /// Gets the share of a shareholder.
@@ -237,6 +251,15 @@ impl SplitterTrait for Splitter {
         amount: i128,
     ) -> Result<(), Error> {
         execute::withdraw_allocation(env, token_address, shareholder, amount)
+    }
+
+    fn withdraw_external_allocation(
+        env: Env,
+        splitter_address: Address,
+        token_address: Address,
+        amount: i128,
+    ) -> Result<(), Error> {
+        execute::withdraw_external_allocation(env, splitter_address, token_address, amount)
     }
 
     // ========== Query Functions ==========
