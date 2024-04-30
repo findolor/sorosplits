@@ -9,16 +9,17 @@ pub enum Error {
     Unauthorized = 3,
     ContractLocked = 4,
     LowShareCount = 5,
-    InvalidShareTotal = 6,
+    SelfShareNotAllowed = 6,
+    InvalidShareTotal = 7,
     // Token distribution errors
-    InsufficientBalance = 7,
+    InsufficientBalance = 8,
     // Token transfer errors
-    ZeroTransferAmount = 8,
-    TransferAmountAboveBalance = 9,
-    TransferAmountAboveUnusedBalance = 10,
+    ZeroTransferAmount = 9,
+    TransferAmountAboveBalance = 10,
+    TransferAmountAboveUnusedBalance = 11,
     // Token withdrawal errors
-    ZeroWithdrawalAmount = 11,
-    WithdrawalAmountAboveAllocation = 12,
+    ZeroWithdrawalAmount = 12,
+    WithdrawalAmountAboveAllocation = 13,
     // Token whitelist errors
-    TokenNotWhitelisted = 13,
+    TokenNotWhitelisted = 14,
 }

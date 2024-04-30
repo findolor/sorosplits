@@ -25,7 +25,7 @@ pub fn execute(
     check_shares(&shares)?;
 
     // Update the shares of the shareholders
-    update_shares(&env, &shares);
+    update_shares(&env, &shares)?;
 
     Ok(())
 }

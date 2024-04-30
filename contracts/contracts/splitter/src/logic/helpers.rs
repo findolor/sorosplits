@@ -19,11 +19,15 @@ pub fn check_shares(shares: &Vec<ShareDataKey>) -> Result<(), Error> {
 }
 
 /// Updates the shares of the shareholders
-pub fn update_shares(env: &Env, shares: &Vec<ShareDataKey>) {
+pub fn update_shares(env: &Env, shares: &Vec<ShareDataKey>) -> Result<(), Error> {
     // Shareholders are stored in a vector
     let mut shareholders: Vec<Address> = Vec::new(&env);
 
     for share in shares.iter() {
+        if share.shareholder == env.current_contract_address() {
+            return Err(Error::SelfShareNotAllowed);
+        }
+
         // Add the shareholder to the vector
         shareholders.push_back(share.shareholder.clone());
 
@@ -33,6 +37,8 @@ pub fn update_shares(env: &Env, shares: &Vec<ShareDataKey>) {
 
     // Store the shareholders vector
     RecipientKeys::save_shareholders(&env, shareholders);
+
+    Ok(())
 }
 
 /// Removes all of the shareholders and their shares

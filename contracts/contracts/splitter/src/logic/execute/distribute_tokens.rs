@@ -47,9 +47,6 @@ pub fn execute(env: Env, token_address: Address, amount: i128) -> Result<(), Err
             let shareholder_allocation = amount.fixed_mul_floor(share, 10000).unwrap_or(0);
 
             if shareholder_allocation > 0 {
-                // TODO: If the shareholder is the current contract, we should not create an allocation
-                // TODO: If the shareholder is the admin, we should not create an allocation but instead transfer the tokens to the admin
-
                 // Get the current allocation for the user - default to 0
                 let allocation =
                     TokenAllocations::get(&env, &shareholder, &token_address).unwrap_or(0);
