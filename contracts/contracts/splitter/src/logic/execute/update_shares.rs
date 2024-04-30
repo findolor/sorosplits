@@ -22,7 +22,7 @@ pub fn execute(env: Env, shares: Vec<ShareDataKey>) -> Result<(), Error> {
     reset_shares(&env);
 
     // Update the shares of the shareholders
-    update_shares_helper(&env, &shares);
+    update_shares_helper(&env, &shares)?;
 
     Ok(())
 }
