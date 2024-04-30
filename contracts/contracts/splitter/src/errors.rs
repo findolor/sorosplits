@@ -4,22 +4,22 @@ use soroban_sdk::contracterror;
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
 #[repr(u32)]
 pub enum Error {
-    NotInitialized = 1,
-    AlreadyInitialized = 2,
-    Unauthorized = 3,
-    ContractLocked = 4,
-    LowShareCount = 5,
-    SelfShareNotAllowed = 6,
-    InvalidShareTotal = 7,
+    NotInitialized = 101,
+    AlreadyInitialized = 102,
+    Unauthorized = 103,
+    ContractLocked = 104,
+    LowShareCount = 105,
+    SelfShareNotAllowed = 106,
+    InvalidShareTotal = 107,
     // Token distribution errors
-    InsufficientBalance = 8,
+    InsufficientBalance = 108,
     // Token transfer errors
-    ZeroTransferAmount = 9,
-    TransferAmountAboveBalance = 10,
-    TransferAmountAboveUnusedBalance = 11,
+    ZeroTransferAmount = 109,
+    TransferAmountAboveBalance = 110,
+    TransferAmountAboveUnusedBalance = 111,
     // Token withdrawal errors
-    ZeroWithdrawalAmount = 12,
-    WithdrawalAmountAboveAllocation = 13,
+    ZeroWithdrawalAmount = 112,
+    WithdrawalAmountAboveAllocation = 113,
     // Token whitelist errors
-    TokenNotWhitelisted = 14,
+    TokenNotWhitelisted = 114,
 }

@@ -4,10 +4,10 @@ use soroban_sdk::contracterror;
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
 #[repr(u32)]
 pub enum Error {
-    NotInitialized = 1,
-    NotActive = 2,
-    NotAllowed = 3,
-    InvalidSwapPath = 4,
-    InvalidSwapToken = 5,
-    InsufficientTokenBalance = 6,
+    NotInitialized = 201,
+    NotActive = 202,
+    NotAllowed = 203,
+    InvalidSwapPath = 204,
+    InvalidSwapToken = 205,
+    InsufficientTokenBalance = 206,
 }
