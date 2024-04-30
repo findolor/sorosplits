@@ -5,10 +5,10 @@ import clsx from "clsx"
 import { useEffect, useState } from "react"
 import useToken from "@/hooks/contracts/useToken"
 import { WhitelistedTokensCardData } from "./WhitelistedTokens"
-import { getBalance } from "@/utils/getBalance"
+import { floorToFixed, getBalance } from "@/utils/getBalance"
 import useSplitter from "@/hooks/contracts/useSplitter"
 import useAppStore from "@/store/index"
-import { errorToast, loadingToast } from "@/utils/toast"
+import { errorToast, loadingToast, successToast } from "@/utils/toast"
 
 interface TokenBalancesCardProps {
   data: WhitelistedTokensCardData[]
@@ -25,11 +25,18 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
 }) => {
   const token = useToken()
   const splitter = useSplitter()
-  const { walletAddress, setLoading, isConnected } = useAppStore()
+  const { walletAddress, setLoading, isConnected, loading } = useAppStore()
 
-  const [allocation, setAllocation] = useState<string[]>([])
+  const [isDistributionHovered, setIsDistributionHovered] = useState<
+    [number, boolean]
+  >([0, false])
+  const [isWithdrawHovered, setIsWithdrawHovered] = useState<[number, boolean]>(
+    [0, false]
+  )
+
+  const [allocation, setAllocation] = useState<BigInt[]>([])
   const [waitingForDistribution, setWaitingForDistribution] = useState<
-    string[]
+    BigInt[]
   >([])
 
   useEffect(() => {
@@ -39,6 +46,8 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
   }, [data, diversifierContractAddress, walletAddress])
 
   const fetchBalanceData = async () => {
+    setLoading(true)
+
     const allocationRes = walletAddress
       ? await Promise.all(
           data.map((item) => {
@@ -50,15 +59,8 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
           })
         )
       : data.map(() => BigInt(0))
-    setAllocation(
-      walletAddress
-        ? allocationRes.map((item, index) => {
-            return getBalance(item, data[index].decimals).toFixed(2)
-          })
-        : allocationRes.map(() => "-")
-    )
 
-    // TODO: Think about what to show for balance
+    setAllocation(allocationRes)
 
     const diversifierTotalRes = await Promise.all(
       data.map((item) => {
@@ -67,11 +69,7 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
     )
 
     if (isDiversifierActive) {
-      setWaitingForDistribution(
-        diversifierTotalRes.map((item, index) => {
-          return getBalance(item, data[index].decimals).toFixed(2)
-        })
-      )
+      setWaitingForDistribution(diversifierTotalRes)
     } else {
       const unusedRes = await Promise.all(
         data.map((item) => {
@@ -85,12 +83,10 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
       for (let i = 0; i < data.length; i++) {
         total.push(Number(diversifierTotalRes[i]) + Number(unusedRes[i]))
       }
-      setWaitingForDistribution(
-        total.map((item, index) => {
-          return getBalance(BigInt(item), data[index].decimals).toFixed(2)
-        })
-      )
+      setWaitingForDistribution(total.map((item, index) => BigInt(item)))
     }
+
+    setLoading(false)
   }
 
   const handleWithdrawAllocation = async (index: number) => {
@@ -101,14 +97,16 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
 
       loadingToast("Withdrawal in progress...")
 
+      console.log(Number(allocation[index]) * 10 ** data[index].decimals)
+
       await splitter.call.withdrawAllocation(
-        splitterContractAddress,
+        diversifierContractAddress,
         data[index].address,
         walletAddress || "",
-        1000
+        Number(allocation[index])
       )
 
-      loadingToast("Withdrawal successful")
+      successToast("Withdrawal successful!")
 
       await fetchBalanceData()
     } catch (error: any) {
@@ -129,10 +127,10 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
         diversifierContractAddress,
         data[index].address,
         walletAddress || "",
-        50000000
+        Number(waitingForDistribution[index])
       )
 
-      loadingToast("Transfer successful")
+      successToast("Transfer successful!")
 
       await fetchBalanceData()
     } catch (error: any) {
@@ -152,10 +150,10 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
       await splitter.call.distributeTokens(
         diversifierContractAddress,
         data[index].address,
-        50000000
+        Number(waitingForDistribution[index])
       )
 
-      loadingToast("Distribution successful")
+      successToast("Distribution successful!")
 
       await fetchBalanceData()
     } catch (error: any) {
@@ -221,7 +219,6 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
               key={item.address}
               className={clsx(
                 "h-[28px] w-full rounded-[8px] flex justify-between items-center px-1"
-                // "hover:bg-[#EBF2F7] hover:cursor-pointer"
               )}
             >
               {/* <button
@@ -229,14 +226,14 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
                 className="text-[10px] bg-[#F2F2F2] text-[#687B8C] px-2 py-1 rounded-[8px] hover:bg-[#EBF2F7]"
               >
                 WA
-              </button>
-              <button
+              </button> */}
+              {/* <button
                 onClick={() => handleTransferTokens(index)}
                 className="text-[10px] bg-[#F2F2F2] text-[#687B8C] px-2 py-1 rounded-[8px] hover:bg-[#EBF2F7]"
               >
                 TT
-              </button>
-              <button
+              </button> */}
+              {/* <button
                 onClick={() => handleDistributeTokens(index)}
                 className="text-[10px] bg-[#F2F2F2] text-[#687B8C] px-2 py-1 rounded-[8px] hover:bg-[#EBF2F7]"
               >
@@ -249,12 +246,6 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
                 letterSpacing="-1.5"
               />
               <div className="flex items-center">
-                <Text
-                  text={allocation[index]}
-                  size="12"
-                  lineHeight="12"
-                  letterSpacing="-1.5"
-                />
                 {/* <div className="w-[110px] flex justify-end">
                   <Text
                     text={unused[index]}
@@ -264,13 +255,80 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
                   />
                 </div> */}
                 {/* <div className="w-[65px] flex justify-end"> */}
-                <div className="w-[190px] flex justify-end">
-                  <Text
-                    text={waitingForDistribution[index]}
-                    size="12"
-                    lineHeight="12"
-                    letterSpacing="-1.5"
-                  />
+                <div
+                  className="w-[150px] ml-[35px] flex justify-end"
+                  onMouseEnter={() => setIsWithdrawHovered([index, true])}
+                  onMouseLeave={() => setIsWithdrawHovered([index, false])}
+                >
+                  {isWithdrawHovered[0] === index && isWithdrawHovered[1] ? (
+                    <button
+                      className={clsx(
+                        "p-2 px-4 bg-[#FFDC93] rounded-md",
+                        loading && "opacity-50"
+                      )}
+                      onClick={() => handleWithdrawAllocation(index)}
+                      disabled={loading}
+                    >
+                      <Text
+                        text="Withdraw Allocation"
+                        size="12"
+                        lineHeight="12"
+                        letterSpacing="-1.5"
+                        bold
+                      />
+                    </button>
+                  ) : (
+                    <Text
+                      text={floorToFixed(
+                        getBalance(
+                          allocation[index] || BigInt(0),
+                          item.decimals
+                        ),
+                        2
+                      )}
+                      size="12"
+                      lineHeight="12"
+                      letterSpacing="-1.5"
+                    />
+                  )}
+                </div>
+                <div
+                  className="w-[150px] ml-[35px] flex justify-end"
+                  onMouseEnter={() => setIsDistributionHovered([index, true])}
+                  onMouseLeave={() => setIsDistributionHovered([index, false])}
+                >
+                  {isDistributionHovered[0] === index &&
+                  isDistributionHovered[1] ? (
+                    <button
+                      className={clsx(
+                        "p-2 px-4 bg-[#FFDC93] rounded-md",
+                        loading && "opacity-50"
+                      )}
+                      onClick={() => handleDistributeTokens(index)}
+                      disabled={loading}
+                    >
+                      <Text
+                        text="Distribute Tokens"
+                        size="12"
+                        lineHeight="12"
+                        letterSpacing="-1.5"
+                        bold
+                      />
+                    </button>
+                  ) : (
+                    <Text
+                      text={floorToFixed(
+                        getBalance(
+                          waitingForDistribution[index] || BigInt(0),
+                          item.decimals
+                        ),
+                        2
+                      )}
+                      size="12"
+                      lineHeight="12"
+                      letterSpacing="-1.5"
+                    />
+                  )}
                 </div>
               </div>
             </div>
