@@ -28,7 +28,7 @@ pub struct SplitterInputData {
 #[contracttype]
 pub struct NetworkArg {
     pub id: u32,
-    pub is_splitter: bool,
+    pub is_diversifier_active: bool,
     pub salt: BytesN<32>,
     pub splitter_data: SplitterData,
     pub external_inputs: Vec<SplitterInputData>,
@@ -109,27 +109,17 @@ impl Deployer {
             let deployer = env
                 .deployer()
                 .with_address(deployer.clone(), arg.salt.clone());
-            let contract_address = match arg.is_splitter {
-                true => deployer.deploy(splitter_wasm_hash.clone()),
-                false => deployer.deploy(diversifier_wasm_hash.clone()),
-            };
+            let contract_address = deployer.deploy(diversifier_wasm_hash.clone());
             deployed_contracts.set(arg.id, contract_address);
         }
 
         for arg in args.iter() {
             if let Some(deployed_address) = deployed_contracts.get(arg.id) {
                 let mut init_args: Vec<Val> = vec![&env];
-                let init_func: Symbol = Symbol::new(
-                    &env,
-                    if arg.is_splitter {
-                        "init_splitter"
-                    } else {
-                        "init_diversifier"
-                    },
-                );
 
                 let mut common_splitter_args: Vec<Val> =
                     vec![&env, arg.splitter_data.name.to_val()];
+
                 let mut share_args: Vec<Val> = vec![&env];
                 for input_data in arg.external_inputs.iter() {
                     if let Some(contract_address) = deployed_contracts.get(input_data.id as u32) {
@@ -143,21 +133,21 @@ impl Deployer {
                     }
                 }
                 share_args.append(&arg.splitter_data.shares);
+
                 common_splitter_args.push_back(share_args.to_val());
                 common_splitter_args.push_back(arg.splitter_data.updatable.into());
 
-                if arg.is_splitter {
-                    init_args.push_back(deployer.to_val());
-                    init_args.append(&common_splitter_args);
-                } else {
-                    init_args.push_back(deployer.to_val());
-                    init_args.push_back(splitter_wasm_hash.to_val());
-                    init_args.push_back(arg.salt.to_val());
-                    init_args.push_back(true.into_val(&env));
-                    init_args.push_back(common_splitter_args.to_val());
-                }
+                init_args.push_back(deployer.to_val());
+                init_args.push_back(splitter_wasm_hash.to_val());
+                init_args.push_back(arg.salt.to_val());
+                init_args.push_back(arg.is_diversifier_active.into_val(&env));
+                init_args.push_back(common_splitter_args.to_val());
 
-                let _: Val = env.invoke_contract(&deployed_address, &init_func, init_args);
+                let _: Val = env.invoke_contract(
+                    &deployed_address,
+                    &Symbol::new(&env, "init_diversifier"),
+                    init_args,
+                );
             }
         }
 

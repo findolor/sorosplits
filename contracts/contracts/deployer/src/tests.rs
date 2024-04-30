@@ -233,6 +233,8 @@ fn test_deploy_diversifier() {
 fn test_network_deploy() {
     let env = Env::default();
     env.mock_all_auths();
+    // Reset the budget to unlimited
+    env.budget().reset_unlimited();
 
     let deployer_client = DeployerClient::new(&env, &env.register_contract(None, Deployer));
     let mut wasm_hashes = map![&env];
@@ -249,10 +251,10 @@ fn test_network_deploy() {
     let shareholder3 = Address::generate(&env);
     let shareholder4 = Address::generate(&env);
 
-    let first_splitter = NetworkArg {
+    let first_contract = NetworkArg {
         id: 1,
         salt: BytesN::from_array(&env, &[0; 32]),
-        is_splitter: true,
+        is_diversifier_active: false,
         splitter_data: SplitterData {
             name: Bytes::from_slice(&env, "SPLITTER 1".as_bytes()),
             shares: soroban_vec![
@@ -272,10 +274,10 @@ fn test_network_deploy() {
         },
         external_inputs: soroban_vec![&env],
     };
-    let second_splitter = NetworkArg {
+    let second_contract = NetworkArg {
         id: 4,
         salt: BytesN::from_array(&env, &[1; 32]),
-        is_splitter: false,
+        is_diversifier_active: true,
         splitter_data: SplitterData {
             name: Bytes::from_slice(&env, "DIVERSIFIER 1".as_bytes()),
             shares: soroban_vec![
@@ -295,10 +297,10 @@ fn test_network_deploy() {
         },
         external_inputs: soroban_vec![&env, SplitterInputData { id: 1, share: 2000 }],
     };
-    let third_splitter = NetworkArg {
+    let third_contract = NetworkArg {
         id: 10,
         salt: BytesN::from_array(&env, &[2; 32]),
-        is_splitter: true,
+        is_diversifier_active: false,
         splitter_data: SplitterData {
             name: Bytes::from_slice(&env, "SPLITTER 3".as_bytes()),
             shares: soroban_vec![
@@ -323,11 +325,11 @@ fn test_network_deploy() {
         ],
     };
 
-    let network_args = soroban_vec![&env, first_splitter, second_splitter, third_splitter];
+    let network_args = soroban_vec![&env, first_contract, second_contract, third_contract];
 
     let deployed_contracts = deployer_client.deploy_network(&deployer, &wasm_hashes, &network_args);
 
-    // FIRST SPLITTER
+    // FIRST CONTRACT
     let client = splitter_contract::Client::new(&env, &deployed_contracts.get(1).unwrap());
     let config = client.get_config();
     assert_eq!(
