@@ -287,6 +287,7 @@ impl SplitterContract for Diversifier {
         let config = DiversifierConfig::get(&env)?;
         config.require_admin()?;
 
+        transfer_diversifier_balance_to_splitter(&env, &token_address, &config.splitter_address);
         splitter_contract::Client::new(&env, &config.splitter_address).transfer_tokens(
             &token_address,
             &recipient,
@@ -297,12 +298,9 @@ impl SplitterContract for Diversifier {
     fn distribute_tokens(env: Env, token_address: Address, amount: i128) -> Result<(), Error> {
         let config = DiversifierConfig::get(&env)?;
         config.require_admin()?;
+        config.require_diversifier_inactive()?;
 
-        // Only allow distribution if the diversifier is inactive
-        if config.diversifier_active {
-            return Err(ContractError::NotAllowed.into());
-        }
-
+        transfer_diversifier_balance_to_splitter(&env, &token_address, &config.splitter_address);
         splitter_contract::Client::new(&env, &config.splitter_address)
             .distribute_tokens(&token_address, &amount);
         Ok(())
@@ -327,7 +325,10 @@ impl SplitterContract for Diversifier {
         shareholder: Address,
         amount: i128,
     ) -> Result<(), Error> {
+        shareholder.require_auth();
+
         let splitter_address = DiversifierConfig::get(&env)?.splitter_address;
+
         splitter_contract::Client::new(&env, &splitter_address).withdraw_allocation(
             &token_address,
             &shareholder,
@@ -367,5 +368,21 @@ impl SplitterContract for Diversifier {
     fn list_whitelisted_tokens(env: Env) -> Result<Vec<Address>, Error> {
         let splitter_address = DiversifierConfig::get(&env)?.splitter_address;
         Ok(splitter_contract::Client::new(&env, &splitter_address).list_whitelisted_tokens())
+    }
+}
+
+fn transfer_diversifier_balance_to_splitter(
+    env: &Env,
+    token_address: &Address,
+    splitter_address: &Address,
+) {
+    let token_client = get_token_client(&env, &token_address);
+    let token_balance = token_client.balance(&env.current_contract_address());
+    if token_balance > 0 {
+        token_client.transfer(
+            &env.current_contract_address(),
+            &splitter_address,
+            &token_balance,
+        );
     }
 }

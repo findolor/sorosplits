@@ -57,4 +57,12 @@ impl DiversifierConfig {
         }
         Ok(())
     }
+
+    /// Validates the contract is inactive
+    pub fn require_diversifier_inactive(&self) -> Result<(), Error> {
+        if self.diversifier_active {
+            return Err(Error::NotAllowed);
+        }
+        Ok(())
+    }
 }
