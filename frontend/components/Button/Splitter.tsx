@@ -102,8 +102,8 @@ const CreateSplitterButton = () => {
       onClick={() => {}}
       bgColor="#FFDC93"
       icon={{
-        src: "/icons/create.svg",
-        size: 10,
+        src: "/icons/plus.svg",
+        size: 18,
       }}
     />
   )
@@ -158,7 +158,7 @@ const PinSplitterButton = ({ onClick }: { onClick: () => void }) => {
       onClick={onClick}
       bgColor="#FFDC93"
       icon={{
-        src: "/icons/search.svg",
+        src: "/icons/pin.svg",
         size: 10,
       }}
     />
@@ -171,7 +171,7 @@ const UnpinSplitterButton = ({ onClick }: { onClick: () => void }) => {
       onClick={onClick}
       bgColor="#FF9E9E"
       icon={{
-        src: "/icons/search.svg",
+        src: "/icons/pin.svg",
         size: 10,
       }}
     />

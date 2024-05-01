@@ -256,7 +256,15 @@ const WhitelistedSwapTokensCard: React.FC<WhitelistedSwapTokensCardProps> = ({
                         >
                           <button
                             onClick={() => tokenCopyOnClick(swapToken.address)}
+                            className="flex items-center w-full"
                           >
+                            <Image
+                              src="/icons/side-arrow.svg"
+                              width="12"
+                              height="12"
+                              alt="Trash icon"
+                              className="mr-2 h-[28px]"
+                            />
                             <Text
                               text={`${swapIndex + 1}. ${swapToken.name}`}
                               size="12"
@@ -299,9 +307,9 @@ const WhitelistedSwapTokensCard: React.FC<WhitelistedSwapTokensCardProps> = ({
                     )
                   })}
                 {selectedTokenIdx === index && edit && (
-                  <div className="flex w-full items-center pl-4">
+                  <div className="flex w-full items-center pl-6">
                     <Image
-                      src="/icons/wrench.svg"
+                      src="/icons/side-arrow.svg"
                       width="12"
                       height="12"
                       alt="Trash icon"

@@ -454,11 +454,11 @@ const CreateNodeButton = ({
   return (
     <button
       className={clsx(
-        "flex items-center justify-center w-[240px] h-[80px] border-4 border-black rounded-2xl bg-white"
+        "flex items-center justify-center w-[200px] h-[60px] border-2 border-black rounded-2xl bg-white"
       )}
       onClick={onClick}
     >
-      <Text text={title} color="#000000" size="20" />
+      <Text text={title} color="#000000" size="16" />
     </button>
   )
 }
