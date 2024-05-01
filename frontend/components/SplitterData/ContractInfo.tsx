@@ -105,7 +105,7 @@ const ContractInfoCard: React.FC<ContractInfoCardProps> = ({
             rightText={splitterAddress}
           />
         )}
-        <div className="flex items-center gap-1 mb-1 mt-1">
+        <div className="flex items-center gap-1 mt-1">
           <Image src="/icons/info.svg" height={12} width={12} alt="Info icon" />
           <div className="flex items-center">
             <Text text="Shareholders & shares are" size="12" color="#687B8C" />

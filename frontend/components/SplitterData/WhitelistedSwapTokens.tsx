@@ -8,6 +8,7 @@ import { errorToast, successToast } from "@/utils/toast"
 import clsx from "clsx"
 import useAppStore from "@/store/index"
 import useToken from "@/hooks/contracts/useToken"
+import { handleWheel } from "@/utils/handleWheel"
 
 export interface WhitelistedTokensCardData {
   address: string
@@ -155,7 +156,7 @@ const WhitelistedSwapTokensCard: React.FC<WhitelistedSwapTokensCardProps> = ({
           />
         </div>
       </div>
-      <div className="flex flex-col mt-3 gap-1">
+      <div className="flex flex-col mt-3">
         {dataLoading && <Loading small />}
         {!dataLoading && data.length === 0 && (
           <div className="flex w-full gap-3">
@@ -172,160 +173,160 @@ const WhitelistedSwapTokensCard: React.FC<WhitelistedSwapTokensCardProps> = ({
             />
           </div>
         )}
-        {!dataLoading &&
-          data.map((item, index) => {
-            return (
-              <div
-                key={item.token.address}
-                className="flex w-full flex-col gap-1 items-end"
-              >
+        <div
+          className="flex flex-col gap-1 max-h-[140px] overflow-y-auto overflow-x-hidden"
+          onWheel={handleWheel}
+        >
+          {!dataLoading &&
+            data.map((item, index) => {
+              return (
                 <div
-                  onClick={() => setSelectedTokenIdx(index)}
-                  className="flex w-full"
+                  key={item.token.address}
+                  className="flex w-full flex-col gap-1 items-end"
                 >
                   <div
-                    className={clsx(
-                      "h-[28px] w-full rounded-[8px] flex justify-between items-center px-1",
-                      edit &&
-                        "border-2 border-[#EBF2F7] p-4 px-2 hover:border-[#FFDC93] cursor-pointer",
-                      selectedTokenIdx === index && "border-[#FFDC93]"
-                    )}
+                    onClick={() => setSelectedTokenIdx(index)}
+                    className="flex w-full"
                   >
-                    <button
-                      onClick={() => tokenCopyOnClick(item.token.address)}
+                    <div
+                      className={clsx(
+                        "h-[28px] w-full rounded-[8px] flex justify-between items-center px-1",
+                        edit &&
+                          "border-2 border-[#EBF2F7] p-4 px-2 hover:border-[#FFDC93] cursor-pointer",
+                        selectedTokenIdx === index && "border-[#FFDC93]"
+                      )}
                     >
-                      <Text
-                        text={`${index + 1}. ${item.token.name}`}
-                        size="12"
-                        lineHeight="12"
-                        letterSpacing="-1.5"
-                        customStyle="hover:underline cursor-pointer"
-                      />
-                    </button>
-                    <div className="flex items-center">
-                      <div className="w-[65px] flex justify-end">
+                      <button
+                        onClick={() => tokenCopyOnClick(item.token.address)}
+                      >
                         <Text
-                          text={item.token.symbol}
+                          text={`${index + 1}. ${item.token.name}`}
                           size="12"
                           lineHeight="12"
                           letterSpacing="-1.5"
+                          customStyle="hover:underline cursor-pointer"
                         />
-                      </div>
-                      <div className="w-[75px] flex justify-end">
-                        <Text
-                          text={item.token.decimals.toString()}
-                          size="12"
-                          lineHeight="12"
-                          letterSpacing="-1.5"
-                        />
+                      </button>
+                      <div className="flex items-center">
+                        <div className="w-[65px] flex justify-end">
+                          <Text
+                            text={item.token.symbol}
+                            size="12"
+                            lineHeight="12"
+                            letterSpacing="-1.5"
+                          />
+                        </div>
+                        <div className="w-[75px] flex justify-end">
+                          <Text
+                            text={item.token.decimals.toString()}
+                            size="12"
+                            lineHeight="12"
+                            letterSpacing="-1.5"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-                {internalData.find(
-                  (i) => item.token.address === i.token.address
-                )?.swapTokens?.length === 0 &&
-                  !edit && (
-                    <div className="flex w-full gap-1 pl-4">
+                  {internalData.find(
+                    (i) => item.token.address === i.token.address
+                  )?.swapTokens?.length === 0 &&
+                    !edit && (
+                      <div className="flex w-full gap-1 pl-4">
+                        <Image
+                          src="/icons/info.svg"
+                          height={12}
+                          width={12}
+                          alt="Info icon"
+                        />
+                        <Text
+                          text="No swap tokens for found this token"
+                          size="12"
+                          color="#687B8C"
+                        />
+                      </div>
+                    )}
+                  {internalData
+                    .find((i) => item.token.address === i.token.address)
+                    ?.swapTokens.map((swapToken, swapIndex) => {
+                      return (
+                        <div
+                          key={swapToken.address}
+                          className="flex w-full items-center pl-4"
+                        >
+                          <div
+                            className={clsx(
+                              "h-[28px] w-full rounded-[8px] flex justify-between items-center px-1",
+                              edit && "border-2 border-[#EBF2F7] p-4 px-2"
+                            )}
+                          >
+                            <button
+                              onClick={() =>
+                                tokenCopyOnClick(swapToken.address)
+                              }
+                              className="flex items-center w-full"
+                            >
+                              <Text
+                                text={`${swapIndex + 1}. ${swapToken.name}`}
+                                size="12"
+                                lineHeight="12"
+                                letterSpacing="-1.5"
+                                customStyle="hover:underline cursor-pointer"
+                              />
+                            </button>
+                            <div className="flex items-center">
+                              <div className="w-[65px] flex justify-end">
+                                <Text
+                                  text={swapToken.symbol}
+                                  size="12"
+                                  lineHeight="12"
+                                  letterSpacing="-1.5"
+                                />
+                              </div>
+                              <div className="w-[75px] flex justify-end">
+                                <Text
+                                  text={swapToken.decimals.toString()}
+                                  size="12"
+                                  lineHeight="12"
+                                  letterSpacing="-1.5"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                          {edit && (
+                            <button onClick={() => remove(index, swapIndex)}>
+                              <Image
+                                src="/icons/trash.svg"
+                                width="12"
+                                height="12"
+                                alt="Trash icon"
+                                className="ml-2 h-[28px]"
+                              />
+                            </button>
+                          )}
+                        </div>
+                      )
+                    })}
+                  {selectedTokenIdx === index && edit && (
+                    <div className="flex w-full items-center pl-6">
                       <Image
-                        src="/icons/info.svg"
-                        height={12}
-                        width={12}
-                        alt="Info icon"
+                        src="/icons/side-arrow.svg"
+                        width="12"
+                        height="12"
+                        alt="Trash icon"
+                        className="mr-2 h-[28px]"
                       />
-                      <Text
-                        text="No swap tokens for found this token"
-                        size="12"
-                        color="#687B8C"
+                      <AddressInput
+                        placeholder="Enter token address"
+                        onChange={(e) => setAddressInput(e.target.value)}
+                        value={addressInput}
+                        disabled={loading}
                       />
                     </div>
                   )}
-                {internalData
-                  .find((i) => item.token.address === i.token.address)
-                  ?.swapTokens.map((swapToken, swapIndex) => {
-                    return (
-                      <div
-                        key={swapToken.address}
-                        className="flex w-full items-center pl-4"
-                      >
-                        <div
-                          className={clsx(
-                            "h-[28px] w-full rounded-[8px] flex justify-between items-center px-1",
-                            edit && "border-2 border-[#EBF2F7] p-4 px-2"
-                          )}
-                        >
-                          <button
-                            onClick={() => tokenCopyOnClick(swapToken.address)}
-                            className="flex items-center w-full"
-                          >
-                            <Image
-                              src="/icons/side-arrow.svg"
-                              width="12"
-                              height="12"
-                              alt="Trash icon"
-                              className="mr-2 h-[28px]"
-                            />
-                            <Text
-                              text={`${swapIndex + 1}. ${swapToken.name}`}
-                              size="12"
-                              lineHeight="12"
-                              letterSpacing="-1.5"
-                              customStyle="hover:underline cursor-pointer"
-                            />
-                          </button>
-                          <div className="flex items-center">
-                            <div className="w-[65px] flex justify-end">
-                              <Text
-                                text={swapToken.symbol}
-                                size="12"
-                                lineHeight="12"
-                                letterSpacing="-1.5"
-                              />
-                            </div>
-                            <div className="w-[75px] flex justify-end">
-                              <Text
-                                text={swapToken.decimals.toString()}
-                                size="12"
-                                lineHeight="12"
-                                letterSpacing="-1.5"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                        {edit && (
-                          <button onClick={() => remove(index, swapIndex)}>
-                            <Image
-                              src="/icons/trash.svg"
-                              width="12"
-                              height="12"
-                              alt="Trash icon"
-                              className="ml-2 h-[28px]"
-                            />
-                          </button>
-                        )}
-                      </div>
-                    )
-                  })}
-                {selectedTokenIdx === index && edit && (
-                  <div className="flex w-full items-center pl-6">
-                    <Image
-                      src="/icons/side-arrow.svg"
-                      width="12"
-                      height="12"
-                      alt="Trash icon"
-                      className="mr-2 h-[28px]"
-                    />
-                    <AddressInput
-                      placeholder="Enter token address"
-                      onChange={(e) => setAddressInput(e.target.value)}
-                      value={addressInput}
-                      disabled={loading}
-                    />
-                  </div>
-                )}
-              </div>
-            )
-          })}
+                </div>
+              )
+            })}
+        </div>
       </div>
       {edit && data.length !== 0 && (
         <div className="flex flex-col items-center gap-1 mt-1">
@@ -342,14 +343,14 @@ const WhitelistedSwapTokensCard: React.FC<WhitelistedSwapTokensCardProps> = ({
               ) : (
                 <>
                   <Image
-                    src="/icons/wrench.svg"
-                    width={14}
-                    height={14}
+                    src="/icons/plus.svg"
+                    width={18}
+                    height={18}
                     alt="Add shareholder icon"
                     className="mr-2"
                   />
                   <Text
-                    text="Add whitelisted swap token"
+                    text="Add diversifier swap token"
                     size="12"
                     lineHeight="12"
                     letterSpacing="-1.5"

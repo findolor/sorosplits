@@ -11,6 +11,7 @@ import useContracts from "@/hooks/contracts/useContracts"
 import Loading from "../Loading"
 import useAppStore from "@/store/index"
 import { truncateAddressMega } from "@/utils/truncateAddress"
+import { handleWheel } from "@/utils/handleWheel"
 
 export interface ShareholderCardData {
   address: string
@@ -160,53 +161,61 @@ const ShareholdersCard: React.FC<ShareholdersCardProps> = ({
           color="#687B8C"
         />
       </div>
-      <div className="flex flex-col mt-3 gap-1">
-        {internalData.map((item, index) => {
-          return (
-            <div key={item.address} className="flex items-center">
-              <div
-                className={clsx(
-                  "h-[28px] w-full rounded-[8px] flex justify-between items-center px-1",
-                  edit && "border-2 border-[#EBF2F7] p-4 px-2"
-                )}
-              >
-                <button onClick={() => shareholderOnClick(item)}>
+      <div className="flex flex-col mt-2">
+        <div
+          className={clsx(
+            "flex flex-col gap-1 max-h-[180px] overflow-y-auto overflow-x-hidden",
+            internalData.length > 0 && "mt-1"
+          )}
+          onWheel={handleWheel}
+        >
+          {internalData.map((item, index) => {
+            return (
+              <div key={item.address} className="flex items-center">
+                <div
+                  className={clsx(
+                    "h-[28px] w-full rounded-[8px] flex justify-between items-center px-1",
+                    edit && "border-2 border-[#EBF2F7] p-4 px-2"
+                  )}
+                >
+                  <button onClick={() => shareholderOnClick(item)}>
+                    <Text
+                      text={
+                        item.domain
+                          ? item.domainName || ""
+                          : truncateAddressMega(item.address)
+                      }
+                      size="12"
+                      lineHeight="12"
+                      letterSpacing="-1.5"
+                      customStyle="hover:underline"
+                    />
+                  </button>
                   <Text
-                    text={
-                      item.domain
-                        ? item.domainName || ""
-                        : truncateAddressMega(item.address)
-                    }
+                    text={item.share + "%"}
                     size="12"
                     lineHeight="12"
                     letterSpacing="-1.5"
-                    customStyle="hover:underline"
                   />
-                </button>
-                <Text
-                  text={item.share + "%"}
-                  size="12"
-                  lineHeight="12"
-                  letterSpacing="-1.5"
-                />
+                </div>
+                {edit && (
+                  <button onClick={() => remove(index)}>
+                    <Image
+                      src="/icons/trash.svg"
+                      width={12}
+                      height={12}
+                      alt="Trash icon"
+                      className="ml-2 h-[28px]"
+                    />
+                  </button>
+                )}
               </div>
-              {edit && (
-                <button onClick={() => remove(index)}>
-                  <Image
-                    src="/icons/trash.svg"
-                    width={12}
-                    height={12}
-                    alt="Trash icon"
-                    className="ml-2 h-[28px]"
-                  />
-                </button>
-              )}
-            </div>
-          )
-        })}
+            )
+          })}
+        </div>
         {edit && (
           <div className="flex flex-col items-center gap-1">
-            <div className="flex w-full gap-1">
+            <div className="flex w-full gap-1 mt-1">
               <AddressInput
                 placeholder="Enter shareholder address"
                 onChange={(e) => setAddressInput(e.target.value)}
@@ -232,9 +241,9 @@ const ShareholdersCard: React.FC<ShareholdersCardProps> = ({
                 ) : (
                   <>
                     <Image
-                      src="/icons/wrench.svg"
-                      width={14}
-                      height={14}
+                      src="/icons/plus.svg"
+                      width={18}
+                      height={18}
                       alt="Add shareholder icon"
                       className="mr-2"
                     />

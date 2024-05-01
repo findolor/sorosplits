@@ -4,6 +4,7 @@ import Card from "./Card"
 import Loading from "../Loading"
 import Image from "next/image"
 import Link from "next/link"
+import { handleWheel } from "@/utils/handleWheel"
 
 interface PinnedSplittersCardProps {
   loading: boolean
@@ -35,7 +36,10 @@ const PinnedSplittersCard: React.FC<PinnedSplittersCardProps> = ({
           color="#687B8C"
         />
       </div>
-      <div className="w-[405px]">
+      <div
+        className="w-[405px] max-h-[280px] overflow-y-auto"
+        onWheel={handleWheel}
+      >
         {loading ? (
           <Loading small />
         ) : (

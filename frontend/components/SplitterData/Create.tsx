@@ -76,14 +76,6 @@ const CreateSplitter = ({
             edit={true}
             reset={reset}
           />
-
-          {contractInfoData.isDiversifierActive && (
-            <WhitelistedSwapTokensCard
-              data={whitelistSwapTokenCardData}
-              onUpdate={onWhitelistedSwapTokensCardUpdate}
-              edit={true}
-            />
-          )}
         </div>
 
         <div className="flex flex-col gap-4 w-[423px]">
@@ -94,6 +86,13 @@ const CreateSplitter = ({
             reset={reset}
             create
           />
+          {contractInfoData.isDiversifierActive && (
+            <WhitelistedSwapTokensCard
+              data={whitelistSwapTokenCardData}
+              onUpdate={onWhitelistedSwapTokensCardUpdate}
+              edit={true}
+            />
+          )}
         </div>
       </div>
     </div>

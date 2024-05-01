@@ -53,9 +53,31 @@ const initialNodes: Node<NodeData>[] = [
           share: "100",
           domain: false,
         },
+        ...Array.from({ length: 25 }, (_, index) => ({
+          address: "",
+          share: "1000",
+          domain: false,
+        })),
       ],
-      whitelistedTokens: [],
-      whitelistedSwapTokens: [],
+      whitelistedTokens: [
+        ...Array.from({ length: 25 }, (_, index) => ({
+          name: `Token ${index}`,
+          address: `GBOAWTUJNSI5VKE3MDGY32LJF723OCQ42XYLNJWXDHCJKRZSFV3PKKMY${index}`,
+          symbol: `T${index}`,
+          decimals: 18,
+        })),
+      ],
+      whitelistedSwapTokens: [
+        ...Array.from({ length: 25 }, (_, index) => ({
+          token: {
+            name: `Token ${index}`,
+            address: `GBOAWTUJNSI5VKE3MDGY32LJF723OCQ42XYLNJWXDHCJKRZSFV3PKKMY${index}`,
+            symbol: `T${index}`,
+            decimals: 18,
+          },
+          swapTokens: [],
+        })),
+      ],
       selected: false,
     },
   },

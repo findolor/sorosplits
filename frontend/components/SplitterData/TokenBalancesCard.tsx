@@ -221,24 +221,6 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
                 "h-[28px] w-full rounded-[8px] flex justify-between items-center px-1"
               )}
             >
-              {/* <button
-                onClick={() => handleWithdrawAllocation(index)}
-                className="text-[10px] bg-[#F2F2F2] text-[#687B8C] px-2 py-1 rounded-[8px] hover:bg-[#EBF2F7]"
-              >
-                WA
-              </button> */}
-              {/* <button
-                onClick={() => handleTransferTokens(index)}
-                className="text-[10px] bg-[#F2F2F2] text-[#687B8C] px-2 py-1 rounded-[8px] hover:bg-[#EBF2F7]"
-              >
-                TT
-              </button> */}
-              {/* <button
-                onClick={() => handleDistributeTokens(index)}
-                className="text-[10px] bg-[#F2F2F2] text-[#687B8C] px-2 py-1 rounded-[8px] hover:bg-[#EBF2F7]"
-              >
-                DT
-              </button> */}
               <Text
                 text={item.name}
                 size="12"
@@ -270,7 +252,7 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
                       disabled={loading}
                     >
                       <Text
-                        text="Withdraw Allocation"
+                        text="Withdraw"
                         size="12"
                         lineHeight="12"
                         letterSpacing="-1.5"
@@ -308,7 +290,7 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
                       disabled={loading}
                     >
                       <Text
-                        text="Distribute Tokens"
+                        text="Distribute"
                         size="12"
                         lineHeight="12"
                         letterSpacing="-1.5"

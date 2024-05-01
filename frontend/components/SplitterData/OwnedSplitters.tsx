@@ -4,6 +4,7 @@ import Card from "./Card"
 import Link from "next/link"
 import Loading from "../Loading"
 import Image from "next/image"
+import { handleWheel } from "@/utils/handleWheel"
 
 interface OwnedSplittersCardProps {
   loading: boolean
@@ -35,7 +36,10 @@ const OwnedSplittersCard: React.FC<OwnedSplittersCardProps> = ({
           color="#687B8C"
         />
       </div>
-      <div className="w-[405px]">
+      <div
+        className="w-[405px] max-h-[280px] overflow-y-auto"
+        onWheel={handleWheel}
+      >
         {loading ? (
           <Loading small />
         ) : (

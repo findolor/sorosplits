@@ -8,6 +8,7 @@ import { errorToast, successToast } from "@/utils/toast"
 import clsx from "clsx"
 import useAppStore from "@/store/index"
 import useToken from "@/hooks/contracts/useToken"
+import { handleWheel } from "@/utils/handleWheel"
 export interface WhitelistedTokensCardData {
   address: string
   name: string
@@ -113,7 +114,7 @@ const WhitelistedTokensCard: React.FC<WhitelistedTokensCardProps> = ({
           />
         </div>
       </div>
-      <div className="flex flex-col mt-3 gap-1">
+      <div className="flex flex-col mt-2 gap-1">
         {dataLoading && <Loading small />}
         {!dataLoading && (edit ? internalData : data).length === 0 && !edit && (
           <div className="flex w-full gap-3">
@@ -130,62 +131,69 @@ const WhitelistedTokensCard: React.FC<WhitelistedTokensCardProps> = ({
             />
           </div>
         )}
-        {!dataLoading &&
-          (edit ? internalData : data).map((item, index) => {
-            return (
-              <div className="flex items-center" key={item.address}>
-                <div
-                  className={clsx(
-                    "h-[28px] w-full rounded-[8px] flex justify-between items-center px-1",
-                    edit && "border-2 border-[#EBF2F7] p-4 px-2"
-                  )}
-                >
-                  <button onClick={() => tokenOnClick(item.address)}>
-                    <Text
-                      text={`${index + 1}. ${item.name}`}
-                      size="12"
-                      lineHeight="12"
-                      letterSpacing="-1.5"
-                      customStyle="hover:underline cursor-pointer"
-                    />
-                  </button>
-                  <div className="flex items-center">
-                    <div className="w-[65px] flex justify-end">
+        <div
+          className={clsx(
+            "flex flex-col gap-1 max-h-[140px] overflow-y-auto overflow-x-hidden"
+          )}
+          onWheel={handleWheel}
+        >
+          {!dataLoading &&
+            (edit ? internalData : data).map((item, index) => {
+              return (
+                <div className="flex items-center" key={item.address}>
+                  <div
+                    className={clsx(
+                      "h-[28px] w-full rounded-[8px] flex justify-between items-center px-1",
+                      edit && "border-2 border-[#EBF2F7] p-4 px-2"
+                    )}
+                  >
+                    <button onClick={() => tokenOnClick(item.address)}>
                       <Text
-                        text={item.symbol}
+                        text={`${index + 1}. ${item.name}`}
                         size="12"
                         lineHeight="12"
                         letterSpacing="-1.5"
+                        customStyle="hover:underline cursor-pointer"
                       />
-                    </div>
-                    <div className="w-[75px] flex justify-end">
-                      <Text
-                        text={item.decimals.toString()}
-                        size="12"
-                        lineHeight="12"
-                        letterSpacing="-1.5"
-                      />
+                    </button>
+                    <div className="flex items-center">
+                      <div className="w-[65px] flex justify-end">
+                        <Text
+                          text={item.symbol}
+                          size="12"
+                          lineHeight="12"
+                          letterSpacing="-1.5"
+                        />
+                      </div>
+                      <div className="w-[75px] flex justify-end">
+                        <Text
+                          text={item.decimals.toString()}
+                          size="12"
+                          lineHeight="12"
+                          letterSpacing="-1.5"
+                        />
+                      </div>
                     </div>
                   </div>
+                  {edit && (
+                    <button onClick={() => remove(index)}>
+                      <Image
+                        src="/icons/trash.svg"
+                        width="12"
+                        height="12"
+                        alt="Trash icon"
+                        className="ml-2 h-[28px]"
+                      />
+                    </button>
+                  )}
                 </div>
-                {edit && (
-                  <button onClick={() => remove(index)}>
-                    <Image
-                      src="/icons/trash.svg"
-                      width="12"
-                      height="12"
-                      alt="Trash icon"
-                      className="ml-2 h-[28px]"
-                    />
-                  </button>
-                )}
-              </div>
-            )
-          })}
+              )
+            })}
+        </div>
       </div>
       {edit && (
-        <div className="flex flex-col items-center gap-1 mt-1">
-          <div className="flex w-full gap-1">
+        <div className="flex flex-col items-center gap-1">
+          <div className="flex w-full gap-1 mt-1">
             <AddressInput
               placeholder="Enter token address"
               onChange={(e) => setAddressInput(e.target.value)}
@@ -206,9 +214,9 @@ const WhitelistedTokensCard: React.FC<WhitelistedTokensCardProps> = ({
               ) : (
                 <>
                   <Image
-                    src="/icons/wrench.svg"
-                    width={14}
-                    height={14}
+                    src="/icons/plus.svg"
+                    width={18}
+                    height={18}
                     alt="Add shareholder icon"
                     className="mr-2"
                   />
