@@ -47,37 +47,9 @@ const initialNodes: Node<NodeData>[] = [
         updatable: true,
         isDiversifierActive: false,
       },
-      shareholders: [
-        {
-          address: "GBOAWTUJNSI5VKE3MDGY32LJF723OCQ42XYLNJWXDHCJKRZSFV3PKKMY",
-          share: "100",
-          domain: false,
-        },
-        ...Array.from({ length: 25 }, (_, index) => ({
-          address: "",
-          share: "1000",
-          domain: false,
-        })),
-      ],
-      whitelistedTokens: [
-        ...Array.from({ length: 25 }, (_, index) => ({
-          name: `Token ${index}`,
-          address: `GBOAWTUJNSI5VKE3MDGY32LJF723OCQ42XYLNJWXDHCJKRZSFV3PKKMY${index}`,
-          symbol: `T${index}`,
-          decimals: 18,
-        })),
-      ],
-      whitelistedSwapTokens: [
-        ...Array.from({ length: 25 }, (_, index) => ({
-          token: {
-            name: `Token ${index}`,
-            address: `GBOAWTUJNSI5VKE3MDGY32LJF723OCQ42XYLNJWXDHCJKRZSFV3PKKMY${index}`,
-            symbol: `T${index}`,
-            decimals: 18,
-          },
-          swapTokens: [],
-        })),
-      ],
+      shareholders: [],
+      whitelistedTokens: [],
+      whitelistedSwapTokens: [],
       selected: false,
     },
   },
@@ -409,14 +381,10 @@ export default function DragDrop() {
                 <MiniMap />
               </ReactFlow>
             </div>
-            <div className="absolute flex flex-col flex-2 gap-4 right-[24px]">
+            <div className="absolute flex flex-col flex-2 gap-3 right-[24px]">
               <CreateNodeButton
-                title="Add Splitter"
+                title="Add Contract"
                 onClick={() => addSplitterNode(false)}
-              />
-              <CreateNodeButton
-                title="Add Diversifier"
-                onClick={() => addSplitterNode(true)}
               />
               <CreateNodeButton
                 title="Deploy Network"
@@ -431,7 +399,7 @@ export default function DragDrop() {
         <>
           <NetworkModal
             isOpen={isNetworkModalOpen}
-            title="Update Node"
+            title="Update Contract"
             doneButtonOnClick={() => {
               onPaneClick()
               setIsNetworkModalOpen(false)
@@ -476,11 +444,16 @@ const CreateNodeButton = ({
   return (
     <button
       className={clsx(
-        "flex items-center justify-center w-[200px] h-[60px] border-2 border-black rounded-2xl bg-white"
+        "flex items-center justify-center w-[140px] h-[40px] border-2 border-black rounded-xl bg-white hover:bg-black group"
       )}
       onClick={onClick}
     >
-      <Text text={title} color="#000000" size="16" />
+      <Text
+        text={title}
+        color="#000000"
+        size="14"
+        customStyle="group-hover:!text-white"
+      />
     </button>
   )
 }

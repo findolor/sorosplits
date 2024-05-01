@@ -100,14 +100,14 @@ const CreateCustomSplitter = () => {
 
       checkSplitterData(shares)
 
-      loadingToast("Creating your Splitter contract...")
+      loadingToast("Creating your contract...")
       const contractAddress = await deployer.deployDiversifier({
         name: contractName,
         shares,
         updatable: contractUpdatable,
         isDiversifierActive: contractIsDiversifierActive,
       })
-      successToast("Splitter contract initialized successfully!")
+      successToast("Contract initialized successfully!")
 
       if (contractWhitelistedTokens.length != 0) {
         loadingToast("Updating whitelisted tokens...")
@@ -119,7 +119,7 @@ const CreateCustomSplitter = () => {
       }
 
       if (contractIsDiversifierActive) {
-        loadingToast("Updating whitelisted swap tokens...")
+        loadingToast("Updating diversifier swap tokens...")
         for (let item of contractWhitelistedSwapTokens) {
           await diversifier.call.updateWhitelistedSwapTokens(
             contractAddress,
@@ -127,7 +127,7 @@ const CreateCustomSplitter = () => {
             item.swapTokens.map((i) => i.address)
           )
         }
-        successToast("Whitelisted swap tokens updated successfully!")
+        successToast("Diversifier swap tokens updated successfully!")
       }
 
       const diversifierConfig = await diversifier.query.getDiversifierConfig(

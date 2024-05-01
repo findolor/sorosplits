@@ -70,9 +70,7 @@ const CustomNode = ({
         <Text text={name} size="16" lineHeight="12" letterSpacing="-2" />
         <div className="flex flex-col pt-1 items-center gap-3 w-full px-8">
           <Text
-            text={`${
-              isDiversifierActive ? "Diversifier" : "Splitter"
-            } contract`}
+            text={`Diversifier ${isDiversifierActive ? "enabled" : "disabled"}`}
             size="8"
             color="#687B8C"
             lineHeight="12"
