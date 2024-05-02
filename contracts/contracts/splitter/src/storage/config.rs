@@ -31,37 +31,26 @@ impl ConfigDataKey {
     }
 
     /// Returns the config
-    pub fn get(e: &Env) -> Option<ConfigDataKey> {
+    pub fn get(e: &Env) -> Result<ConfigDataKey, Error> {
+        if !ConfigDataKey::exists(e) {
+            return Err(Error::NotInitialized);
+        }
         bump_instance(e);
         let key = ConfigKeys::Config;
-        e.storage().instance().get(&key)
+        e.storage().instance().get(&key).unwrap()
     }
 
     /// Locks the contract for further changes
-    pub fn lock_contract(e: &Env) {
-        bump_instance(e);
+    pub fn lock_contract(mut self, e: &Env) {
         let key = ConfigKeys::Config;
-        let config: Option<ConfigDataKey> = e.storage().instance().get(&key);
-        match config {
-            Some(mut config) => {
-                config.updatable = false;
-                e.storage().instance().set(&key, &config);
-            }
-            None => (),
-        }
+        self.updatable = false;
+        e.storage().instance().set(&key, &self);
     }
 
-    pub fn update_name(e: &Env, name: Bytes) {
-        bump_instance(e);
+    pub fn update_name(mut self, e: &Env, name: Bytes) {
         let key = ConfigKeys::Config;
-        let config: Option<ConfigDataKey> = e.storage().instance().get(&key);
-        match config {
-            Some(mut config) => {
-                config.name = name;
-                e.storage().instance().set(&key, &config);
-            }
-            None => (),
-        }
+        self.name = name;
+        e.storage().instance().set(&key, &self);
     }
 
     /// Returns true if ConfigDataKey exists in the storage
@@ -72,23 +61,12 @@ impl ConfigDataKey {
     }
 
     /// Validates the admin address
-    pub fn require_admin(e: &Env) -> Result<(), Error> {
-        bump_instance(e);
-        let key = ConfigKeys::Config;
-        let config: ConfigDataKey = e.storage().instance().get(&key).unwrap();
-        config.admin.require_auth();
-        Ok(())
+    pub fn require_admin(self) {
+        self.admin.require_auth()
     }
 
     /// Returns true if the contract is updatable
-    // TODO: Maybe return an error if ConfigDataKey doesn't exist
-    pub fn is_contract_locked(e: &Env) -> bool {
-        bump_instance(e);
-        let key = ConfigKeys::Config;
-        let config: Option<ConfigDataKey> = e.storage().instance().get(&key);
-        match config {
-            Some(config) => config.updatable,
-            None => false,
-        }
+    pub fn is_contract_locked(self) -> bool {
+        self.updatable
     }
 }

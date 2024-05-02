@@ -3,15 +3,13 @@ use soroban_sdk::Env;
 use crate::{errors::Error, storage::config::ConfigDataKey};
 
 pub fn execute(env: Env) -> Result<(), Error> {
-    if !ConfigDataKey::exists(&env) {
-        return Err(Error::NotInitialized);
-    };
+    let config = ConfigDataKey::get(&env)?;
 
     // Make sure the caller is the admin
-    ConfigDataKey::require_admin(&env)?;
+    config.clone().require_admin();
 
     // Update the contract configuration
-    ConfigDataKey::lock_contract(&env);
+    config.lock_contract(&env);
 
     Ok(())
 }

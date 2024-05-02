@@ -18,11 +18,8 @@ pub fn execute(
     token_address: Address,
     amount: i128,
 ) -> Result<(), Error> {
-    if !ConfigDataKey::exists(&env) {
-        return Err(Error::NotInitialized);
-    };
-
-    ConfigDataKey::require_admin(&env)?;
+    // Make sure the caller is the admin
+    ConfigDataKey::get(&env)?.require_admin();
 
     env.authorize_as_current_contract(vec![
         &env,

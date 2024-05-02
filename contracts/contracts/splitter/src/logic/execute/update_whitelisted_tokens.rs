@@ -8,12 +8,8 @@ use crate::{
 };
 
 pub fn execute(env: Env, tokens: Vec<Address>) -> Result<(), Error> {
-    if !ConfigDataKey::exists(&env) {
-        return Err(Error::NotInitialized);
-    };
-
     // Make sure the caller is the admin
-    ConfigDataKey::require_admin(&env)?;
+    ConfigDataKey::get(&env)?.require_admin();
 
     // Check if token address is valid
     for token_address in tokens.iter() {

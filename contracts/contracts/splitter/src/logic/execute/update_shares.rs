@@ -8,12 +8,8 @@ use crate::{
 };
 
 pub fn execute(env: Env, shares: Vec<ShareDataKey>) -> Result<(), Error> {
-    if !ConfigDataKey::exists(&env) {
-        return Err(Error::NotInitialized);
-    };
-
     // Make sure the caller is the admin
-    ConfigDataKey::require_admin(&env)?;
+    ConfigDataKey::get(&env)?.require_admin();
 
     // Check if the shares sum up to 10000
     check_shares(&shares)?;
