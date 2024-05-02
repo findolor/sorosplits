@@ -102,9 +102,7 @@ const contractHandlers = new Elysia({ prefix: "/contract" })
 
         return {}
       } catch (error: any) {
-        console.log(error.message)
         const txResult = xdr.TransactionResult.fromXDR(error.message, "base64")
-        console.log(txResult)
         throw new Error(JSON.stringify(txResult))
       }
     },
