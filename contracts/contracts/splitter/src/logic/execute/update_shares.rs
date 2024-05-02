@@ -8,8 +8,15 @@ use crate::{
 };
 
 pub fn execute(env: Env, shares: Vec<ShareDataKey>) -> Result<(), Error> {
+    let config = ConfigDataKey::get(&env)?;
+
     // Make sure the caller is the admin
-    ConfigDataKey::get(&env)?.require_admin();
+    config.clone().require_admin();
+
+    // Make sure the contract is updatable
+    if !config.updatable {
+        return Err(Error::ContractLocked);
+    }
 
     // Check if the shares sum up to 10000
     check_shares(&shares)?;
