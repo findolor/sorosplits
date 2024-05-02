@@ -35,6 +35,7 @@ import TokenBalancesCard from "@/components/SplitterData/TokenBalancesCard"
 import WhitelistedSwapTokensCard, {
   WhitelistedSwapTokensCardData,
 } from "@/components/SplitterData/WhitelistedSwapTokens"
+import parseContractError from "@/utils/parseContractError"
 
 const NewSearch: React.FC = () => {
   const router = useRouter()
@@ -490,7 +491,7 @@ const NewSearch: React.FC = () => {
       onCancelModal()
     } catch (error: any) {
       setLoading(false)
-      errorToast(error)
+      errorToast(parseContractError(error))
     }
   }
 
@@ -559,7 +560,7 @@ const NewSearch: React.FC = () => {
 
   return (
     <Layout>
-      <div className="mt-10">
+      <div className="mt-10 w-[1024px]">
         <PageHeader
           title="Search Contract"
           subtitle="Display information about a contract by entering the address below."
@@ -620,7 +621,13 @@ const NewSearch: React.FC = () => {
                 <ShareholdersCard
                   data={shareholdersCardData}
                   onUpdate={onShareholderCardUpdate}
-                  edit={manageSplitter}
+                  edit={
+                    manageSplitter
+                      ? contractConfig.updatable
+                        ? true
+                        : false
+                      : false
+                  }
                   reset={resetTrigger}
                 />
                 <WhitelistedTokensCard
