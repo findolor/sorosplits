@@ -4,6 +4,7 @@ import { Elysia, t } from "elysia"
 import { AuthenticationError } from "../errors"
 import { PrismaClient, Prisma } from "@prisma/client"
 import SorosplitsSDK from "sorosplits-sdk"
+import { xdr } from "@stellar/stellar-sdk"
 
 const contractHandlers = new Elysia({ prefix: "/contract" })
   .decorate("prisma", new PrismaClient())
@@ -83,21 +84,29 @@ const contractHandlers = new Elysia({ prefix: "/contract" })
 
       // Contract class does not matter here
       const sendTxRes = await diversifierContract.sendTransaction(transaction)
-      await diversifierContract.getTransaction(sendTxRes)
 
-      await prisma.contract.update({
-        where: { address: decodedTransactionParams.contractAddress },
-        data: {
-          transactions: {
-            create: {
-              action: decodedTransactionParams.functionName,
-              data: decodedTransactionParams.args as unknown as Prisma.JsonObject,
+      try {
+        await diversifierContract.getTransaction(sendTxRes)
+
+        await prisma.contract.update({
+          where: { address: decodedTransactionParams.contractAddress },
+          data: {
+            transactions: {
+              create: {
+                action: decodedTransactionParams.functionName,
+                data: decodedTransactionParams.args as unknown as Prisma.JsonObject,
+              },
             },
           },
-        },
-      })
+        })
 
-      return {}
+        return {}
+      } catch (error: any) {
+        console.log(error.message)
+        const txResult = xdr.TransactionResult.fromXDR(error.message, "base64")
+        console.log(txResult)
+        throw new Error(JSON.stringify(txResult))
+      }
     },
     {
       body: t.Object({
