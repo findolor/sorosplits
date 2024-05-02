@@ -75,6 +75,7 @@ export default function App({ Component, pageProps }: AppProps) {
             color: "#687B8C",
             border: "1px solid #EBF2F7",
             fontSize: "14px",
+            wordBreak: "break-all",
           },
         }}
         containerStyle={{
