@@ -378,6 +378,17 @@ export class SplitterContract extends BaseContract {
     }
   }
 
+  private decodeWithdrawAllocationParams(args: xdr.ScVal[]) {
+    const tokenAddress = scValToNative(args[0])
+    const shareholder = scValToNative(args[1])
+    const amount = scValToNative(args[2])
+    return {
+      tokenAddress: tokenAddress.toString(),
+      shareholder: shareholder.toString(),
+      amount: Number(BigInt(amount)),
+    }
+  }
+
   public decodeTransactionParams({ xdrString }: DecodeArgs) {
     const invokeContract = xdr.TransactionEnvelope.fromXDR(xdrString, "base64")
       .v1()
@@ -420,6 +431,9 @@ export class SplitterContract extends BaseContract {
         response.args = this.decodeUpdateWhitelistedTokensParams(args)
         break
       case "lock_contract":
+        break
+      case "withdraw_allocation":
+        response.args = this.decodeWithdrawAllocationParams(args)
         break
       default:
         throw new Error("Invalid transaction function!")
