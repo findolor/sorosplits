@@ -76,7 +76,7 @@ export default class BaseContract {
 
     do {
       if (tries > 20) {
-        throw new Error("Transaction failed")
+        throw new Error("Transaction timeout")
       }
 
       confirmation = await server.getTransaction(transactionResponse.hash)
@@ -93,7 +93,7 @@ export default class BaseContract {
     } while (true)
 
     if (confirmation.status === SorobanRpc.Api.GetTransactionStatus.FAILED) {
-      throw new Error("Transaction failed")
+      throw new Error(confirmation.resultXdr.toXDR("base64"))
     }
 
     return confirmation
