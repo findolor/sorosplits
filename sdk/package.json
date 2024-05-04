@@ -1,7 +1,7 @@
 {
   "name": "sorosplits-sdk",
   "description": "Sorosplits SDK",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "findolor",
   "repository": "https://github.com/findolor/sorosplits/tree/main/sdk",
   "module": "lib/index.js",
