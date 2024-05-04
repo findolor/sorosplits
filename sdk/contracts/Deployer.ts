@@ -38,18 +38,13 @@ export interface SplitterInputData {
 export interface NetworkArg {
   id: number
   salt: Buffer
-  isSplitter: boolean
+  isDiversifierActive: boolean
   splitterData: SplitterData
   externalInputs: SplitterInputData[]
 }
 
 export interface DeployNetworkArgs {
-  data: {
-    id: number
-    isSplitter: boolean
-    splitterData: SplitterData
-    externalInputs: SplitterInputData[]
-  }[]
+  data: NetworkArg[]
 }
 
 export interface DecodeArgs {
@@ -204,7 +199,7 @@ export class DeployerContract extends BaseContract {
       args.push({
         id: dataItem.id,
         salt: Buffer.from(randomBytes()),
-        isSplitter: dataItem.isSplitter,
+        isDiversifierActive: dataItem.isDiversifierActive,
         splitterData: dataItem.splitterData,
         externalInputs: dataItem.externalInputs,
       })
@@ -263,8 +258,8 @@ export class DeployerContract extends BaseContract {
             }),
             // IsSplitter
             new xdr.ScMapEntry({
-              key: xdr.ScVal.scvSymbol("is_splitter"),
-              val: xdr.ScVal.scvBool(arg.isSplitter),
+              key: xdr.ScVal.scvSymbol("is_diversifier_active"),
+              val: xdr.ScVal.scvBool(arg.isDiversifierActive),
             }),
             // Salt
             new xdr.ScMapEntry({
