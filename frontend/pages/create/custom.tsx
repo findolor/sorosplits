@@ -14,6 +14,8 @@ import useDeployer from "@/hooks/contracts/useDeployer"
 import useSplitter from "@/hooks/contracts/useSplitter"
 import { WhitelistedSwapTokensCardData } from "@/components/SplitterData/WhitelistedSwapTokens"
 import useDiversifier from "@/hooks/contracts/useDiversifier"
+import { downloadContracts } from "@/utils/downloadContracts"
+import { SuccessContractDetails } from "@/components/Modal/CustomSuccessModal"
 
 const CreateCustomSplitter = () => {
   const { push } = useRouter()
@@ -45,6 +47,9 @@ const CreateCustomSplitter = () => {
 
   const [diversifierAddress, setDiversifierAddress] = useState("")
   const [splitterAddress, setSplitterAddress] = useState("")
+  const [deployedContracts, setDeployedContracts] = useState<
+    SuccessContractDetails[]
+  >([])
 
   const contractInfoData = useMemo(() => {
     return {
@@ -109,6 +114,19 @@ const CreateCustomSplitter = () => {
       })
       successToast("Contract initialized successfully!")
 
+      const diversifierConfig = await diversifier.query.getDiversifierConfig(
+        contractAddress
+      )
+      setDiversifierAddress(contractAddress)
+      setSplitterAddress(diversifierConfig.splitter_address)
+      setDeployedContracts([
+        {
+          name: contractName,
+          splitter: diversifierConfig.splitter_address,
+          diversifier: contractAddress,
+        },
+      ])
+
       if (contractWhitelistedTokens.length != 0) {
         loadingToast("Updating whitelisted tokens...")
         await splitter.call.updateWhitelistedTokens(
@@ -129,12 +147,6 @@ const CreateCustomSplitter = () => {
         }
         successToast("Diversifier swap tokens updated successfully!")
       }
-
-      const diversifierConfig = await diversifier.query.getDiversifierConfig(
-        contractAddress
-      )
-      setDiversifierAddress(contractAddress)
-      setSplitterAddress(diversifierConfig.splitter_address)
 
       setLoading(false)
       onCancelModal()
@@ -181,11 +193,8 @@ const CreateCustomSplitter = () => {
   }
 
   const successModalOnConfirm = () => {
-    successToast("Navigating to contract page...")
-    setTimeout(() => {
-      setLoading(false)
-      push(`/search?address=${diversifierAddress}`)
-    }, 1000)
+    setLoading(false)
+    push(`/search?address=${diversifierAddress}`)
   }
 
   return (
@@ -225,10 +234,8 @@ const CreateCustomSplitter = () => {
           onConfirm={modalOnConfirm}
         />
         <CustomSuccessModal
-          contractAddresses={{
-            splitter: splitterAddress,
-            diversifier: diversifierAddress,
-          }}
+          contracts={deployedContracts}
+          onDownload={() => downloadContracts(deployedContracts)}
           onConfirm={successModalOnConfirm}
         />
       </div>

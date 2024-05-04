@@ -9,7 +9,7 @@ import useApiService from "../useApi"
 
 export interface NetworkItemProps {
   id: number
-  isSplitter: boolean
+  isDiversifierActive: boolean
   data: SplitterData
   externalInputs: SplitterInputData[]
 }
@@ -45,9 +45,10 @@ const useDeployer = () => {
     for (let networkItem of networkItems) {
       args.data.push({
         id: networkItem.id,
-        isSplitter: networkItem.isSplitter,
+        isDiversifierActive: networkItem.isDiversifierActive,
         splitterData: networkItem.data,
         externalInputs: networkItem.externalInputs,
+        salt: Buffer.from("sorosplits"),
       })
     }
 

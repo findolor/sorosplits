@@ -27,11 +27,15 @@ import { SplitterInputData } from "sorosplits-sdk/lib/contracts/Deployer"
 import NetworkModal from "@/components/Modal/NetworkModal"
 import useAppStore from "../../store"
 import useModal from "@/hooks/modals/useConfirmation"
-import { errorToast } from "@/utils/toast"
+import { errorToast, loadingToast, successToast } from "@/utils/toast"
 import Text from "@/components/Text"
 import clsx from "clsx"
 import { WhitelistedSwapTokensCardData } from "@/components/SplitterData/WhitelistedSwapTokens"
 import parseContractError from "@/utils/parseContractError"
+import useDiversifier from "@/hooks/contracts/useDiversifier"
+import useCustomSuccess from "@/hooks/modals/useCustomSuccess"
+import { SuccessContractDetails } from "@/components/Modal/CustomSuccessModal"
+import { downloadContracts } from "@/utils/downloadContracts"
 
 const nodeTypes = {
   customNode: CustomNode,
@@ -91,7 +95,8 @@ const edgeStyles = {
 }
 
 export default function DragDrop() {
-  const { deployNetwork } = useDeployer()
+  const diversifier = useDiversifier()
+  const deployer = useDeployer()
   const { walletAddress, isConnected, loading, setLoading } = useAppStore()
   const {
     onConfirmModal,
@@ -99,6 +104,10 @@ export default function DragDrop() {
     RenderModal,
     confirmModal: modalState,
   } = useModal()
+  const {
+    RenderModal: CustomSuccessModal,
+    setIsOpen: setCustomSuccessModalIsOpen,
+  } = useCustomSuccess()
 
   const [nodeId, setNodeId] = useState(3)
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false)
@@ -116,6 +125,7 @@ export default function DragDrop() {
       ...edgeStyles,
     },
   ])
+  const [contracts, setContracts] = useState<SuccessContractDetails[]>([])
 
   const onConnect = useCallback(
     (params: Edge | Connection) => {
@@ -280,7 +290,7 @@ export default function DragDrop() {
     for (let node of nodes) {
       data.push({
         id: parseInt(node.id),
-        isSplitter: !node.data.contractInfo.isDiversifierActive,
+        isDiversifierActive: !node.data.contractInfo.isDiversifierActive,
         data: {
           name: node.data.contractInfo.name,
           shares: node.data.shareholders.map((s: any) => {
@@ -327,9 +337,28 @@ export default function DragDrop() {
         data[i].externalInputs = parseEdgeData(data[i].id)
       }
 
-      const contracts = await deployNetwork(data)
+      loadingToast("Deploying contract network...")
 
-      console.log("CONTRACTS", contracts)
+      const contracts = await deployer.deployNetwork(data)
+
+      const promises = contracts.map((contract) =>
+        diversifier.query
+          .getDiversifierConfig(contract.address)
+          .then((diversifierConfig) => ({
+            name: nodes.find((n) => n.id === contract.id.toString())?.data
+              .contractInfo.name as string,
+            diversifier: contract.address,
+            splitter: diversifierConfig.splitter_address,
+          }))
+      )
+
+      const downloadData = await Promise.all(promises)
+
+      setContracts(downloadData)
+
+      successToast("Network deployed successfully!")
+      setCustomSuccessModalIsOpen(true)
+      setLoading(false)
     } catch (error: any) {
       setLoading(false)
       errorToast(parseContractError(error))
@@ -430,6 +459,12 @@ export default function DragDrop() {
           />
         </>
       )}
+
+      <CustomSuccessModal
+        contracts={contracts}
+        onDownload={() => downloadContracts(contracts)}
+        onConfirm={() => setCustomSuccessModalIsOpen(false)}
+      />
     </Layout>
   )
 }
