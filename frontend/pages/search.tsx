@@ -272,6 +272,18 @@ const NewSearch: React.FC = () => {
     }
   }, [contractIsDiversifierActive, contractConfig])
 
+  const tokenBalancesCardData = useMemo(() => {
+    const tokenSet: Set<WhitelistedTokensCardData> = new Set()
+    whitelistedSwapTokensCardData.forEach((item) => {
+      tokenSet.add(item.token)
+      item.swapTokens.forEach((swapToken) => {
+        tokenSet.add(swapToken)
+      })
+    })
+    const tokenBalancesCardData = Array.from(tokenSet)
+    return tokenBalancesCardData
+  }, [whitelistedSwapTokensCardData])
+
   useEffect(() => {
     const fetch = async () => {
       if (contractAddress === "" || contractWhitelistedTokens.length === 0) {
@@ -656,7 +668,7 @@ const NewSearch: React.FC = () => {
                   reset={resetTrigger}
                 />
                 <TokenBalancesCard
-                  data={whitelistedTokensCardData}
+                  data={tokenBalancesCardData}
                   isDiversifierActive={contractIsDiversifierActive}
                   diversifierContractAddress={diversifierContractAddress}
                   splitterContractAddress={splitterContractAddress}
