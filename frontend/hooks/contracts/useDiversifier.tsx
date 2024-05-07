@@ -32,9 +32,20 @@ const useDiversifier = () => {
 
   const swapAndDistributeTokens = async (
     contractId: string,
-    swapPath: string[],
+    sourceTokenAddress: string,
+    destinationTokenAddress: string,
     amount: number
   ) => {
+    const swapPath = (await contractApiService.getSwapPath({
+      sourceTokenAddress,
+      destinationTokenAddress,
+      amount: amount.toString(),
+    })) as string[]
+
+    if (swapPath.length < 2) {
+      throw new Error("Swap path cannot be found for the given tokens")
+    }
+
     const signature = await diversifierContract.signTransaction([
       diversifierContract.getCallOperation({
         contractId,

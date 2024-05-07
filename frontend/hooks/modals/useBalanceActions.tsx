@@ -10,6 +10,7 @@ interface RenderModalProps {
     allocation: number
     unused: number
   }
+  isDiversifierActive: boolean
 }
 
 const useModal = () => {
@@ -25,6 +26,7 @@ const useModal = () => {
     onConfirm,
     isAdmin,
     maxAmounts,
+    isDiversifierActive,
   }: RenderModalProps) => {
     return (
       <BalanceActionsModal
@@ -35,6 +37,7 @@ const useModal = () => {
         onConfirm={onConfirm}
         isAdmin={isAdmin}
         maxAmounts={maxAmounts}
+        isDiversifierActive={isDiversifierActive}
       />
     )
   }

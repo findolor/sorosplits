@@ -9,6 +9,7 @@ import useAppStore from "@/store/index"
 
 export type Action =
   | "withdraw_allocation"
+  | "swap_and_distribute_tokens"
   | "distribute_tokens"
   | "transfer_tokens"
 
@@ -21,6 +22,7 @@ interface ModalProps {
     allocation: number
     unused: number
   }
+  isDiversifierActive: boolean
   onConfirm: (action: Action, data: Record<string, any>) => void
   onCancel: () => void
 }
@@ -31,6 +33,7 @@ const BalanceActionsModal: React.FC<ModalProps> = ({
   message,
   isAdmin,
   maxAmounts,
+  isDiversifierActive,
   onConfirm,
   onCancel,
 }) => {
@@ -77,8 +80,18 @@ const BalanceActionsModal: React.FC<ModalProps> = ({
             disabled={loading || false}
           />
           <ActionButton
-            text="Distribute Tokens"
-            onClick={() => setAction("distribute_tokens")}
+            text={
+              isDiversifierActive
+                ? "Swap and Distribute Tokens"
+                : "Distribute Tokens"
+            }
+            onClick={() =>
+              setAction(
+                isDiversifierActive
+                  ? "swap_and_distribute_tokens"
+                  : "distribute_tokens"
+              )
+            }
             disabled={loading || !isAdmin}
           />
           <ActionButton

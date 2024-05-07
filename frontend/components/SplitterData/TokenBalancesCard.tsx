@@ -12,6 +12,7 @@ import { errorToast, loadingToast, successToast } from "@/utils/toast"
 import useModal from "@/hooks/modals/useBalanceActions"
 import { Action } from "../Modal/BalanceActions"
 import parseContractError from "@/utils/parseContractError"
+import useDiversifier from "@/hooks/contracts/useDiversifier"
 
 interface TokenBalancesCardProps {
   data: WhitelistedTokensCardData[]
@@ -30,6 +31,7 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
 }) => {
   const token = useToken()
   const splitter = useSplitter()
+  const diversifier = useDiversifier()
   const { walletAddress, setLoading, isConnected, loading } = useAppStore()
   const { RenderModal, toggleModal } = useModal()
 
@@ -152,6 +154,30 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
     successToast("Distribution successful!")
   }
 
+  const handleSwapAndDistributeTokens = async (
+    index: number,
+    amount: number
+  ) => {
+    loadingToast("Distribution in progress...")
+
+    const distributeAmount = amount * 10 ** data[index].decimals
+    if (distributeAmount > Number(waitingForDistribution[index])) {
+      throw new Error(
+        "Amount to distribute is greater than the available balance."
+      )
+    }
+
+    // TODO: FIX THIS
+    await diversifier.call.swapAndDistributeTokens(
+      diversifierContractAddress,
+      "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
+      "CBT5F2FSLHR4JERVHBIIQXQLONE4HZ5E4KC7W7NTR5NGPSH6KQ4AX4Y7",
+      distributeAmount
+    )
+
+    successToast("Distribution successful!")
+  }
+
   const tokenActionOnConfirm = async (
     action: Action,
     data: Record<string, any>
@@ -168,6 +194,9 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
       switch (action) {
         case "withdraw_allocation":
           await handleWithdrawAllocation(selectedToken, data.amount)
+          break
+        case "swap_and_distribute_tokens":
+          await handleSwapAndDistributeTokens(selectedToken, data.amount)
           break
         case "distribute_tokens":
           await handleDistributeTokens(selectedToken, data.amount)
@@ -317,6 +346,7 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
         }.`}
         onConfirm={tokenActionOnConfirm}
         isAdmin={isUserAdmin}
+        isDiversifierActive={isDiversifierActive}
         maxAmounts={{
           allocation:
             selectedToken !== null && data.length > 0
