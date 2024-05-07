@@ -667,13 +667,18 @@ const NewSearch: React.FC = () => {
                   edit={manageSplitter}
                   reset={resetTrigger}
                 />
-                <TokenBalancesCard
-                  data={tokenBalancesCardData}
-                  isDiversifierActive={contractIsDiversifierActive}
-                  diversifierContractAddress={diversifierContractAddress}
-                  splitterContractAddress={splitterContractAddress}
-                />
-                <ActivityCard data={contractTransactions} />
+                {!manageSplitter && (
+                  <>
+                    <TokenBalancesCard
+                      data={tokenBalancesCardData}
+                      isDiversifierActive={contractIsDiversifierActive}
+                      isUserAdmin={walletAddress === contractOwner.toString()}
+                      diversifierContractAddress={diversifierContractAddress}
+                      splitterContractAddress={splitterContractAddress}
+                    />
+                    <ActivityCard data={contractTransactions} />
+                  </>
+                )}
               </div>
             </div>
           </div>

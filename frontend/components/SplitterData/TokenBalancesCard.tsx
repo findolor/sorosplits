@@ -9,10 +9,14 @@ import { floorToFixed, getBalance } from "@/utils/getBalance"
 import useSplitter from "@/hooks/contracts/useSplitter"
 import useAppStore from "@/store/index"
 import { errorToast, loadingToast, successToast } from "@/utils/toast"
+import useModal from "@/hooks/modals/useBalanceActions"
+import { Action } from "../Modal/BalanceActions"
+import parseContractError from "@/utils/parseContractError"
 
 interface TokenBalancesCardProps {
   data: WhitelistedTokensCardData[]
   isDiversifierActive: boolean
+  isUserAdmin: boolean
   diversifierContractAddress: string
   splitterContractAddress: string
 }
@@ -20,24 +24,20 @@ interface TokenBalancesCardProps {
 const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
   data,
   isDiversifierActive,
+  isUserAdmin,
   diversifierContractAddress,
   splitterContractAddress,
 }) => {
   const token = useToken()
   const splitter = useSplitter()
   const { walletAddress, setLoading, isConnected, loading } = useAppStore()
-
-  const [isDistributionHovered, setIsDistributionHovered] = useState<
-    [number, boolean]
-  >([0, false])
-  const [isWithdrawHovered, setIsWithdrawHovered] = useState<[number, boolean]>(
-    [0, false]
-  )
+  const { RenderModal, toggleModal } = useModal()
 
   const [allocation, setAllocation] = useState<BigInt[]>([])
   const [waitingForDistribution, setWaitingForDistribution] = useState<
     BigInt[]
   >([])
+  const [selectedToken, setSelectedToken] = useState<null | number>(null)
 
   useEffect(() => {
     if (data.length === 0) return
@@ -89,76 +89,98 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
     setLoading(false)
   }
 
-  const handleWithdrawAllocation = async (index: number) => {
-    try {
-      setLoading(true)
+  const handleWithdrawAllocation = async (index: number, amount: number) => {
+    loadingToast("Withdrawal in progress...")
 
-      if (!isConnected) throw new Error("Please connect your wallet.")
-
-      loadingToast("Withdrawal in progress...")
-
-      console.log(Number(allocation[index]) * 10 ** data[index].decimals)
-
-      await splitter.call.withdrawAllocation(
-        diversifierContractAddress,
-        data[index].address,
-        walletAddress || "",
-        Number(allocation[index])
+    const withdrawAmount = amount * 10 ** data[index].decimals
+    if (withdrawAmount > Number(allocation[index])) {
+      throw new Error(
+        "Amount to withdraw is greater than the available allocation."
       )
-
-      successToast("Withdrawal successful!")
-
-      await fetchBalanceData()
-    } catch (error: any) {
-      setLoading(false)
-      errorToast(error)
     }
+
+    await splitter.call.withdrawAllocation(
+      diversifierContractAddress,
+      data[index].address,
+      walletAddress || "",
+      withdrawAmount
+    )
+
+    successToast("Withdrawal successful!")
   }
 
-  const handleTransferTokens = async (index: number) => {
-    try {
-      setLoading(true)
+  const handleTransferTokens = async (
+    index: number,
+    recipient: string,
+    amount: number
+  ) => {
+    loadingToast("Transfer in progress...")
 
-      if (!isConnected) throw new Error("Please connect your wallet.")
-
-      loadingToast("Transfer in progress...")
-
-      await splitter.call.transferTokens(
-        diversifierContractAddress,
-        data[index].address,
-        walletAddress || "",
-        Number(waitingForDistribution[index])
+    const transferAmount = amount * 10 ** data[index].decimals
+    if (transferAmount > Number(waitingForDistribution[index])) {
+      throw new Error(
+        "Amount to transfer is greater than the available balance."
       )
-
-      successToast("Transfer successful!")
-
-      await fetchBalanceData()
-    } catch (error: any) {
-      setLoading(false)
-      errorToast(error)
     }
+
+    await splitter.call.transferTokens(
+      diversifierContractAddress,
+      data[index].address,
+      recipient,
+      transferAmount
+    )
+
+    successToast("Transfer successful!")
   }
 
-  const handleDistributeTokens = async (index: number) => {
+  const handleDistributeTokens = async (index: number, amount: number) => {
+    loadingToast("Distribution in progress...")
+
+    const distributeAmount = amount * 10 ** data[index].decimals
+    if (distributeAmount > Number(waitingForDistribution[index])) {
+      throw new Error(
+        "Amount to distribute is greater than the available balance."
+      )
+    }
+
+    await splitter.call.distributeTokens(
+      diversifierContractAddress,
+      data[index].address,
+      distributeAmount
+    )
+
+    successToast("Distribution successful!")
+  }
+
+  const tokenActionOnConfirm = async (
+    action: Action,
+    data: Record<string, any>
+  ) => {
     try {
       setLoading(true)
 
       if (!isConnected) throw new Error("Please connect your wallet.")
 
-      loadingToast("Distribution in progress...")
+      if (selectedToken === null) throw new Error("No token selected.")
 
-      await splitter.call.distributeTokens(
-        diversifierContractAddress,
-        data[index].address,
-        Number(waitingForDistribution[index])
-      )
+      console.log(action, data)
 
-      successToast("Distribution successful!")
+      switch (action) {
+        case "withdraw_allocation":
+          await handleWithdrawAllocation(selectedToken, data.amount)
+          break
+        case "distribute_tokens":
+          await handleDistributeTokens(selectedToken, data.amount)
+          break
+        case "transfer_tokens":
+          await handleTransferTokens(selectedToken, data.recipient, data.amount)
+          break
+      }
 
       await fetchBalanceData()
-    } catch (error: any) {
+    } catch (error) {
       setLoading(false)
-      errorToast(error)
+      errorToast(parseContractError(error))
     }
   }
 
@@ -166,13 +188,13 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
     <Card>
       <div className="flex justify-between">
         <Text
-          text="Token Balances"
+          text="Balances"
           size="14"
           lineHeight="16"
           letterSpacing="-1.5"
           color="#687B8C"
         />
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-8 pr-14">
           <Text
             text="My Allocation"
             size="14"
@@ -188,7 +210,7 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
             color="#687B8C"
           /> */}
           <Text
-            text="Waiting for Distribution"
+            text="For Distribution"
             size="14"
             lineHeight="16"
             letterSpacing="-1.5"
@@ -237,86 +259,81 @@ const TokenBalancesCard: React.FC<TokenBalancesCardProps> = ({
                   />
                 </div> */}
                 {/* <div className="w-[65px] flex justify-end"> */}
-                <div
-                  className="w-[150px] ml-[35px] flex justify-end"
-                  onMouseEnter={() => setIsWithdrawHovered([index, true])}
-                  onMouseLeave={() => setIsWithdrawHovered([index, false])}
-                >
-                  {isWithdrawHovered[0] === index && isWithdrawHovered[1] ? (
-                    <button
-                      className={clsx(
-                        "p-2 px-4 bg-[#FFDC93] rounded-md",
-                        loading && "opacity-50"
-                      )}
-                      onClick={() => handleWithdrawAllocation(index)}
-                      disabled={loading}
-                    >
-                      <Text
-                        text="Withdraw"
-                        size="12"
-                        lineHeight="12"
-                        letterSpacing="-1.5"
-                        bold
-                      />
-                    </button>
-                  ) : (
-                    <Text
-                      text={floorToFixed(
-                        getBalance(
-                          allocation[index] || BigInt(0),
-                          item.decimals
-                        ),
-                        2
-                      )}
-                      size="12"
-                      lineHeight="12"
-                      letterSpacing="-1.5"
-                    />
-                  )}
+                <div className="flex justify-end">
+                  <Text
+                    text={floorToFixed(
+                      getBalance(allocation[index] || BigInt(0), item.decimals),
+                      2
+                    )}
+                    size="12"
+                    lineHeight="12"
+                    letterSpacing="-1.5"
+                  />
                 </div>
-                <div
-                  className="w-[150px] ml-[35px] flex justify-end"
-                  onMouseEnter={() => setIsDistributionHovered([index, true])}
-                  onMouseLeave={() => setIsDistributionHovered([index, false])}
-                >
-                  {isDistributionHovered[0] === index &&
-                  isDistributionHovered[1] ? (
-                    <button
-                      className={clsx(
-                        "p-2 px-4 bg-[#FFDC93] rounded-md",
-                        loading && "opacity-50"
-                      )}
-                      onClick={() => handleDistributeTokens(index)}
-                      disabled={loading}
-                    >
-                      <Text
-                        text="Distribute"
-                        size="12"
-                        lineHeight="12"
-                        letterSpacing="-1.5"
-                        bold
-                      />
-                    </button>
-                  ) : (
-                    <Text
-                      text={floorToFixed(
-                        getBalance(
-                          waitingForDistribution[index] || BigInt(0),
-                          item.decimals
-                        ),
-                        2
-                      )}
-                      size="12"
-                      lineHeight="12"
-                      letterSpacing="-1.5"
-                    />
-                  )}
+                <div className="w-[135px] flex justify-end">
+                  <Text
+                    text={floorToFixed(
+                      getBalance(
+                        waitingForDistribution[index] || BigInt(0),
+                        item.decimals
+                      ),
+                      2
+                    )}
+                    size="12"
+                    lineHeight="12"
+                    letterSpacing="-1.5"
+                  />
                 </div>
+                <button
+                  className={clsx(
+                    "ml-[25px] px-2 py-1 bg-[#FFDC93] rounded-md hover:bg-[#FFD166]",
+                    loading && "opacity-50"
+                  )}
+                  onClick={() => {
+                    setSelectedToken(index)
+                    toggleModal(true)
+                  }}
+                  disabled={loading}
+                >
+                  <Image
+                    src="/icons/transfer.svg"
+                    height={16}
+                    width={16}
+                    alt="Transfer icon"
+                  />
+                </button>
               </div>
             </div>
           )
         })}
       </div>
+
+      <RenderModal
+        title="Token Actions"
+        message={`Execute the following actions on ${
+          data.length > 0 && selectedToken !== null
+            ? data[selectedToken].name
+            : ""
+        }.`}
+        onConfirm={tokenActionOnConfirm}
+        isAdmin={isUserAdmin}
+        maxAmounts={{
+          allocation:
+            selectedToken !== null && data.length > 0
+              ? getBalance(
+                  allocation[selectedToken],
+                  data[selectedToken].decimals
+                )
+              : 0,
+          unused:
+            selectedToken !== null && data.length > 0
+              ? getBalance(
+                  waitingForDistribution[selectedToken],
+                  data[selectedToken].decimals
+                )
+              : 0,
+        }}
+      />
     </Card>
   )
 }
