@@ -5,6 +5,15 @@ import { AuthenticationError } from "../errors"
 import { PrismaClient, Prisma } from "@prisma/client"
 import SorosplitsSDK from "sorosplits-sdk"
 import { xdr } from "@stellar/stellar-sdk"
+import {
+  Router,
+  Token,
+  CurrencyAmount,
+  TradeType,
+  Networks,
+  Protocols,
+} from "soroswap-router-sdk"
+import { TokenContract } from "sorosplits-sdk/lib/contracts"
 
 const contractHandlers = new Elysia({ prefix: "/contract" })
   .decorate("prisma", new PrismaClient())
@@ -44,7 +53,11 @@ const contractHandlers = new Elysia({ prefix: "/contract" })
       "testnet",
       user.publicKey
     )
-    return { user, splitterContract, diversifierContract }
+    const tokenContract = new SorosplitsSDK.TokenContract(
+      "testnet",
+      user.publicKey
+    )
+    return { user, splitterContract, diversifierContract, tokenContract }
   })
   .post(
     "/call",
@@ -198,5 +211,75 @@ const contractHandlers = new Elysia({ prefix: "/contract" })
     )
     return data.filter((item) => item !== null)
   })
+  .get(
+    "/swap-path",
+    async ({
+      query: { sourceTokenAddress, destinationTokenAddress, amount },
+      tokenContract,
+    }) => {
+      const [SOURCE_TOKEN, DESTINATION_TOKEN] = await Promise.all([
+        getSoroswapRouterToken(tokenContract, sourceTokenAddress),
+        getSoroswapRouterToken(tokenContract, destinationTokenAddress),
+      ])
+
+      const router = new Router({
+        backendUrl: process.env.SOROSWAP_BACKEND_URL as string,
+        backendApiKey: process.env.SOROSWAP_API_KEY as string,
+        pairsCacheInSeconds: 20,
+        protocols: [Protocols.SOROSWAP],
+        network: Networks.TESTNET,
+      })
+
+      const currencyAmount = CurrencyAmount.fromRawAmount(SOURCE_TOKEN, amount)
+      const quoteCurrency = DESTINATION_TOKEN
+
+      const route = await router.route(
+        currencyAmount,
+        quoteCurrency,
+        TradeType.EXACT_INPUT
+      )
+
+      return {
+        swapPath: route?.trade.path || [],
+      }
+    },
+    {
+      query: t.Object({
+        sourceTokenAddress: t.String(),
+        destinationTokenAddress: t.String(),
+        amount: t.String(),
+      }),
+    }
+  )
+
+const getSoroswapRouterToken = async (
+  tokenContract: TokenContract,
+  tokenAddresss: string
+) => {
+  const sourceTokenRes = await Promise.all([
+    tokenContract.query({
+      contractId: tokenAddresss,
+      method: "get_token_name",
+      args: {},
+    }),
+    tokenContract.query({
+      contractId: tokenAddresss,
+      method: "get_token_symbol",
+      args: {},
+    }),
+    tokenContract.query({
+      contractId: tokenAddresss,
+      method: "get_token_decimal",
+      args: {},
+    }),
+  ])
+  return new Token(
+    Networks.TESTNET,
+    tokenAddresss,
+    sourceTokenRes[2],
+    sourceTokenRes[1],
+    sourceTokenRes[0]
+  )
+}
 
 export { contractHandlers }

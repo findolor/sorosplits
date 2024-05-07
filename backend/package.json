@@ -15,7 +15,8 @@
     "@stellar/freighter-api": "^2.0.0",
     "@stellar/stellar-sdk": "^11.3.0",
     "elysia": "latest",
-    "sorosplits-sdk": "^0.0.2"
+    "sorosplits-sdk": "^0.0.2",
+    "soroswap-router-sdk": "^1.2.4"
   },
   "devDependencies": {
     "bun-types": "latest",
