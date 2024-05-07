@@ -4,6 +4,7 @@ const BASE_PATH = "contract"
 const CALL_METHOD = `${BASE_PATH}/call`
 const OWNED_SPLITTERS = `${BASE_PATH}/my-contracts`
 const TRANSACTIONS = `${BASE_PATH}/transactions`
+const SWAP_PATH = `${BASE_PATH}/swap-path`
 
 export interface ResponseProps {
   address: string
@@ -18,6 +19,12 @@ interface ICallMethodRequest {
 
 interface ITransactionRequest {
   address: string
+}
+
+interface ISwapPathRequest {
+  sourceTokenAddress: string
+  destinationTokenAddress: string
+  amount: string
 }
 
 class ContractApiService extends BaseApiService {
@@ -54,6 +61,19 @@ class ContractApiService extends BaseApiService {
   public async isPinned({ address }: ITransactionRequest): Promise<boolean> {
     const res = await this.get(`${BASE_PATH}/is-pinned`, { address })
     return res.pinned
+  }
+
+  public async getSwapPath({
+    sourceTokenAddress,
+    destinationTokenAddress,
+    amount,
+  }: ISwapPathRequest) {
+    const res = await this.get(SWAP_PATH, {
+      sourceTokenAddress,
+      destinationTokenAddress,
+      amount,
+    })
+    return res.swapPath
   }
 }
 
