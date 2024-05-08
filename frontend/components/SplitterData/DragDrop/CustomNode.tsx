@@ -65,7 +65,7 @@ const CustomNode = ({
 
   return (
     <div
-      className={`h-[82px] w-60 border-2 ${
+      className={`h-[90px] w-60 border-2 ${
         selected ? "border-[#FFDC93]" : "border-[#C3D1DD]"
       } bg-white rounded-xl hover:border-[#FFDC93]`}
     >
@@ -95,9 +95,9 @@ const CustomNode = ({
               lineHeight="12"
             />
             <Text
-              text={`%${
+              text={`${
                 totalShareholderShares + totalOutputContractShares
-              } share total`}
+              }% share total`}
               size="8"
               color={
                 totalShareholderShares + totalOutputContractShares > 100
@@ -110,20 +110,40 @@ const CustomNode = ({
             />
           </div>
           <div className="flex justify-between w-full">
-            <Text
-              text={`${shareholders.length} user share`}
-              size="10"
-              color="black"
-              lineHeight="12"
-              bold
-            />
-            <Text
-              text={`${connectedEdges.length} contract share`}
-              size="10"
-              color="black"
-              lineHeight="12"
-              bold
-            />
+            <div>
+              <Text
+                text={`${shareholders.length} user share`}
+                size="10"
+                color="black"
+                lineHeight="12"
+                bold
+                centered
+              />
+              <Text
+                text={`${totalShareholderShares}% share total`}
+                size="8"
+                color="#687B8C"
+                lineHeight="12"
+                centered
+              />
+            </div>
+            <div>
+              <Text
+                text={`${connectedEdges.length} contract share`}
+                size="10"
+                color="black"
+                lineHeight="12"
+                bold
+                centered
+              />
+              <Text
+                text={`${totalOutputContractShares}% share total`}
+                size="8"
+                color="#687B8C"
+                lineHeight="12"
+                centered
+              />
+            </div>
           </div>
         </div>
       </div>
