@@ -202,7 +202,7 @@ export default function DragDrop() {
 
   const selectedNodePreAllocations = useMemo(() => {
     let filteredEdges = edges.filter(
-      (e) => e.target === selectedNodeId.toString()
+      (e) => e.source === selectedNodeId.toString()
     )
     if (edges.length === 0) return 0
     return filteredEdges.reduce(
@@ -313,12 +313,12 @@ export default function DragDrop() {
       let source = parseInt(edge.source)
       let target = parseInt(edge.target)
 
-      if (target === currentNodeId) {
+      if (source === currentNodeId) {
         if (!edge.data || edge.data.share === "0" || edge.data.share === "")
           throw new Error("Edge must have a share value")
 
         data.push({
-          id: source,
+          id: target,
           share: Number(edge.data.share) * 100,
         })
       }

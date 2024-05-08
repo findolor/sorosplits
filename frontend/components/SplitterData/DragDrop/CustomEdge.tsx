@@ -43,7 +43,7 @@ export default function CustomEdge({
   markerEnd,
   data,
 }: EdgeProps) {
-  const { setEdges } = useReactFlow()
+  const { getEdges, setEdges } = useReactFlow()
   const sourceNode = useStore(
     useCallback((store) => store.nodeInternals.get(source), [source])
   )
@@ -73,20 +73,13 @@ export default function CustomEdge({
   }
 
   const edgeValueOnChange = (value: string) => {
-    setEdges((edges) =>
-      edges.map((edge) => {
-        if (edge.id === id) {
-          return {
-            ...edge,
-            data: {
-              ...edge.data,
-              share: value,
-            },
-          }
-        }
-        return edge
-      })
-    )
+    const edges = getEdges()
+    const edge = edges.find((edge) => edge.id === id)
+    if (!edge) {
+      return
+    }
+    edge.data.share = value
+    setEdges(edges)
   }
 
   return (

@@ -43,13 +43,29 @@ const CustomNode = ({
     })
   }
 
-  const splitterShareholders = useMemo(() => {
-    return edges.filter((edge) => edge.target === id)
+  const connectedEdges = useMemo(() => {
+    return edges.filter((edge) => edge.source === id)
   }, [edges])
+
+  const totalShareholderShares = useMemo(() => {
+    let totalShares = 0
+    for (const shareholder of shareholders) {
+      totalShares += parseInt(shareholder.share)
+    }
+    return totalShares
+  }, [shareholders])
+
+  const totalOutputContractShares = useMemo(() => {
+    let totalShares = 0
+    for (const edge of connectedEdges) {
+      totalShares += parseInt(edge.data.share || 0)
+    }
+    return totalShares
+  }, [connectedEdges])
 
   return (
     <div
-      className={`h-20 w-60 border-2 ${
+      className={`h-[82px] w-60 border-2 ${
         selected ? "border-[#FFDC93]" : "border-[#C3D1DD]"
       } bg-white rounded-xl hover:border-[#FFDC93]`}
     >
@@ -58,7 +74,7 @@ const CustomNode = ({
       <Handle type="source" position={Position.Bottom} id="c" />
       <Handle type="source" position={Position.Left} id="d" />
 
-      <div className="w-full h-full flex flex-col items-center pt-4 relative">
+      <div className="w-full h-full flex flex-col items-center pt-3 relative">
         <button
           className="absolute top-[-10px] right-[-4px] bg-red-500"
           onClick={removeNode}
@@ -68,13 +84,31 @@ const CustomNode = ({
           </div>
         </button>
         <Text text={name} size="16" lineHeight="12" letterSpacing="-2" />
-        <div className="flex flex-col pt-1 items-center gap-3 w-full px-8">
-          <Text
-            text={`Diversifier ${isDiversifierActive ? "enabled" : "disabled"}`}
-            size="8"
-            color="#687B8C"
-            lineHeight="12"
-          />
+        <div className="flex flex-col pt-1 items-center gap-1 w-full px-8">
+          <div>
+            <Text
+              text={`Diversifier ${
+                isDiversifierActive ? "enabled" : "disabled"
+              }`}
+              size="8"
+              color="#687B8C"
+              lineHeight="12"
+            />
+            <Text
+              text={`%${
+                totalShareholderShares + totalOutputContractShares
+              } share total`}
+              size="8"
+              color={
+                totalShareholderShares + totalOutputContractShares > 100
+                  ? "red"
+                  : "#687B8C"
+              }
+              lineHeight="12"
+              centered
+              bold={totalShareholderShares + totalOutputContractShares > 100}
+            />
+          </div>
           <div className="flex justify-between w-full">
             <Text
               text={`${shareholders.length} user share`}
@@ -84,7 +118,7 @@ const CustomNode = ({
               bold
             />
             <Text
-              text={`${splitterShareholders.length} contract share`}
+              text={`${connectedEdges.length} contract share`}
               size="10"
               color="black"
               lineHeight="12"
