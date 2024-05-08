@@ -23,7 +23,7 @@ import { WhitelistedTokensCardData } from "@/components/SplitterData/Whitelisted
 import { ShareholderCardData } from "@/components/SplitterData/Shareholders"
 import Card from "@/components/SplitterData/Card"
 import useDeployer, { NetworkItemProps } from "@/hooks/contracts/useDeployer"
-import { SplitterInputData } from "sorosplits-sdk/lib/contracts/Deployer"
+import { OutputContractData } from "sorosplits-sdk/lib/contracts/Deployer"
 import NetworkModal from "@/components/Modal/NetworkModal"
 import useAppStore from "../../store"
 import useModal from "@/hooks/modals/useConfirmation"
@@ -301,14 +301,14 @@ export default function DragDrop() {
           }),
           updatable: node.data.contractInfo.updatable,
         },
-        externalInputs: [],
+        outputContracts: [],
       })
     }
     return data
   }
 
   const parseEdgeData = (currentNodeId: number) => {
-    let data: SplitterInputData[] = []
+    let data: OutputContractData[] = []
     for (let edge of edges) {
       let source = parseInt(edge.source)
       let target = parseInt(edge.target)
@@ -334,7 +334,7 @@ export default function DragDrop() {
 
       let data = processNodeData()
       for (let i = 0; i < data.length; i++) {
-        data[i].externalInputs = parseEdgeData(data[i].id)
+        data[i].outputContracts = parseEdgeData(data[i].id)
       }
 
       loadingToast("Deploying contract network...")

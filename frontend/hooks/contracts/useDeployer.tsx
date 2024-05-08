@@ -2,7 +2,7 @@ import {
   DeployNetworkArgs,
   DiversifierDeployAndInitContractArgs,
   SplitterData,
-  SplitterInputData,
+  OutputContractData,
 } from "sorosplits-sdk/lib/contracts/Deployer"
 import useContracts from "./useContracts"
 import useApiService from "../useApi"
@@ -11,7 +11,7 @@ export interface NetworkItemProps {
   id: number
   isDiversifierActive: boolean
   data: SplitterData
-  externalInputs: SplitterInputData[]
+  outputContracts: OutputContractData[]
 }
 
 const useDeployer = () => {
@@ -47,7 +47,7 @@ const useDeployer = () => {
         id: networkItem.id,
         isDiversifierActive: networkItem.isDiversifierActive,
         splitterData: networkItem.data,
-        externalInputs: networkItem.externalInputs,
+        outputContracts: networkItem.outputContracts,
         salt: Buffer.from("sorosplits"),
       })
     }

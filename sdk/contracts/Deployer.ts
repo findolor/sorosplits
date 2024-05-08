@@ -30,7 +30,7 @@ export interface SplitterData {
   updatable: boolean
 }
 
-export interface SplitterInputData {
+export interface OutputContractData {
   id: number
   share: number
 }
@@ -40,7 +40,7 @@ export interface NetworkArg {
   salt: Buffer
   isDiversifierActive: boolean
   splitterData: SplitterData
-  externalInputs: SplitterInputData[]
+  outputContracts: OutputContractData[]
 }
 
 export interface DeployNetworkArgs {
@@ -201,7 +201,7 @@ export class DeployerContract extends BaseContract {
         salt: Buffer.from(randomBytes()),
         isDiversifierActive: dataItem.isDiversifierActive,
         splitterData: dataItem.splitterData,
-        externalInputs: dataItem.externalInputs,
+        outputContracts: dataItem.outputContracts,
       })
     }
 
@@ -233,11 +233,21 @@ export class DeployerContract extends BaseContract {
       xdr.ScVal.scvVec(
         args.map((arg) => {
           return xdr.ScVal.scvMap([
-            // ExternalInputs
+            // ID
             new xdr.ScMapEntry({
-              key: xdr.ScVal.scvSymbol("external_inputs"),
+              key: xdr.ScVal.scvSymbol("id"),
+              val: xdr.ScVal.scvU32(arg.id),
+            }),
+            // IsSplitter
+            new xdr.ScMapEntry({
+              key: xdr.ScVal.scvSymbol("is_diversifier_active"),
+              val: xdr.ScVal.scvBool(arg.isDiversifierActive),
+            }),
+            // OutputContracts
+            new xdr.ScMapEntry({
+              key: xdr.ScVal.scvSymbol("output_contracts"),
               val: xdr.ScVal.scvVec(
-                arg.externalInputs.map((item) => {
+                arg.outputContracts.map((item) => {
                   return xdr.ScVal.scvMap([
                     new xdr.ScMapEntry({
                       key: xdr.ScVal.scvSymbol("id"),
@@ -250,16 +260,6 @@ export class DeployerContract extends BaseContract {
                   ])
                 })
               ),
-            }),
-            // ID
-            new xdr.ScMapEntry({
-              key: xdr.ScVal.scvSymbol("id"),
-              val: xdr.ScVal.scvU32(arg.id),
-            }),
-            // IsSplitter
-            new xdr.ScMapEntry({
-              key: xdr.ScVal.scvSymbol("is_diversifier_active"),
-              val: xdr.ScVal.scvBool(arg.isDiversifierActive),
             }),
             // Salt
             new xdr.ScMapEntry({
@@ -391,7 +391,7 @@ export class DeployerContract extends BaseContract {
           }),
           updatable: item.splitter_data.updatable,
         },
-        externalInputs: item.external_inputs.map((item: any) => {
+        outputContracts: item.output_contracts.map((item: any) => {
           return { id: item.id, share: Number(BigInt(item.share)) }
         }),
       })
