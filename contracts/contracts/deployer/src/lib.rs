@@ -19,7 +19,7 @@ pub struct SplitterData {
 
 #[derive(Clone, Debug, PartialEq)]
 #[contracttype]
-pub struct SplitterInputData {
+pub struct OutputContractData {
     id: u32,
     share: i128,
 }
@@ -31,7 +31,7 @@ pub struct NetworkArg {
     pub is_diversifier_active: bool,
     pub salt: BytesN<32>,
     pub splitter_data: SplitterData,
-    pub external_inputs: Vec<SplitterInputData>,
+    pub output_contracts: Vec<OutputContractData>,
 }
 
 #[contractimpl]
@@ -121,12 +121,12 @@ impl Deployer {
                     vec![&env, arg.splitter_data.name.to_val()];
 
                 let mut share_args: Vec<Val> = vec![&env];
-                for input_data in arg.external_inputs.iter() {
-                    if let Some(contract_address) = deployed_contracts.get(input_data.id as u32) {
+                for data in arg.output_contracts.iter() {
+                    if let Some(contract_address) = deployed_contracts.get(data.id as u32) {
                         share_args.push_back(
                             ShareDataKey {
                                 shareholder: contract_address,
-                                share: input_data.share,
+                                share: data.share,
                             }
                             .into_val(&env),
                         );

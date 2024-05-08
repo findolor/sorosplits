@@ -2,7 +2,7 @@
 extern crate alloc;
 extern crate std;
 
-use crate::{Deployer, DeployerClient, NetworkArg, SplitterData, SplitterInputData};
+use crate::{Deployer, DeployerClient, NetworkArg, OutputContractData, SplitterData};
 use alloc::vec;
 use soroban_sdk::{
     map,
@@ -272,7 +272,7 @@ fn test_network_deploy() {
             ],
             updatable: true,
         },
-        external_inputs: soroban_vec![&env],
+        output_contracts: soroban_vec![&env],
     };
     let second_contract = NetworkArg {
         id: 4,
@@ -295,7 +295,7 @@ fn test_network_deploy() {
             ],
             updatable: true,
         },
-        external_inputs: soroban_vec![&env, SplitterInputData { id: 1, share: 2000 }],
+        output_contracts: soroban_vec![&env, OutputContractData { id: 1, share: 2000 }],
     };
     let third_contract = NetworkArg {
         id: 10,
@@ -318,10 +318,10 @@ fn test_network_deploy() {
             ],
             updatable: true,
         },
-        external_inputs: soroban_vec![
+        output_contracts: soroban_vec![
             &env,
-            SplitterInputData { id: 1, share: 500 },
-            SplitterInputData { id: 4, share: 4000 }
+            OutputContractData { id: 1, share: 500 },
+            OutputContractData { id: 4, share: 4000 }
         ],
     };
 
