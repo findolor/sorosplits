@@ -7,6 +7,7 @@ import {
   DeployNetworkArgs,
 } from "../../contracts/Deployer"
 import { checkFreighterConnection } from "../helper"
+import { xdr } from "@stellar/stellar-sdk"
 
 export const useDeployerContract = (
   network: Network,
@@ -21,17 +22,25 @@ export const useDeployerContract = (
     setDeployerContract(deployerContract)
   }, [walletAddress])
 
+  const processTransaction = async (op: xdr.Operation) => {
+    const signedTx = await deployerContract.signTransaction([op])
+    const txResponse = await deployerContract.sendTransaction(signedTx)
+    return deployerContract.getTransaction(txResponse)
+  }
+
   const deployAndInitSplitter = async ({
     name,
     shares,
     updatable,
   }: SplitterDeployAndInitContractArgs) => {
     await checkFreighterConnection()
-    return deployerContract.getDeployAndInitOperation({
-      name,
-      shares,
-      updatable,
-    })
+    return processTransaction(
+      deployerContract.getDeployAndInitOperation({
+        name,
+        shares,
+        updatable,
+      })
+    )
   }
 
   const deployDiversifier = async ({
@@ -41,17 +50,21 @@ export const useDeployerContract = (
     isDiversifierActive,
   }: DiversifierDeployAndInitContractArgs) => {
     await checkFreighterConnection()
-    return deployerContract.getDeployDiversifierOperation({
-      name,
-      shares,
-      updatable,
-      isDiversifierActive,
-    })
+    return processTransaction(
+      deployerContract.getDeployDiversifierOperation({
+        name,
+        shares,
+        updatable,
+        isDiversifierActive,
+      })
+    )
   }
 
   const deployNetwork = async ({ data }: DeployNetworkArgs) => {
     await checkFreighterConnection()
-    return deployerContract.getDeployNetworkOperation({ data })
+    return processTransaction(
+      deployerContract.getDeployNetworkOperation({ data })
+    )
   }
 
   return {
