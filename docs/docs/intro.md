@@ -7,7 +7,8 @@ title: Welcome to Sorosplits
 # Welcome to Sorosplits
 
 Welcome to Sorosplits, the premier platform for equitable and automated token distribution on the Soroban network. Sorosplits leverages the power of smart contracts to revolutionize the way tokens are allocated and distributed among stakeholders. Our platform is designed with transparency, security, and efficiency at its core, ensuring that every participant receives their fair share without the need for manual intervention.
-Our Mission
+
+## Our Mission
 
 At Sorosplits, our mission is to simplify the process of token distribution for organizations, DAOs, and investment groups. We aim to provide a trustless environment where the distribution of assets is governed by immutable rules set within our smart contracts. Our goal is to eliminate the complexities and potential for human error that come with traditional distribution methods.
 
@@ -23,16 +24,8 @@ At Sorosplits, our mission is to simplify the process of token distribution for 
 
 ### Smart Contracts
 
-For more info on how smart contracts work, check out the [Smart Contracts](/smart-contracts/splitter-contract/01-overview.md) section of our docs.
+For more information on how smart contracts work, check out the [Smart Contracts](/smart-contracts/splitter-contract/01-overview.md) section of our docs.
 
 ### Platform
 
-For more info on our platform, check out the [Platform](/platform/01-overview.md) section of our docs.
-
-<!-- ## Getting Started with Sorosplits
-
-To begin using Sorosplits, you'll need to deploy the Splitter Contract on the Stellar network. Once deployed, the contract will guide you through the process of initializing your distribution parameters. After the initial setup, shareholders can easily query their shares, and authorized parties can trigger distributions as needed.
-
----
-
-Sorosplits is not just a platform; it's a commitment to fair and transparent token economics. We're excited to have you join our journey and look forward to supporting your distribution needs. -->
+For more information on our platform, check out the [Platform](/platform/01-overview.md) section of our docs.

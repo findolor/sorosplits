@@ -1,45 +1,50 @@
 # Sorosplits Contracts
 
-Sorosplits is a set of smart contracts & interfaces to enable split transactions and revenue sharing across multiple parties in the Stellar ecosystem.
+Sorosplits is a set of smart contracts and interfaces designed to enable split transactions and revenue sharing across multiple parties in the Stellar ecosystem. These contracts allow any assets (tokens) that exist on Stellar to be split in a trustless, automated, and transparent way across addresses. The user interface enables all Stellar community members and projects to leverage the technology as a public good.
 
-Soroplits would allow any assets (tokens) that exist on Stellar to be split in a trustless, automated, & transparent way across addresses and the user interface would enable all Stellar community members & projects to leverage the technology as a public good.
+## Contracts Overview
+
+### Splitter Contract
+
+The Splitter Contract is used to distribute tokens to shareholders with predefined shares. It ensures transparent and efficient token distributions according to predefined shares.
+
+**Key Features:**
+
+- **Immutable Data**: Prevents re-initialization of shareholder data unless marked as mutable.
+- **Share Validation**: Ensures the sum of all shares equals exactly 100.
+- **Admin-Centric Operations**: Sensitive operations can only be performed by the admin.
+- **Token Distribution**: Distributes tokens based on shares.
+- **Shareholder Transparency**: Shareholders can query their shares and the entire list of shareholders.
+
+### Diversifier Contract
+
+The Diversifier Contract is a wrapper around the Splitter Contract with added functionality for token swapping. Instead of distributing tokens directly, it swaps token A to token B and distributes B tokens.
+
+**Key Features:**
+
+- **Token Swapping**: Swaps tokens before distribution.
+- **Integration with Splitter Contract**: Leverages the Splitter Contract for distribution.
+- **Admin-Centric Operations**: Sensitive operations can only be performed by the admin.
+- **Whitelisted Swap Tokens**: Ensures only approved tokens can be used for swapping.
+
+### Deployer Contract
+
+The Deployer Contract facilitates the deployment of other contracts, specifically the Splitter and Diversifier contracts. It ensures that the deployment and initialization of these contracts are atomic operations, preventing frontrunning and ensuring secure contract initialization.
+
+**Key Features:**
+
+- **Atomic Deployment and Initialization**: Ensures secure contract initialization.
+- **Support for Multiple Contracts**: Supports the deployment of both Splitter and Diversifier contracts.
+- **Flexible Initialization**: Allows for the initialization of deployed contracts with custom arguments.
 
 ## Pre-requisites
 
-Read through [Soroban Docs](https://soroban.stellar.org/docs/getting-started/setup) for more info about installation and usage of soroban-cli.
+Read through [Soroban Docs](https://developers.stellar.org/docs/smart-contracts) for more information about the installation and usage of soroban-cli.
 
 ## Usage
 
-Simple deployment and initialization of the Sorosplits contract can be done with running:
+To deploy the contracts in a single command, run the following script:
 
 ```bash
-make
+./scripts/deploy.sh
 ```
-
-This command will execute the following steps:
-
-1. Upload Sorosplits contract to the network
-
-2. Upload the token contract to the network (included
-   in the root of this repo)
-
-3. Initialize the Sorosplits contract with the list of addresses to split the revenue with
-
-```json
-[
-  {
-    "shareholder": "<Random Address>",
-    "share": 8050
-  },
-  {
-    "shareholder": "<Random Address>",
-    "share": 1950
-  }
-]
-```
-
-4. Mint 100 tokens to the Sorosplits contract using the token contract
-
-5. Distribute the tokens to the shareholders using the Sorosplits contract
-
-6. Display the balances of the shareholders
