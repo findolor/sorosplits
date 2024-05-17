@@ -15,35 +15,136 @@ Execute messages are the means by which users interact with the Splitter Contrac
 
 ## Execute Message Functions
 
-### `init`
+### `init_splitter`
 
-Initializes the contract with the necessary parameters.
+Initializes the contract with the necessary parameters. This method can only be called once.
 
 **Parameters:**
 
+- **`env`**: The environment.
 - **`admin`**: The address of the admin.
 - **`name`**: The name of the contract.
 - **`shares`**: A vector of `ShareDataKey` structs representing the shareholders and their respective shares.
 - **`updatable`**: A boolean flag indicating whether the contract is mutable.
 
-### `distribute_tokens`
+**Returns:**
 
-Distributes the available tokens to shareholders based on their shares.
+- `Result<(), Error>`: Returns an empty result on success or an error on failure.
+
+### `update_whitelisted_tokens`
+
+**ADMIN ONLY FUNCTION**
+
+Updates the whitelisted tokens. Only whitelisted tokens can be distributed to the shareholders.
 
 **Parameters:**
 
-- **`token_address`**: The address of the token to be distributed.
+- **`env`**: The environment.
+- **`tokens`**: A list of token addresses to whitelist.
+
+**Returns:**
+
+- `Result<(), Error>`: Returns an empty result on success or an error on failure.
+
+### `transfer_tokens`
+
+**ADMIN ONLY FUNCTION**
+
+Transfers unused tokens to the recipient. Unused tokens are defined as the tokens that are not distributed to the shareholders (i.e., token balance - sum of all the allocations).
+
+**Parameters:**
+
+- **`env`**: The environment.
+- **`token_address`**: The address of the token to transfer.
+- **`recipient`**: The address of the recipient.
+- **`amount`**: The amount of tokens to transfer.
+
+**Returns:**
+
+- `Result<(), Error>`: Returns an empty result on success or an error on failure.
+
+### `distribute_tokens`
+
+Distributes tokens to the shareholders. All of the available balance of the specified token is distributed on execution.
+
+**Parameters:**
+
+- **`env`**: The environment.
+- **`token_address`**: The address of the token to distribute.
+- **`amount`**: The amount of tokens to distribute.
+
+**Returns:**
+
+- `Result<(), Error>`: Returns an empty result on success or an error on failure.
 
 ### `update_shares`
 
-Updates the shares of the shareholders.
+**ADMIN ONLY FUNCTION**
+
+Updates the shares of the shareholders. All of the shares and shareholders are updated on execution.
 
 **Parameters:**
 
+- **`env`**: The environment.
 - **`shares`**: A vector of `ShareDataKey` structs representing the updated shareholders and their respective shares.
+
+**Returns:**
+
+- `Result<(), Error>`: Returns an empty result on success or an error on failure.
+
+### `update_name`
+
+**ADMIN ONLY FUNCTION**
+
+Updates the name of the contract.
+
+**Parameters:**
+
+- **`env`**: The environment.
+- **`name`**: The new name for the contract.
+
+**Returns:**
+
+- `Result<(), Error>`: Returns an empty result on success or an error on failure.
 
 ### `lock_contract`
 
-Locks the contract to prevent further updates to the shares.
+**ADMIN ONLY FUNCTION**
+
+Locks the contract to prevent further updates to the shares. Locking the contract does not affect the distribution of tokens.
 
 **Parameters:** None
+
+**Returns:**
+
+- `Result<(), Error>`: Returns an empty result on success or an error on failure.
+
+### `withdraw_allocation`
+
+Withdraws the allocation of the shareholder for the token. A shareholder can withdraw their allocation for a token if they have any.
+
+**Parameters:**
+
+- **`env`**: The environment.
+- **`token_address`**: The address of the token to withdraw.
+- **`shareholder`**: The address of the shareholder.
+- **`amount`**: The amount of tokens to withdraw.
+
+**Returns:**
+
+- `Result<(), Error>`: Returns an empty result on success or an error on failure.
+
+### `withdraw_external_allocation`
+
+Withdraws the allocation of the current contract from another splitter contract.
+
+**Parameters:**
+
+- **`env`**: The environment.
+- **`splitter_address`**: The address of the splitter contract.
+- **`token_address`**: The address of the token to withdraw.
+- **`amount`**: The amount of tokens to withdraw.
+
+**Returns:**
+
+- `Result<(), Error>`: Returns an empty result on success or an error on failure.

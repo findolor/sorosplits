@@ -4,36 +4,87 @@ sidebar_position: 4
 
 # Data Structures & Errors
 
+This section provides detailed information about the data structures and errors used in the Splitter Contract. Understanding these structures and errors is crucial for effectively interacting with the contract.
+
 ## Data Structures
 
-### `Vec<ShareDataKey>`
+### Contract Config
 
-A vector that holds elements of the `ShareDataKey`` type. It is used to store and manage the list of shareholders and their respective shares.
+Represents the configuration of the contract. This structure holds essential information about the contract's administrative settings and its mutability state.
 
-### `ShareDataKey`
+**Fields:**
 
-A custom data structure that represents a shareholder's information, including:
+- **`admin`**: The admin address of the contract. This address has special permissions to perform administrative tasks such as updating shares and locking the contract.
+- **`name`**: The name of the contract. This is a human-readable identifier for the contract.
+- **`updatable`**: A boolean indicating whether the contract is mutable. If set to `false`, certain administrative actions, such as updating shares, are restricted.
 
-- **shareholder** - `Address`: The blockchain address of the shareholder.
-- **share** - `i128`: The amount of share the shareholder owns, represented as an integer.
+**Key Structs and Storage Variants:**
 
-This structure is used to map each shareholder to their allocated share of the tokens.
+- **`ConfigKeys`**: Enum used to define storage keys.
+  - **`Config`**: Key used to store the configuration data.
 
-### `ConfigDataKey`
+### Whitelisted Tokens
 
-A data structure that holds the configuration details of the contract, which includes:
+Manages the list of whitelisted tokens. Only tokens that are whitelisted can be distributed to shareholders. This ensures that only approved tokens are used within the contract.
 
-- **admin** - `Address`: The blockchain address of the admin who has the authority to execute admin-level operations.
-- **name** - `String`: The name of the contract.
-- **updatable** - `bool`: A boolean flag indicating whether the contract is mutable (i.e., whether the shares and other configurations can be updated post-initialization).
+**Fields:**
 
-This structure is crucial for maintaining the state of the contract, including administrative control and mutability status.
+- **`WhitelistedTokens`**: A key used to store the list of whitelisted token addresses in persistent storage.
+
+**Key Structs and Storage Variants:**
+
+- **`WhitelistKeys`**: Enum used to define storage keys.
+  - **`WhitelistedTokens`**: Key used to store the list of whitelisted tokens.
+
+### Token Allocations
+
+Manages token allocations for shareholders. This structure keeps track of how many tokens each shareholder is entitled to and the total allocation for each token.
+
+**Fields:**
+
+- **`TotalAllocation(Address)`**: A key that maps a token address to the total allocation amount for that token.
+- **`Allocation(Address, Address)`**: A key that maps a combination of a shareholder address and a token address to the allocation amount for that shareholder and token.
+
+**Key Structs and Storage Variants:**
+
+- **`DistributionKeys`**: Enum used to define storage keys.
+  - **`TotalAllocation(Address)`**: Key for the total allocation amount for a token.
+  - **`Allocation(Address, Address)`**: Key for mapping the allocation amount for a shareholder.
+
+### Recipients
+
+Manages the shareholders and their shares. This structure is used to store and retrieve information about the shareholders and their respective shares in the contract.
+
+**Fields:**
+
+- **`Shareholders`**: A key used to store the list of all shareholders in the contract.
+- **`Share(Address)`**: A key that maps a shareholder address to their share information, represented by a `ShareDataKey` struct.
+
+**Key Structs and Storage Variants:**
+
+- **`RecipientKeys`**: Enum used to define storage keys.
+  - **`Shareholders`**: Key used to store the list of shareholders.
+  - **`Share(Address)`**: Key used to store the share information for a specific shareholder.
 
 ## Errors
 
-An enumeration that defines the possible error states that the contract can encounter, such as:
+The Splitter contract defines a set of errors to handle various failure conditions. Each error is represented by an enum variant with a unique code.
 
-- **AlreadyInitialized**: Indicates that the contract has already been initialized and cannot be re-initialized.
-- **NotInitialized**: Indicates that the contract has not been initialized and therefore cannot perform the requested operation.
-- **InvalidShareTotal**: Indicates that the total shares do not sum up to the required total (10,000).
-- **LowShareCount**: Indicates that there is an insufficient number of shareholders (less than the required minimum).
+### Error Enum
+
+**Variants:**
+
+- **`NotInitialized` (101)**: The contract has not been initialized.
+- **`AlreadyInitialized` (102)**: The contract has already been initialized.
+- **`Unauthorized` (103)**: The caller is not authorized to perform the action.
+- **`ContractLocked` (104)**: The contract is locked and cannot be modified.
+- **`LowShareCount` (105)**: The share count is too low.
+- **`SelfShareNotAllowed` (106)**: Self-sharing is not allowed.
+- **`InvalidShareTotal` (107)**: The total shares are invalid.
+- **`InsufficientBalance` (108)**: Insufficient balance for the operation.
+- **`ZeroTransferAmount` (109)**: The transfer amount is zero.
+- **`TransferAmountAboveBalance` (110)**: The transfer amount exceeds the balance.
+- **`TransferAmountAboveUnusedBalance` (111)**: The transfer amount exceeds the unused balance.
+- **`ZeroWithdrawalAmount` (112)**: The withdrawal amount is zero.
+- **`WithdrawalAmountAboveAllocation` (113)**: The withdrawal amount exceeds the allocation.
+- **`TokenNotWhitelisted` (114)**: The token is not whitelisted.
