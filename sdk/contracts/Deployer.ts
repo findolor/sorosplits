@@ -56,7 +56,7 @@ export class DeployerContract extends BaseContract {
     super(network, walletAddress)
   }
 
-  public getDeployAndInitOperation({
+  public getDeploySplitterOperation({
     name,
     shares,
     updatable,

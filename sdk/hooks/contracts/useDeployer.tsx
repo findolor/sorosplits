@@ -28,14 +28,14 @@ export const useDeployerContract = (
     return deployerContract.getTransaction(txResponse)
   }
 
-  const deployAndInitSplitter = async ({
+  const deploySplitter = async ({
     name,
     shares,
     updatable,
   }: SplitterDeployAndInitContractArgs) => {
     await checkFreighterConnection()
     return processTransaction(
-      deployerContract.getDeployAndInitOperation({
+      deployerContract.getDeploySplitterOperation({
         name,
         shares,
         updatable,
@@ -68,7 +68,7 @@ export const useDeployerContract = (
   }
 
   return {
-    deployAndInitSplitter,
+    deploySplitter,
     deployDiversifier,
     deployNetwork,
   }
