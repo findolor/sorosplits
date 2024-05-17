@@ -55,10 +55,9 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: "Sorosplits",
         logo: {
           alt: "Sorosplits Logo",
-          src: "img/logo.jpg",
+          src: "img/logo.svg",
         },
         items: [
           // {
@@ -73,7 +72,7 @@ const config = {
             position: "right",
           },
           {
-            href: "https://github.com/orgs/Sorosplits/repositories",
+            href: "https://github.com/findolor/sorosplits",
             label: "GitHub",
             position: "right",
           },
