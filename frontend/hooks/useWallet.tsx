@@ -3,7 +3,6 @@ import {
   setAllowed,
   getUserInfo,
   signBlob,
-  getNetworkDetails,
   isConnected as isConnectedFreighter,
 } from "@stellar/freighter-api"
 import useAppStore from "../store"
@@ -55,8 +54,13 @@ const useWallet = () => {
         }
       )) as unknown as { data: Uint8Array }
 
+      const signature = signedBlob.hasOwnProperty("data")
+        ? Buffer.from(signedBlob.data).toString("base64")
+        : // @ts-ignore || Some hacky fix for FF
+          Buffer.from(signedBlob).toString("base64")
+
       const accessToken = await authenticationApiService.connect({
-        signature: Buffer.from(signedBlob.data).toString("base64"),
+        signature,
         publicKey,
       })
 
