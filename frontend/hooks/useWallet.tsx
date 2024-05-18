@@ -3,12 +3,11 @@ import {
   setAllowed,
   getUserInfo,
   signBlob,
-  getNetworkDetails,
   isConnected as isConnectedFreighter,
-} from "@stellar/freighter-api";
-import useAppStore from "../store";
-import { errorToast } from "../utils/toast";
-import useApiService from "./useApi";
+} from "@stellar/freighter-api"
+import useAppStore from "../store"
+import { errorToast } from "../utils/toast"
+import useApiService from "./useApi"
 
 const useWallet = () => {
   const {
@@ -18,30 +17,30 @@ const useWallet = () => {
     setWalletAddress,
     setAccessToken,
     setLoading,
-  } = useAppStore();
-  const { authenticationApiService } = useApiService();
+  } = useAppStore()
+  const { authenticationApiService } = useApiService()
 
   const connect = async () => {
     try {
-      setLoading(true);
+      setLoading(true)
 
-      const installed = await isConnectedFreighter();
+      const installed = await isConnectedFreighter()
       if (!installed) {
-        throw new Error("Freighter is not installed");
+        throw new Error("Freighter is not installed")
       }
 
-      const allowed = await isAllowed();
+      const allowed = await isAllowed()
       if (!allowed) {
-        await setAllowed();
+        await setAllowed()
       }
-      const info = await getUserInfo();
+      const info = await getUserInfo()
       if (info.publicKey === "") {
-        throw new Error("Please unlock your wallet");
+        throw new Error("Please unlock your wallet")
       }
 
-      let publicKey = info.publicKey;
+      let publicKey = info.publicKey
 
-      const nonce = await authenticationApiService.getNonce({ publicKey });
+      const nonce = await authenticationApiService.getNonce({ publicKey })
 
       const signedBlob = (await signBlob(
         btoa(
@@ -53,40 +52,40 @@ const useWallet = () => {
         {
           accountToSign: publicKey,
         }
-      )) as unknown as { data: Uint8Array };
+      )) as unknown as { data: Uint8Array }
 
       const signature = signedBlob.hasOwnProperty("data")
         ? Buffer.from(signedBlob.data).toString("base64")
         : // @ts-ignore || Some hacky fix for FF
-          Buffer.from(signedBlob).toString("base64");
+          Buffer.from(signedBlob).toString("base64")
 
       const accessToken = await authenticationApiService.connect({
         signature,
         publicKey,
-      });
+      })
 
-      setWalletAddress(info.publicKey);
-      setAccessToken(accessToken);
-      setIsConnected(true);
-      setLoading(false);
+      setWalletAddress(info.publicKey)
+      setAccessToken(accessToken)
+      setIsConnected(true)
+      setLoading(false)
     } catch (error: any) {
-      setLoading(false);
-      errorToast(error);
+      setLoading(false)
+      errorToast(error)
     }
-  };
+  }
 
   const disconnect = async () => {
-    setIsConnected(false);
-    setWalletAddress("");
-    setAccessToken("null");
-  };
+    setIsConnected(false)
+    setWalletAddress("")
+    setAccessToken("null")
+  }
 
   return {
     connect,
     disconnect,
     walletAddress,
     isConnected,
-  };
-};
+  }
+}
 
-export default useWallet;
+export default useWallet
