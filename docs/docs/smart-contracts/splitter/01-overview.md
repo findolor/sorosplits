@@ -40,4 +40,4 @@ Ideal for organizations needing to distribute profits, dividends, or rewards in 
 
 - [Execute Messages](./02-execute-messages.md)
 - [Query Messages](./03-query-messages.md)
-- [Data Structures & Errors](./04-data-structures-errors.md)
+- [Data Structures & Errors](/smart-contracts/splitter/04-data-structures.md)

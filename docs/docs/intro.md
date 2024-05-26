@@ -24,7 +24,7 @@ At Sorosplits, our mission is to simplify the process of token distribution for 
 
 ### Smart Contracts
 
-For more information on how smart contracts work, check out the [Smart Contracts](/smart-contracts/splitter-contract/01-overview.md) section of our docs.
+For more information on how smart contracts work, check out the [Smart Contracts](/smart-contracts/splitter/01-overview.md) section of our docs.
 
 ### Platform
 

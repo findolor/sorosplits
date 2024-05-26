@@ -37,4 +37,4 @@ Ideal for organizations needing to convert and distribute tokens in a transparen
 
 - [Execute Messages](./02-execute-messages.md)
 - [Query Messages](./03-query-messages.md)
-- [Data Structures & Errors](./04-data-structures-errors.md)
+- [Data Structures & Errors](/smart-contracts/diversifier/04-data-structures.md)
